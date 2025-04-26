@@ -37,6 +37,10 @@ const HomePage: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isMedium = useMediaQuery(theme.breakpoints.down('md'));
 
+  // Add beautiful background theme variables
+  const bgGradient = `linear-gradient(to bottom right, ${alpha(theme.palette.background.paper, 0.9)}, ${alpha(theme.palette.background.default, 0.8)})`;
+  const bgPattern = `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23${theme.palette.primary.main.replace('#', '')}' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E")`;
+
   const features = [
     {
       title: 'Report Issues',
@@ -72,12 +76,28 @@ const HomePage: React.FC = () => {
   }, []);
 
   return (
-    <Box>
+    <Box sx={{
+      backgroundImage: bgGradient,
+      backgroundAttachment: 'fixed',
+      position: 'relative',
+      '&::before': {
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundImage: bgPattern,
+        opacity: 0.6,
+        zIndex: 0,
+        pointerEvents: 'none'
+      }
+    }}>
       {/* Hero Section */}
       <Box 
         sx={{
           position: 'relative',
-          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`,
+          background: 'transparent',
           color: 'text.primary',
           overflow: 'hidden',
           borderRadius: { xs: 0, md: 8 },
@@ -86,20 +106,28 @@ const HomePage: React.FC = () => {
             `0 15px 50px ${alpha(theme.palette.primary.main, 0.15)}`,
           mx: { xs: 0, md: 3 },
           minHeight: { xs: 'auto', md: '65vh' },
+          backdropFilter: 'blur(8px)',
+          border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+          backgroundColor: alpha(theme.palette.background.paper, 0.7),
         }}
       >
-        {/* Decorative elements */}
+        {/* Enhanced decorative elements */}
         <Box
           sx={{
             position: 'absolute',
             width: '400px',
             height: '400px',
             borderRadius: '50%',
-            background: `radial-gradient(circle, ${alpha(theme.palette.primary.main, 0.08)}, ${alpha(theme.palette.secondary.main, 0.08)})`,
+            background: `radial-gradient(circle, ${alpha(theme.palette.primary.main, 0.15)}, ${alpha(theme.palette.primary.main, 0.05)})`,
             top: '-150px',
             left: '-150px',
             zIndex: 0,
             filter: 'blur(10px)',
+            animation: 'pulse-slow 15s infinite alternate',
+            '@keyframes pulse-slow': {
+              '0%': { opacity: 0.5, transform: 'scale(1)' },
+              '100%': { opacity: 0.8, transform: 'scale(1.1)' }
+            }
           }}
         />
         <Box
@@ -108,11 +136,12 @@ const HomePage: React.FC = () => {
             width: '250px',
             height: '250px',
             borderRadius: '50%',
-            background: `radial-gradient(circle, ${alpha(theme.palette.secondary.main, 0.06)}, ${alpha(theme.palette.primary.main, 0.06)})`,
+            background: `radial-gradient(circle, ${alpha(theme.palette.secondary.main, 0.15)}, ${alpha(theme.palette.secondary.main, 0.05)})`,
             bottom: '-80px',
             right: '25%',
             zIndex: 0,
             filter: 'blur(8px)',
+            animation: 'pulse-slow 12s infinite alternate-reverse',
           }}
         />
         <Box
@@ -121,11 +150,12 @@ const HomePage: React.FC = () => {
             width: '120px',
             height: '120px',
             borderRadius: '50%',
-            background: `radial-gradient(circle, ${alpha(theme.palette.info.main, 0.07)}, ${alpha(theme.palette.success.main, 0.07)})`,
+            background: `radial-gradient(circle, ${alpha(theme.palette.info.main, 0.15)}, ${alpha(theme.palette.info.main, 0.05)})`,
             top: '15%',
             right: '10%',
             zIndex: 0,
             filter: 'blur(5px)',
+            animation: 'pulse-slow 10s infinite alternate',
           }}
         />
 
@@ -223,7 +253,7 @@ const HomePage: React.FC = () => {
                       sx={{ 
                         width: '50px',
                         height: '5px',
-                        background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                        background: theme.palette.primary.main,
                         borderRadius: '6px'
                       }} 
                     />
@@ -438,6 +468,17 @@ const HomePage: React.FC = () => {
                       }
                     }}
                   />
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: 'rgba(0,0,0,0.2)',
+                      zIndex: 2
+                    }}
+                  />
                 </Box>
                 
                 {/* Decorative Dot Pattern */}
@@ -566,57 +607,161 @@ const HomePage: React.FC = () => {
             </Zoom>
           </Grid>
         </Grid>
-
-        {/* Add a subtle background pattern overlay to the hero section */}
-        <Box 
-          sx={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            opacity: 0.3,
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23${theme.palette.primary.main.replace('#', '')}' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-            pointerEvents: 'none',
-            zIndex: 0
-          }}
-        />
       </Box>
 
       {/* Stats Section */}
-      <Container id="stats-section" maxWidth="lg" sx={{ mb: 8 }}>
-        <Grid container spacing={3} justifyContent="center">
+      <Container id="stats-section" maxWidth="lg" sx={{ 
+        mb: 10,
+        position: 'relative',
+        zIndex: 1
+      }}>
+        {/* Decorative floating elements */}
+        <Box sx={{
+          position: 'absolute',
+          top: '-50px',
+          right: '10%',
+          width: '150px',
+          height: '150px',
+          borderRadius: '20px',
+          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.light, 0.4)}, ${alpha(theme.palette.primary.main, 0.1)})`,
+          transform: 'rotate(15deg)',
+          filter: 'blur(2px)',
+          zIndex: -1,
+          animation: 'float 15s ease-in-out infinite alternate',
+          '@keyframes float': {
+            '0%': {
+              transform: 'rotate(15deg) translateY(0px)'
+            },
+            '50%': {
+              transform: 'rotate(20deg) translateY(-15px)'
+            },
+            '100%': {
+              transform: 'rotate(15deg) translateY(0px)'
+            }
+          }
+        }} />
+        
+        <Box sx={{
+          position: 'absolute',
+          bottom: '10%',
+          left: '5%',
+          width: '100px',
+          height: '100px',
+          borderRadius: '50%',
+          background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.light, 0.3)}, ${alpha(theme.palette.secondary.main, 0.1)})`,
+          filter: 'blur(2px)',
+          zIndex: -1,
+          animation: 'float 12s ease-in-out infinite alternate-reverse'
+        }} />
+        
+        <Box sx={{ textAlign: 'center', mb: 6 }}>
+          <Typography 
+            variant="h4" 
+            component="h2" 
+            sx={{ 
+              fontWeight: 'bold',
+              mb: 2,
+              position: 'relative',
+              display: 'inline-block',
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                bottom: '-10px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                width: '80px',
+                height: '4px',
+                background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                borderRadius: '2px'
+              }
+            }}
+          >
+            Our Impact
+          </Typography>
+          <Typography 
+            variant="subtitle1" 
+            color="text.secondary" 
+            sx={{ 
+              maxWidth: '650px', 
+              mx: 'auto',
+              mt: 3
+            }}
+          >
+            Together we're building a stronger, more engaged community through active participation and collaboration
+          </Typography>
+        </Box>
+        
+        <Grid container spacing={4} justifyContent="center">
           {stats.map((stat, index) => (
             <Grid item xs={12} sm={4} key={index}>
               <Grow in={true} timeout={(index + 1) * 500}>
-                <Box 
+                <Paper 
+                  elevation={2}
                   sx={{ 
-                    p: 3, 
+                    p: 4, 
                     textAlign: 'center',
-                    backgroundColor: alpha(theme.palette.primary.main, 0.05),
-                    borderRadius: 4,
                     height: '100%',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                    borderRadius: '16px',
+                    transition: 'all 0.3s ease',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    backdropFilter: 'blur(10px)',
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                    backgroundColor: alpha(theme.palette.background.paper, 0.7),
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: '6px',
+                      background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                    },
                     '&:hover': {
-                      transform: 'translateY(-5px)',
-                      boxShadow: `0 10px 30px ${alpha(theme.palette.primary.main, 0.1)}`
+                      transform: 'translateY(-8px)',
+                      boxShadow: `0 15px 30px ${alpha(theme.palette.primary.main, 0.2)}`
                     }
                   }}
                 >
-                  <Box sx={{ color: theme.palette.primary.main, mb: 2 }}>
+                  <Box 
+                    sx={{ 
+                      color: theme.palette.primary.main, 
+                      mb: 2,
+                      p: 2,
+                      borderRadius: '50%',
+                      backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '80px',
+                      height: '80px',
+                      marginBottom: 3
+                    }}
+                  >
                     {stat.icon}
                   </Box>
-                  <Typography variant="h3" sx={{ fontWeight: 'bold', mb: 1 }}>
+                  <Typography 
+                    variant="h3" 
+                    sx={{ 
+                      fontWeight: 'bold', 
+                      mb: 1,
+                      color: theme.palette.primary.main
+                    }}
+                  >
                     {stat.value}
                   </Typography>
-                  <Typography variant="subtitle1" color="text.secondary">
+                  <Typography 
+                    variant="h6" 
+                    color="text.secondary"
+                    sx={{ fontWeight: 500 }}
+                  >
                     {stat.label}
                   </Typography>
-                </Box>
+                </Paper>
               </Grow>
             </Grid>
           ))}
@@ -624,121 +769,314 @@ const HomePage: React.FC = () => {
       </Container>
 
       {/* Features Section */}
-      <Container maxWidth="lg" sx={{ mb: 8 }}>
-        <Box sx={{ textAlign: 'center', mb: 6 }}>
-          <Typography 
-            variant="h3" 
-            component="h2" 
-            sx={{ 
-              fontWeight: 'bold',
-              mb: 2 
-            }}
-          >
-            How It Works
-          </Typography>
-          <Typography 
-            variant="h6" 
-            color="text.secondary" 
-            sx={{ 
-              maxWidth: '800px', 
-              mx: 'auto',
-              mb: 2
-            }}
-          >
-            The Society Management System empowers citizens and authorities to work together for a better community
-          </Typography>
-          <Divider sx={{ width: '80px', mx: 'auto', borderWidth: '4px', borderColor: theme.palette.primary.main, borderRadius: '2px' }} />
-        </Box>
+      <Box sx={{ 
+        py: 10, 
+        background: 'transparent',
+        position: 'relative',
+        zIndex: 1,
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundImage: `radial-gradient(circle at 20% 30%, ${alpha(theme.palette.primary.light, 0.1)} 0%, transparent 25%), 
+                           radial-gradient(circle at 80% 60%, ${alpha(theme.palette.secondary.light, 0.1)} 0%, transparent 25%)`,
+          zIndex: -1
+        }
+      }}>
+        {/* Decorative elements */}
+        <Box sx={{
+          position: 'absolute',
+          top: '10%',
+          left: '8%',
+          width: '180px',
+          height: '180px',
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20.97 50c0-9.04-7.28-16.36-16.28-16.47C13.68 33.42 21 26.14 21 17.1c0 9.05 7.32 16.37 16.31 16.47-8.99.11-16.31 7.42-16.31 16.47 0-9.05-7.28-16.33-16.28-16.47 8.99-.1 16.28-7.37 16.28-16.42 0 9.05 7.28 16.32 16.31 16.47-9.03-.15-16.31-7.42-16.31-16.47zm62.5 0c0-4.52-3.64-8.18-8.14-8.23 4.5-.06 8.14-3.72 8.14-8.24 0 4.52 3.64 8.18 8.16 8.24-4.52.05-8.16 3.71-8.16 8.23 0-4.52-3.64-8.18-8.14-8.23 4.5-.05 8.14-3.72 8.14-8.24 0 4.52 3.64 8.19 8.16 8.24-4.52.05-8.16 3.71-8.16 8.23zm-45.56 0c0-3.01-2.43-5.45-5.42-5.49 3-.04 5.42-2.48 5.42-5.5 0 3.01 2.43 5.45 5.44 5.5-3.01.03-5.44 2.48-5.44 5.5 0-3.01-2.43-5.45-5.42-5.5 3-.04 5.42-2.48 5.42-5.5 0 3.01 2.43 5.46 5.44 5.5-3.01.04-5.44 2.48-5.44 5.5z' fill='%23${theme.palette.primary.main.replace('#', '')}' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E")`,
+          backgroundRepeat: 'repeat',
+          opacity: 0.7,
+          transform: 'rotate(10deg)',
+          zIndex: -1
+        }} />
         
-        <Grid container spacing={4}>
-          {features.map((feature, index) => (
-            <Grid item xs={12} sm={6} md={4} key={feature.title}>
-              <Grow in={true} timeout={(index + 1) * 500}>
-                <Card 
-                  sx={{ 
-                    height: '100%', 
-                    display: 'flex', 
-                    flexDirection: 'column',
-                    borderRadius: 4,
-                    overflow: 'hidden',
-                    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                    '&:hover': {
-                      transform: 'translateY(-8px)',
-                      boxShadow: theme.shadows[10]
-                    },
-                    position: 'relative'
-                  }}
-                  elevation={2}
-                >
-                  <Box 
+        <Box sx={{
+          position: 'absolute',
+          bottom: '15%',
+          right: '5%',
+          width: '220px',
+          height: '220px',
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23${theme.palette.secondary.main.replace('#', '')}' fill-opacity='0.05' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E")`,
+          backgroundRepeat: 'repeat',
+          opacity: 0.7,
+          zIndex: -1
+        }} />
+
+        <Container maxWidth="lg">
+          <Box sx={{ textAlign: 'center', mb: 8 }}>
+            <Chip 
+              label="POWERFUL FEATURES" 
+              size="small" 
+              color="secondary" 
+              sx={{ 
+                mb: 2,
+                fontWeight: 'bold',
+                px: 1.5,
+                background: `linear-gradient(90deg, ${alpha(theme.palette.secondary.main, 0.9)}, ${alpha(theme.palette.secondary.light, 0.9)})`,
+                backdropFilter: 'blur(8px)',
+                boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.3)}`
+              }} 
+            />
+            <Typography 
+              variant="h3" 
+              component="h2" 
+              sx={{ 
+                fontWeight: 'bold',
+                mb: 2,
+                color: theme.palette.text.primary
+              }}
+            >
+              How It Works
+            </Typography>
+            <Typography 
+              variant="h6" 
+              color="text.secondary" 
+              sx={{ 
+                maxWidth: '700px', 
+                mx: 'auto',
+                mb: 3,
+                fontWeight: 400
+              }}
+            >
+              The Society Management System empowers citizens and authorities to work together for a better community
+            </Typography>
+            <Box 
+              sx={{ 
+                width: '80px', 
+                height: '4px', 
+                background: theme.palette.primary.main,
+                mx: 'auto',
+                borderRadius: '2px'
+              }} 
+            />
+          </Box>
+          
+          <Grid container spacing={4}>
+            {features.map((feature, index) => (
+              <Grid item xs={12} sm={6} md={4} key={feature.title}>
+                <Grow in={true} timeout={(index + 1) * 500}>
+                  <Card 
                     sx={{ 
-                      position: 'absolute', 
-                      top: 0, 
-                      left: 0, 
-                      right: 0, 
-                      height: '8px', 
-                      backgroundColor: feature.color 
-                    }} 
-                  />
-                  <CardContent sx={{ flexGrow: 1, pt: 5 }}>
-                    <Box 
-                      sx={{ 
-                        display: 'inline-flex', 
-                        p: 1.5, 
-                        borderRadius: '12px', 
-                        mb: 2,
-                        backgroundColor: alpha(feature.color, 0.1)
-                      }}
-                    >
-                      {feature.icon}
+                      height: '100%', 
+                      display: 'flex', 
+                      flexDirection: 'column',
+                      borderRadius: 3,
+                      overflow: 'hidden',
+                      transition: 'all 0.3s ease',
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                      boxShadow: 'none',
+                      backdropFilter: 'blur(8px)',
+                      backgroundColor: alpha(theme.palette.background.paper, 0.7),
+                      position: 'relative',
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        height: '100%',
+                        background: `linear-gradient(135deg, ${alpha(feature.color, 0.1)}, transparent 80%)`,
+                        zIndex: 0
+                      },
+                      '&:hover': {
+                        transform: 'translateY(-8px)',
+                        boxShadow: `0 15px 30px ${alpha(theme.palette.primary.main, 0.15)}`,
+                        borderColor: alpha(feature.color, 0.2),
+                        '& .feature-icon-wrapper': {
+                          transform: 'scale(1.1)',
+                        }
+                      },
+                    }}
+                  >
+                    <CardContent sx={{ flexGrow: 1, p: 4, pt: 3 }}>
+                      <Box 
+                        className="feature-icon-wrapper"
+                        sx={{ 
+                          display: 'inline-flex', 
+                          p: 2, 
+                          borderRadius: '16px', 
+                          mb: 3,
+                          backgroundColor: alpha(feature.color, 0.12),
+                          transition: 'transform 0.3s ease',
+                        }}
+                      >
+                        {feature.icon}
+                      </Box>
+                      <Typography 
+                        gutterBottom 
+                        variant="h5" 
+                        component="h3" 
+                        sx={{ 
+                          fontWeight: 'bold',
+                          mb: 1.5 
+                        }}
+                      >
+                        {feature.title}
+                      </Typography>
+                      <Typography variant="body1" color="text.secondary" sx={{ mb: 3, lineHeight: 1.7 }}>
+                        {feature.description}
+                      </Typography>
+                    </CardContent>
+                    <Box sx={{ 
+                      borderTop: '1px solid',
+                      borderColor: alpha(theme.palette.divider, 0.1),
+                      p: 0
+                    }}>
+                      <CardActions sx={{ p: 0 }}>
+                        <Button 
+                          component={Link} 
+                          to={feature.link}
+                          color="primary"
+                          endIcon={<ArrowForwardIcon />}
+                          sx={{ 
+                            fontWeight: 'medium',
+                            p: 2,
+                            width: '100%',
+                            justifyContent: 'space-between',
+                            '&:hover': {
+                              backgroundColor: alpha(theme.palette.primary.main, 0.05)
+                            }
+                          }}
+                        >
+                          Learn More
+                        </Button>
+                      </CardActions>
                     </Box>
-                    <Typography gutterBottom variant="h5" component="h3" sx={{ fontWeight: 'bold' }}>
-                      {feature.title}
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-                      {feature.description}
-                    </Typography>
-                  </CardContent>
-                  <CardActions sx={{ p: 2, pt: 0 }}>
-                    <Button 
-                      component={Link} 
-                      to={feature.link}
-                      color="primary"
-                      endIcon={<ArrowForwardIcon />}
-                      sx={{ fontWeight: 'medium' }}
-                    >
-                      Learn More
-                    </Button>
-                  </CardActions>
-                </Card>
-              </Grow>
-            </Grid>
-          ))}
-        </Grid>
-      </Container>
+                  </Card>
+                </Grow>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      </Box>
 
       {/* About Section */}
-      <Box sx={{ bgcolor: alpha(theme.palette.primary.main, 0.05), py: 8 }}>
+      <Box sx={{ 
+        py: 12, 
+        position: 'relative',
+        background: 'transparent',
+        zIndex: 1,
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundImage: `radial-gradient(circle at 80% 20%, ${alpha(theme.palette.primary.light, 0.08)} 0%, transparent 25%), 
+                           radial-gradient(circle at 20% 70%, ${alpha(theme.palette.secondary.light, 0.08)} 0%, transparent 25%)`,
+          zIndex: -1
+        }
+      }}>
+        {/* Decorative elements */}
+        <Box sx={{
+          position: 'absolute',
+          bottom: '10%',
+          left: '5%',
+          width: '200px',
+          height: '200px',
+          borderRadius: '30% 70% 70% 30% / 30% 30% 70% 70%',
+          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.light, 0.15)}, ${alpha(theme.palette.primary.main, 0.05)})`,
+          filter: 'blur(2px)',
+          zIndex: -1,
+          animation: 'morph 15s linear infinite alternate',
+          '@keyframes morph': {
+            '0%': { borderRadius: '30% 70% 70% 30% / 30% 30% 70% 70%' },
+            '25%': { borderRadius: '70% 30% 30% 70% / 70% 70% 30% 30%' },
+            '50%': { borderRadius: '30% 30% 70% 70% / 60% 40% 60% 40%' },
+            '75%': { borderRadius: '50% 50% 50% 50% / 50% 50% 50% 50%' },
+            '100%': { borderRadius: '30% 70% 70% 30% / 30% 30% 70% 70%' }
+          }
+        }} />
+        
+        <Box sx={{
+          position: 'absolute',
+          top: '20%',
+          right: '8%',
+          width: '150px',
+          height: '150px',
+          background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.light, 0.15)}, ${alpha(theme.palette.secondary.main, 0.05)})`,
+          borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%',
+          filter: 'blur(2px)',
+          zIndex: -1,
+          animation: 'morph 12s linear infinite alternate-reverse'
+        }} />
+
         <Container maxWidth="lg">
-          <Grid container spacing={6} alignItems="center">
+          <Grid container spacing={8} alignItems="center">
             <Grid item xs={12} md={6}>
               <Fade in={true} timeout={1000}>
                 <Box 
                   sx={{ 
-                    borderRadius: 4, 
+                    borderRadius: 5, 
                     overflow: 'hidden',
-                    boxShadow: theme.shadows[10]
+                    boxShadow: theme.shadows[8],
+                    position: 'relative',
+                    background: alpha(theme.palette.primary.main, 0.05),
+                    padding: '10px',
+                    backdropFilter: 'blur(8px)',
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: 'rgba(0,0,0,0.2)',
+                      zIndex: 1
+                    }
                   }}
                 >
-                  <img 
-                    src="https://source.unsplash.com/random?society" 
-                    alt="About the Society Management System"
-                    style={{ 
-                      width: '100%', 
-                      height: isMedium ? '300px' : '400px',
-                      objectFit: 'cover' 
+                  <Box sx={{ 
+                    borderRadius: 4, 
+                    overflow: 'hidden',
+                    position: 'relative',
+                  }}>
+                    <Box
+                      component="img"
+                      src="https://source.unsplash.com/random?society" 
+                      alt="About the Society Management System"
+                      sx={{ 
+                        width: '100%', 
+                        height: isMedium ? '360px' : '460px',
+                        objectFit: 'cover',
+                        transition: 'transform 10s ease',
+                        '&:hover': {
+                          transform: 'scale(1.1)'
+                        }
+                      }}
+                    />
+                  </Box>
+                  <Box 
+                    sx={{ 
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      p: 4,
+                      zIndex: 2
                     }}
-                  />
+                  >
+                    <Chip 
+                      label="About Our Vision" 
+                      color="secondary"
+                      sx={{ 
+                        fontWeight: 'bold',
+                        mb: 2,
+                        backgroundColor: alpha(theme.palette.secondary.main, 0.9)
+                      }}
+                    />
+                  </Box>
                 </Box>
               </Fade>
             </Grid>
@@ -750,38 +1088,79 @@ const HomePage: React.FC = () => {
                     component="h2" 
                     sx={{ 
                       fontWeight: 'bold',
-                      mb: 3
+                      mb: 3,
+                      position: 'relative',
+                      display: 'inline-block',
+                      '&::after': {
+                        content: '""',
+                        position: 'absolute',
+                        bottom: -10,
+                        left: 0,
+                        width: '60px',
+                        height: '4px',
+                        backgroundColor: theme.palette.primary.main,
+                        borderRadius: '4px'
+                      }
                     }}
                   >
                     About the Platform
                   </Typography>
-                  <Typography variant="body1" sx={{ mb: 3, lineHeight: 1.8 }}>
+                  <Typography variant="body1" sx={{ mb: 3, lineHeight: 1.8, color: alpha(theme.palette.text.primary, 0.8) }}>
                     The Society Management System (SMS) is a comprehensive web-based platform designed to promote social order, 
                     awareness, and active community participation in India. The system is structured around two primary user roles: 
                     normal citizens and admins, with admins consisting of police officers and advocates who are responsible for 
                     enforcing laws and regulations.
                   </Typography>
-                  <Typography variant="body1" sx={{ mb: 4, lineHeight: 1.8 }}>
+                  <Typography variant="body1" sx={{ mb: 4, lineHeight: 1.8, color: alpha(theme.palette.text.primary, 0.8) }}>
                     The platform allows citizens to upload videos or report situations that involve violations of social rules or laws, 
                     which are then reviewed by admins for appropriate action. Admins have the authority to accept or reject the proposals 
                     submitted by citizens, taking necessary actions such as issuing fines or legal notices, and updating the system to 
                     reflect these decisions.
                   </Typography>
-                  <Button 
-                    variant="contained" 
-                    color="primary"
-                    size="large"
-                    component={Link}
-                    to="/register"
-                    sx={{ 
-                      borderRadius: '50px', 
-                      px: 4, 
-                      py: 1.5,
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    Join the Movement
-                  </Button>
+                  <Box sx={{ display: 'flex', gap: 3, mt: 5 }}>
+                    <Button 
+                      variant="contained" 
+                      color="primary"
+                      size="large"
+                      component={Link}
+                      to="/register"
+                      sx={{ 
+                        borderRadius: '50px', 
+                        px: 4, 
+                        py: 1.5,
+                        fontWeight: 'bold',
+                        boxShadow: `0 8px 25px ${alpha(theme.palette.primary.main, 0.3)}`,
+                        backgroundColor: theme.palette.primary.main,
+                        '&:hover': {
+                          boxShadow: `0 12px 30px ${alpha(theme.palette.primary.main, 0.4)}`,
+                          transform: 'translateY(-3px)'
+                        }
+                      }}
+                    >
+                      Join the Movement
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      size="large"
+                      component={Link}
+                      to="/about"
+                      sx={{ 
+                        borderRadius: '50px', 
+                        px: 4, 
+                        py: 1.5,
+                        fontWeight: 'bold',
+                        borderWidth: 2,
+                        '&:hover': {
+                          borderWidth: 2,
+                          backgroundColor: alpha(theme.palette.primary.main, 0.05),
+                          transform: 'translateY(-3px)'
+                        }
+                      }}
+                    >
+                      Learn More
+                    </Button>
+                  </Box>
                 </Box>
               </Fade>
             </Grid>
@@ -790,38 +1169,122 @@ const HomePage: React.FC = () => {
       </Box>
 
       {/* Call to Action */}
-      <Box sx={{ py: 8, textAlign: 'center' }}>
-        <Container maxWidth="md">
-          <Typography 
-            variant="h3" 
-            component="h2" 
-            sx={{ 
-              fontWeight: 'bold', 
-              mb: 3,
-            }}
-          >
-            Ready to make a difference?
-          </Typography>
-          <Typography variant="h6" color="text.secondary" sx={{ mb: 4 }}>
-            Join thousands of citizens committed to building a better society through active participation and collaboration.
-          </Typography>
-          <Button 
-            variant="contained" 
-            color="primary" 
-            size="large" 
-            component={Link} 
-            to="/register"
-            sx={{ 
-              borderRadius: '50px', 
-              px: 6, 
-              py: 2,
-              fontSize: '1.1rem',
-              fontWeight: 'bold',
-              boxShadow: `0 8px 20px ${alpha(theme.palette.primary.main, 0.3)}`
-            }}
-          >
-            Get Started Today
-          </Button>
+      <Box sx={{ 
+        py: 12, 
+        textAlign: 'center',
+        background: 'transparent',
+        color: theme.palette.text.primary,
+        position: 'relative',
+        overflow: 'hidden',
+        zIndex: 1,
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)}, ${alpha(theme.palette.secondary.main, 0.05)})`,
+          zIndex: -1
+        }
+      }}>
+        {/* Animated decorative elements */}
+        <Box sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          overflow: 'hidden',
+          zIndex: -1,
+          opacity: 0.4
+        }}>
+          {/* Animated particles */}
+          {[...Array(8)].map((_, i) => (
+            <Box
+              key={i}
+              sx={{
+                position: 'absolute',
+                width: ['20px', '30px', '40px', '25px', '35px', '45px', '50px', '25px'][i],
+                height: ['20px', '30px', '40px', '25px', '35px', '45px', '50px', '25px'][i],
+                borderRadius: '50%',
+                background: `radial-gradient(circle, ${alpha(
+                  [theme.palette.primary.light, theme.palette.secondary.light, theme.palette.primary.main, 
+                   theme.palette.secondary.main, theme.palette.primary.light, theme.palette.secondary.light,
+                   theme.palette.primary.main, theme.palette.secondary.main][i],
+                  0.6
+                )}, ${alpha(
+                  [theme.palette.primary.main, theme.palette.secondary.main, theme.palette.primary.light, 
+                   theme.palette.secondary.light, theme.palette.primary.main, theme.palette.secondary.main,
+                   theme.palette.primary.light, theme.palette.secondary.light][i],
+                  0.2
+                )})`,
+                top: [`${10 + i * 10}%`, `${80 - i * 9}%`, `${30 + i * 7}%`, `${60 - i * 8}%`, 
+                      `${50 + i * 6}%`, `${20 - i * 5}%`, `${70 + i * 3}%`, `${40 - i * 4}%`][i],
+                left: [`${20 + i * 8}%`, `${75 - i * 7}%`, `${40 + i * 6}%`, `${60 - i * 5}%`, 
+                       `${10 + i * 9}%`, `${90 - i * 4}%`, `${30 + i * 5}%`, `${80 - i * 6}%`][i],
+                filter: 'blur(3px)',
+                animation: `float-particle ${5 + i * 3}s ease-in-out infinite alternate-reverse`,
+                '@keyframes float-particle': {
+                  '0%': { 
+                    transform: 'translateY(0) translateX(0) scale(1)',
+                    opacity: 0.7
+                  },
+                  '50%': { 
+                    transform: `translateY(${10 + i * 5}px) translateX(${5 + i * 3}px) scale(${0.8 + i * 0.05})`,
+                    opacity: 0.9
+                  },
+                  '100%': { 
+                    transform: `translateY(${-10 - i * 5}px) translateX(${-5 - i * 3}px) scale(1)`,
+                    opacity: 0.7
+                  }
+                }
+              }}
+            />
+          ))}
+        </Box>
+
+        <Container maxWidth="md" sx={{ position: 'relative', zIndex: 2 }}>
+          <Fade in={true} timeout={1000}>
+            <Box>
+              <Typography 
+                variant="h3" 
+                component="h2" 
+                sx={{ 
+                  fontWeight: 'bold', 
+                  mb: 3,
+                  color: theme.palette.text.primary,
+                  textShadow: 'none'
+                }}
+              >
+                Ready to make a difference?
+              </Typography>
+              <Typography variant="h6" sx={{ mb: 5, color: theme.palette.text.secondary, maxWidth: '800px', mx: 'auto' }}>
+                Join thousands of citizens committed to building a better society through active participation and collaboration.
+              </Typography>
+              <Button 
+                variant="contained" 
+                color="primary" 
+                size="large" 
+                component={Link} 
+                to="/register"
+                sx={{ 
+                  borderRadius: '50px', 
+                  px: 6, 
+                  py: 2,
+                  fontSize: '1.1rem',
+                  fontWeight: 'bold',
+                  boxShadow: `0 8px 25px ${alpha(theme.palette.primary.main, 0.3)}`,
+                  '&:hover': {
+                    transform: 'translateY(-5px)',
+                    boxShadow: `0 12px 30px ${alpha(theme.palette.primary.main, 0.4)}`
+                  }
+                }}
+              >
+                Get Started Today
+              </Button>
+            </Box>
+          </Fade>
         </Container>
       </Box>
     </Box>
