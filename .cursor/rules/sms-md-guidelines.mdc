@@ -1,0 +1,13 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# SMS Project Coding and Documentation Rules
+
+- **Always read [sms.md](mdc:sms.md) before writing any code.**
+- After adding a major feature or completing a milestone, update [sms.md](mdc:sms.md).
+- Document the entire database schema in [sms.md](mdc:sms.md).
+- For new migrations, make sure to add them to the same file ([sms.md](mdc:sms.md)).
+
+- For Mterial UI Grid use GridLegacy as Grid. 
