@@ -739,13 +739,14 @@ const HomePage: React.FC = () => {
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    borderRadius: '16px',
-                    transition: 'all 0.3s ease',
+                    borderRadius: '24px',
+                    transition: 'all 0.5s ease',
                     position: 'relative',
                     overflow: 'hidden',
                     backdropFilter: 'blur(10px)',
-                    border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-                    backgroundColor: alpha(theme.palette.background.paper, 0.7),
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
+                    backgroundColor: alpha(theme.palette.background.paper, 0.8),
+                    backgroundImage: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)}, ${alpha(theme.palette.background.paper, 0.7)})`,
                     '&::before': {
                       content: '""',
                       position: 'absolute',
@@ -753,37 +754,126 @@ const HomePage: React.FC = () => {
                       left: 0,
                       right: 0,
                       height: '6px',
-                      background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                      background: index === 0 
+                        ? `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.info.main})` 
+                        : index === 1 
+                          ? `linear-gradient(90deg, ${theme.palette.success.main}, ${theme.palette.primary.main})` 
+                          : `linear-gradient(90deg, ${theme.palette.secondary.main}, ${theme.palette.warning.main})`,
+                      opacity: 0.8,
+                    },
+                    '&::after': {
+                      content: '""',
+                      position: 'absolute',
+                      top: '6px',
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      backgroundImage: index === 0 
+                        ? `radial-gradient(circle at top right, ${alpha(theme.palette.primary.main, 0.1)}, transparent 70%)` 
+                        : index === 1 
+                          ? `radial-gradient(circle at top left, ${alpha(theme.palette.success.main, 0.1)}, transparent 70%)` 
+                          : `radial-gradient(circle at bottom right, ${alpha(theme.palette.secondary.main, 0.1)}, transparent 70%)`,
+                      zIndex: 0,
                     },
                     '&:hover': {
-                      transform: 'translateY(-8px)',
-                      boxShadow: `0 15px 30px ${alpha(theme.palette.primary.main, 0.2)}`
+                      transform: 'translateY(-12px) scale(1.03)',
+                      boxShadow: index === 0 
+                        ? `0 20px 40px ${alpha(theme.palette.primary.main, 0.25)}` 
+                        : index === 1 
+                          ? `0 20px 40px ${alpha(theme.palette.success.main, 0.25)}` 
+                          : `0 20px 40px ${alpha(theme.palette.secondary.main, 0.25)}`,
+                      '& .stat-icon': {
+                        transform: 'scale(1.15) rotate(10deg)',
+                        boxShadow: index === 0 
+                          ? `0 10px 25px ${alpha(theme.palette.primary.main, 0.4)}` 
+                          : index === 1 
+                            ? `0 10px 25px ${alpha(theme.palette.success.main, 0.4)}` 
+                            : `0 10px 25px ${alpha(theme.palette.secondary.main, 0.4)}`,
+                      },
+                      '& .stat-value': {
+                        transform: 'scale(1.05)',
+                      }
                     }
                   }}
                 >
                   <Box 
+                    className="stat-icon"
                     sx={{ 
-                      color: theme.palette.primary.main, 
-                      mb: 2,
-                      p: 2,
+                      color: index === 0 
+                        ? theme.palette.primary.main 
+                        : index === 1 
+                          ? theme.palette.success.main 
+                          : theme.palette.secondary.main, 
+                      mb: 3,
+                      p: 2.5,
                       borderRadius: '50%',
-                      backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                      backgroundColor: index === 0 
+                        ? alpha(theme.palette.primary.main, 0.12)
+                        : index === 1 
+                          ? alpha(theme.palette.success.main, 0.12)
+                          : alpha(theme.palette.secondary.main, 0.12),
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      width: '80px',
-                      height: '80px',
-                      marginBottom: 3
+                      width: '90px',
+                      height: '90px',
+                      marginBottom: 4,
+                      position: 'relative',
+                      zIndex: 2,
+                      transition: 'all 0.5s ease',
+                      boxShadow: index === 0 
+                        ? `0 8px 20px ${alpha(theme.palette.primary.main, 0.25)}` 
+                        : index === 1 
+                          ? `0 8px 20px ${alpha(theme.palette.success.main, 0.25)}` 
+                          : `0 8px 20px ${alpha(theme.palette.secondary.main, 0.25)}`,
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: '-15%',
+                        left: '-15%',
+                        width: '130%',
+                        height: '130%',
+                        borderRadius: '50%',
+                        border: `2px dashed ${
+                          index === 0 
+                            ? alpha(theme.palette.primary.main, 0.3) 
+                            : index === 1 
+                              ? alpha(theme.palette.success.main, 0.3) 
+                              : alpha(theme.palette.secondary.main, 0.3)
+                        }`,
+                        animation: 'spin 20s linear infinite',
+                        '@keyframes spin': {
+                          '0%': {
+                            transform: 'rotate(0deg)',
+                          },
+                          '100%': {
+                            transform: 'rotate(360deg)',
+                          }
+                        }
+                      }
                     }}
                   >
                     {stat.icon}
                   </Box>
                   <Typography 
+                    className="stat-value"
                     variant="h3" 
                     sx={{ 
                       fontWeight: 'bold', 
                       mb: 1,
-                      color: theme.palette.primary.main
+                      position: 'relative',
+                      zIndex: 2,
+                      color: index === 0 
+                        ? theme.palette.primary.main 
+                        : index === 1 
+                          ? theme.palette.success.main 
+                          : theme.palette.secondary.main,
+                      transition: 'all 0.5s ease',
+                      textShadow: index === 0 
+                        ? `0 4px 12px ${alpha(theme.palette.primary.main, 0.4)}` 
+                        : index === 1 
+                          ? `0 4px 12px ${alpha(theme.palette.success.main, 0.4)}` 
+                          : `0 4px 12px ${alpha(theme.palette.secondary.main, 0.4)}`,
                     }}
                   >
                     {stat.value}
@@ -791,10 +881,65 @@ const HomePage: React.FC = () => {
                   <Typography 
                     variant="h6" 
                     color="text.secondary"
-                    sx={{ fontWeight: 500 }}
+                    sx={{ 
+                      position: 'relative',
+                      zIndex: 2,
+                      fontWeight: 500,
+                      transition: 'all 0.3s ease',
+                      '&::after': {
+                        content: '""',
+                        position: 'absolute',
+                        height: '2px',
+                        width: '40px',
+                        background: index === 0 
+                          ? theme.palette.primary.main 
+                          : index === 1 
+                            ? theme.palette.success.main 
+                            : theme.palette.secondary.main,
+                        bottom: '-10px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        borderRadius: '2px',
+                        opacity: 0.7,
+                      }
+                    }}
                   >
                     {stat.label}
                   </Typography>
+                  
+                  {/* Decorative elements */}
+                  <Box 
+                    sx={{ 
+                      position: 'absolute', 
+                      top: '18px', 
+                      right: '20px',
+                      width: '15px',
+                      height: '15px',
+                      borderRadius: '50%',
+                      background: index === 0 
+                        ? alpha(theme.palette.primary.main, 0.3) 
+                        : index === 1 
+                          ? alpha(theme.palette.success.main, 0.3) 
+                          : alpha(theme.palette.secondary.main, 0.3),
+                      zIndex: 1,
+                    }} 
+                  />
+                  <Box 
+                    sx={{ 
+                      position: 'absolute', 
+                      bottom: '25px', 
+                      left: '20px',
+                      width: '8px',
+                      height: '8px',
+                      borderRadius: '50%',
+                      background: index === 0 
+                        ? alpha(theme.palette.primary.main, 0.3) 
+                        : index === 1 
+                          ? alpha(theme.palette.success.main, 0.3) 
+                          : alpha(theme.palette.secondary.main, 0.3),
+                      zIndex: 1,
+                    }} 
+                  />
                 </Paper>
               </Grow>
             </Grid>
