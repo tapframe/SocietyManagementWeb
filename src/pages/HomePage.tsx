@@ -260,19 +260,6 @@ const HomePage: React.FC = () => {
                         color: '#2196f3' 
                       }}>
                         {user?.name}
-                        <Box 
-                          component="span" 
-                          sx={{ 
-                            position: 'absolute', 
-                            height: '10px', 
-                            width: '100%', 
-                            background: 'rgba(33, 150, 243, 0.3)', 
-                            bottom: '10px', 
-                            left: 0, 
-                            zIndex: -1,
-                            borderRadius: '6px'
-                          }} 
-                        />
                       </Box>
                     </>
                   ) : (

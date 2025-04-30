@@ -8,7 +8,7 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ requiredRole }) => {
-  const { isAuthenticated, user, loading } = useAuth();
+  const { isAuthenticated, user, loading, isAdmin } = useAuth();
 
   // Show loading state
   if (loading) {
@@ -24,8 +24,13 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ requiredRole }) => {
     return <Navigate to="/login" replace />;
   }
 
-  // If a specific role is required and user doesn't have it, redirect to home page
-  if (requiredRole && user?.role !== requiredRole) {
+  // Special check for admin role
+  if (requiredRole === 'admin' && !isAdmin()) {
+    return <Navigate to="/" replace />;
+  }
+  
+  // If a specific non-admin role is required and user doesn't have it, redirect to home page
+  if (requiredRole && requiredRole !== 'admin' && user?.role !== requiredRole) {
     return <Navigate to="/" replace />;
   }
 

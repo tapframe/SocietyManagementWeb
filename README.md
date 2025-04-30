@@ -83,4 +83,37 @@ For more detailed information, please refer to:
 
 ## Development
 
-The project follows the repository pattern with clear separation between frontend and backend. Please refer to [sms.md](sms.md) for comprehensive documentation on the project architecture and design. 
+The project follows the repository pattern with clear separation between frontend and backend. Please refer to [sms.md](sms.md) for comprehensive documentation on the project architecture and design.
+
+## Admin Access
+
+This application includes a secure admin access system with the following features:
+
+### Admin Access
+
+You can access the admin portal by typing the secret keyboard combination `815787` anywhere in the application. When typed correctly, an admin login dialog will appear allowing you to:
+
+1. Login as an existing admin
+2. Create a new admin account (requires the admin secret key: `815787`)
+
+### Admin API Endpoints
+
+The backend includes several admin-specific API endpoints:
+
+- **POST /api/admin/register** - Create a new admin account (requires secret key)
+- **POST /api/admin/login** - Login as an admin
+- **GET /api/admin/users** - Get all users (admin only)
+- **PUT /api/admin/users/:id** - Update a user (admin only)
+- **DELETE /api/admin/users/:id** - Delete a user (admin only)
+- **GET /api/reports/admin/all** - Get all reports (admin only)
+- **PUT /api/reports/admin/:id/status** - Update report status (admin only)
+- **GET /api/reports/admin/stats** - Get report statistics (admin only)
+
+### Admin Dashboard
+
+The admin dashboard provides real-time data fetched from the backend, including:
+
+- Overview statistics of reports (pending, approved, rejected)
+- Detailed report management with approval/rejection functionality
+- Status tracking and admin notes for each report
+- Evidence handling and review capabilities 

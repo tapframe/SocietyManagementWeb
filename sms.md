@@ -93,8 +93,86 @@ The Society Management System (SMS) is a comprehensive web-based platform design
 }
 ```
 
+### Report Collection
+```
+{
+  title: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  description: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  type: {
+    type: String,
+    enum: ['violation', 'complaint'],
+    required: true
+  },
+  category: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  location: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  date: {
+    type: Date,
+    required: true
+  },
+  time: {
+    type: String,
+    trim: true
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'in-progress', 'resolved', 'rejected'],
+    default: 'pending'
+  },
+  evidence: {
+    type: String
+  },
+  submittedBy: {
+    type: ObjectId,
+    ref: 'User',
+    required: true
+  },
+  assignedTo: {
+    type: ObjectId,
+    ref: 'User'
+  },
+  comments: [{
+    text: {
+      type: String,
+      required: true
+    },
+    user: {
+      type: ObjectId,
+      ref: 'User',
+      required: true
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  }
+}
+```
+
 ### Future Collections (Planned)
-- **Reports**: To store violation reports from citizens
 - **Ideas**: For community improvement suggestions
 - **Rules**: To document laws and regulations
 - **Notifications**: For system alerts and communications
@@ -113,10 +191,39 @@ The Society Management System (SMS) is a comprehensive web-based platform design
 - **GET /api/auth/me**: Get current user information (protected route)
   - Response: `{ id, name, email, role }`
 
-### Future Endpoints (Planned)
-- **Reports API**: For submitting and managing violation reports
-- **Ideas API**: For sharing and discussing community improvement ideas
-- **Rules API**: For accessing information about laws and regulations
+### Report Endpoints
+- **GET /api/reports**: Get all reports 
+  - Protected route: Admin users see all reports, citizens see only their own
+  - Response: Array of report objects
+
+- **GET /api/reports/:id**: Get a specific report
+  - Protected route: Only the user who submitted the report or an admin can access it
+  - Response: Report object with populated user information
+
+- **POST /api/reports**: Create a new report
+  - Protected route
+  - Request: `{ title, description, type, category, location, date, time }`
+  - Response: The created report object
+
+- **POST /api/reports/:id/evidence**: Upload evidence file for a report
+  - Protected route
+  - Request: `FormData` object with a file field
+  - Response: `{ message: 'Evidence uploaded successfully', file: filename }`
+
+- **PATCH /api/reports/:id/status**: Update the status of a report
+  - Protected route (admin only)
+  - Request: `{ status }` (must be one of: pending, in-progress, resolved, rejected)
+  - Response: Updated report object
+
+- **PATCH /api/reports/:id/assign**: Assign a report to an admin
+  - Protected route (admin only)
+  - Request: `{ adminId }`
+  - Response: Updated report object
+
+- **POST /api/reports/:id/comments**: Add a comment to a report
+  - Protected route
+  - Request: `{ text }`
+  - Response: The created comment object with populated user information
 
 ## Future Enhancements
 - File upload functionality for evidence

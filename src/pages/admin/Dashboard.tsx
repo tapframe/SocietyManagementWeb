@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -17,7 +17,9 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  TextField
+  TextField,
+  CircularProgress,
+  Alert
 } from '@mui/material';
 import { GridLegacy as Grid } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -26,77 +28,44 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import PendingIcon from '@mui/icons-material/Pending';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import GavelIcon from '@mui/icons-material/Gavel';
+import axiosInstance from '../../utils/axiosInstance';
+import { format } from 'date-fns';
 
 interface Report {
-  id: number;
+  _id: string;
   title: string;
   description: string;
-  submittedBy: string;
+  submittedBy: {
+    _id: string;
+    name: string;
+    email: string;
+  } | string;
   date: string;
   category: string;
   location: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: 'pending' | 'in-progress' | 'resolved' | 'rejected';
   evidence?: string;
+  adminNotes?: Array<{
+    text: string;
+    addedBy: string;
+    addedAt: string;
+  }>;
+  createdAt: string;
+  updatedAt: string;
+  resolvedAt?: string;
 }
 
-// Sample reports data
-const sampleReports: Report[] = [
-  {
-    id: 1,
-    title: 'Traffic Signal Violation',
-    description: 'Vehicle running red light at Main St and Broadway intersection',
-    submittedBy: 'Citizen123',
-    date: '2023-10-15',
-    category: 'Traffic Violation',
-    location: 'Main St & Broadway',
-    status: 'pending',
-    evidence: 'video-evidence-1.mp4'
-  },
-  {
-    id: 2,
-    title: 'Illegal Dumping of Waste',
-    description: 'Multiple bags of construction waste dumped near city park entrance',
-    submittedBy: 'GreenEarth',
-    date: '2023-10-12',
-    category: 'Environmental',
-    location: 'Central Park East Entrance',
-    status: 'approved',
-    evidence: 'photo-evidence-2.jpg'
-  },
-  {
-    id: 3,
-    title: 'Noise Complaint',
-    description: 'Loud construction work continuing past allowed hours of 7pm',
-    submittedBy: 'SleepyNeighbor',
-    date: '2023-10-10',
-    category: 'Public Nuisance',
-    location: '123 Residential Ave',
-    status: 'rejected',
-    evidence: 'audio-evidence-3.mp3'
-  },
-  {
-    id: 4,
-    title: 'Broken Street Light',
-    description: 'Street light not working for past 3 days, creating safety hazard',
-    submittedBy: 'SafetyFirst',
-    date: '2023-10-08',
-    category: 'Infrastructure',
-    location: '456 Main St',
-    status: 'pending',
-    evidence: 'photo-evidence-4.jpg'
-  },
-  {
-    id: 5,
-    title: 'Unauthorized Street Vendor',
-    description: 'Person selling merchandise without license near school zone',
-    submittedBy: 'LawAbider',
-    date: '2023-10-05',
-    category: 'Business Regulation',
-    location: 'School Zone, Education Blvd',
-    status: 'pending',
-    evidence: 'photo-evidence-5.jpg'
-  }
-];
+interface DashboardStats {
+  total: number;
+  pending: number;
+  approved: number;
+  rejected: number;
+  categories: Array<{
+    _id: string;
+    count: number;
+  }>;
+  recentActivity?: Array<Report>;
+}
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -133,11 +102,74 @@ const a11yProps = (index: number) => {
 
 const Dashboard: React.FC = () => {
   const [tabValue, setTabValue] = useState(0);
-  const [reports, setReports] = useState<Report[]>(sampleReports);
+  const [reports, setReports] = useState<Report[]>([]);
+  const [stats, setStats] = useState<DashboardStats | null>(null);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [actionDialogOpen, setActionDialogOpen] = useState(false);
-  const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null);
+  const [actionType, setActionType] = useState<'resolved' | 'rejected' | null>(null);
   const [actionNote, setActionNote] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchReports();
+    fetchStats();
+  }, []);
+
+  const fetchReports = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await axiosInstance.get('/reports/admin/all');
+      setReports(response.data);
+    } catch (err: any) {
+      console.error('Error fetching reports:', err);
+      setError(`Failed to load reports: ${err.response?.data?.message || err.message || 'Unknown error'}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchStats = async () => {
+    setStatsLoading(true);
+    try {
+      const response = await axiosInstance.get('/reports/admin/stats');
+      setStats(response.data);
+    } catch (err) {
+      console.error('Error fetching dashboard stats:', err);
+      // We don't show an error message for stats, just log it
+    } finally {
+      setStatsLoading(false);
+    }
+  };
+
+  const handleUpdateStatus = async (reportId: string, status: 'resolved' | 'rejected', note: string) => {
+    try {
+      const response = await axiosInstance.put(`/reports/admin/${reportId}/status`, {
+        status,
+        note
+      });
+      
+      // Update local state after successful API call
+      setReports(prevReports => 
+        prevReports.map(report => 
+          report._id === reportId 
+            ? { ...report, status, ...response.data }
+            : report
+        )
+      );
+      
+      // Refresh stats
+      fetchStats();
+      
+      return true;
+    } catch (err: any) {
+      console.error(`Error ${status === 'resolved' ? 'approving' : 'rejecting'} report:`, err);
+      setError(`Failed to ${status === 'resolved' ? 'approve' : 'reject'} report: ${err.response?.data?.message || err.message || 'Unknown error'}`);
+      return false;
+    }
+  };
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
@@ -151,7 +183,7 @@ const Dashboard: React.FC = () => {
     setSelectedReport(null);
   };
 
-  const openActionDialog = (report: Report, action: 'approve' | 'reject') => {
+  const openActionDialog = (report: Report, action: 'resolved' | 'rejected') => {
     setSelectedReport(report);
     setActionType(action);
     setActionDialogOpen(true);
@@ -163,48 +195,51 @@ const Dashboard: React.FC = () => {
     setActionNote('');
   };
 
-  const completeAction = () => {
+  const completeAction = async () => {
     if (selectedReport && actionType) {
-      setReports(prevReports => 
-        prevReports.map(report => 
-          report.id === selectedReport.id 
-            ? { ...report, status: actionType === 'approve' ? 'approved' : 'rejected' }
-            : report
-        )
-      );
+      const success = await handleUpdateStatus(selectedReport._id, actionType, actionNote);
       
-      closeActionDialog();
-      
-      // In a real app, we would send this action to an API
-      console.log(`Report ${selectedReport.id} ${actionType}d with note: ${actionNote}`);
+      if (success) {
+        closeActionDialog();
+      }
     }
   };
 
   const pendingReports = reports.filter(report => report.status === 'pending');
-  const approvedReports = reports.filter(report => report.status === 'approved');
+  const resolvedReports = reports.filter(report => report.status === 'resolved');
   const rejectedReports = reports.filter(report => report.status === 'rejected');
 
   const getStatusChip = (status: string) => {
     switch (status) {
       case 'pending':
         return <Chip icon={<PendingIcon />} label="Pending Review" color="warning" />;
-      case 'approved':
+      case 'resolved':
         return <Chip icon={<CheckCircleIcon />} label="Approved" color="success" />;
       case 'rejected':
         return <Chip icon={<CancelIcon />} label="Rejected" color="error" />;
+      case 'in-progress':
+        return <Chip icon={<PendingIcon />} label="In Progress" color="info" />;
       default:
         return <Chip label={status} />;
     }
   };
 
+  const formatDate = (dateString: string) => {
+    try {
+      return format(new Date(dateString), 'yyyy-MM-dd');
+    } catch (error) {
+      return dateString;
+    }
+  };
+
   const renderReportCard = (report: Report) => (
-    <Card key={report.id} sx={{ mb: 2 }}>
+    <Card key={report._id} sx={{ mb: 2 }}>
       <CardContent>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={8}>
             <Typography variant="h6">{report.title}</Typography>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              Submitted by {report.submittedBy} on {report.date}
+              Submitted by {typeof report.submittedBy === 'object' ? report.submittedBy.name : 'Unknown'} on {formatDate(report.createdAt)}
             </Typography>
             <Typography variant="body1" sx={{ mb: 2 }}>
               {report.description}
@@ -221,6 +256,11 @@ const Dashboard: React.FC = () => {
                 {report.evidence && (
                   <Typography variant="body2" color="text.secondary">
                     Evidence: {report.evidence}
+                  </Typography>
+                )}
+                {report.resolvedAt && (
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                    Resolved on: {formatDate(report.resolvedAt)}
                   </Typography>
                 )}
               </Box>
@@ -240,7 +280,7 @@ const Dashboard: React.FC = () => {
                       color="success" 
                       size="small" 
                       startIcon={<CheckCircleIcon />}
-                      onClick={() => openActionDialog(report, 'approve')}
+                      onClick={() => openActionDialog(report, 'resolved')}
                     >
                       Approve
                     </Button>
@@ -249,7 +289,7 @@ const Dashboard: React.FC = () => {
                       color="error" 
                       size="small" 
                       startIcon={<CancelIcon />}
-                      onClick={() => openActionDialog(report, 'reject')}
+                      onClick={() => openActionDialog(report, 'rejected')}
                     >
                       Reject
                     </Button>
@@ -265,6 +305,12 @@ const Dashboard: React.FC = () => {
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
+
       <Grid container spacing={3}>
         <Grid item xs={12}>
           <Paper 
@@ -299,7 +345,11 @@ const Dashboard: React.FC = () => {
             elevation={3}
           >
             <Typography variant="h6" gutterBottom>Pending Reports</Typography>
-            <Typography variant="h3">{pendingReports.length}</Typography>
+            {statsLoading ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              <Typography variant="h3">{stats?.pending || pendingReports.length}</Typography>
+            )}
           </Paper>
         </Grid>
         <Grid item xs={12} md={4}>
@@ -315,7 +365,11 @@ const Dashboard: React.FC = () => {
             elevation={3}
           >
             <Typography variant="h6" gutterBottom>Approved Reports</Typography>
-            <Typography variant="h3">{approvedReports.length}</Typography>
+            {statsLoading ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              <Typography variant="h3">{stats?.approved || resolvedReports.length}</Typography>
+            )}
           </Paper>
         </Grid>
         <Grid item xs={12} md={4}>
@@ -331,7 +385,11 @@ const Dashboard: React.FC = () => {
             elevation={3}
           >
             <Typography variant="h6" gutterBottom>Rejected Reports</Typography>
-            <Typography variant="h3">{rejectedReports.length}</Typography>
+            {statsLoading ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              <Typography variant="h3">{stats?.rejected || rejectedReports.length}</Typography>
+            )}
           </Paper>
         </Grid>
 
@@ -346,39 +404,51 @@ const Dashboard: React.FC = () => {
                 centered
               >
                 <Tab label={`Pending (${pendingReports.length})`} {...a11yProps(0)} />
-                <Tab label={`Approved (${approvedReports.length})`} {...a11yProps(1)} />
+                <Tab label={`Approved (${resolvedReports.length})`} {...a11yProps(1)} />
                 <Tab label={`Rejected (${rejectedReports.length})`} {...a11yProps(2)} />
                 <Tab label="All Reports" {...a11yProps(3)} />
               </Tabs>
             </Box>
 
-            <TabPanel value={tabValue} index={0}>
-              {pendingReports.length > 0 ? (
-                pendingReports.map(report => renderReportCard(report))
-              ) : (
-                <Typography align="center">No pending reports to review</Typography>
-              )}
-            </TabPanel>
+            {loading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                <CircularProgress />
+              </Box>
+            ) : (
+              <>
+                <TabPanel value={tabValue} index={0}>
+                  {pendingReports.length > 0 ? (
+                    pendingReports.map(report => renderReportCard(report))
+                  ) : (
+                    <Typography align="center">No pending reports to review</Typography>
+                  )}
+                </TabPanel>
 
-            <TabPanel value={tabValue} index={1}>
-              {approvedReports.length > 0 ? (
-                approvedReports.map(report => renderReportCard(report))
-              ) : (
-                <Typography align="center">No approved reports</Typography>
-              )}
-            </TabPanel>
+                <TabPanel value={tabValue} index={1}>
+                  {resolvedReports.length > 0 ? (
+                    resolvedReports.map((report) => renderReportCard(report))
+                  ) : (
+                    <Typography align="center">No approved reports</Typography>
+                  )}
+                </TabPanel>
 
-            <TabPanel value={tabValue} index={2}>
-              {rejectedReports.length > 0 ? (
-                rejectedReports.map(report => renderReportCard(report))
-              ) : (
-                <Typography align="center">No rejected reports</Typography>
-              )}
-            </TabPanel>
+                <TabPanel value={tabValue} index={2}>
+                  {rejectedReports.length > 0 ? (
+                    rejectedReports.map(report => renderReportCard(report))
+                  ) : (
+                    <Typography align="center">No rejected reports</Typography>
+                  )}
+                </TabPanel>
 
-            <TabPanel value={tabValue} index={3}>
-              {reports.map(report => renderReportCard(report))}
-            </TabPanel>
+                <TabPanel value={tabValue} index={3}>
+                  {reports.length > 0 ? (
+                    reports.map(report => renderReportCard(report))
+                  ) : (
+                    <Typography align="center">No reports available</Typography>
+                  )}
+                </TabPanel>
+              </>
+            )}
           </Paper>
         </Grid>
       </Grid>
@@ -393,16 +463,18 @@ const Dashboard: React.FC = () => {
         {selectedReport && (
           <>
             <DialogTitle>
-              Report Details #{selectedReport.id}: {selectedReport.title}
+              Report Details: {selectedReport.title}
             </DialogTitle>
             <DialogContent dividers>
               <Grid container spacing={2}>
                 <Grid item xs={12} md={6}>
                   <Typography variant="subtitle2">Submitted By</Typography>
-                  <Typography variant="body1" gutterBottom>{selectedReport.submittedBy}</Typography>
+                  <Typography variant="body1" gutterBottom>
+                    {typeof selectedReport.submittedBy === 'object' ? selectedReport.submittedBy.name : 'Unknown'}
+                  </Typography>
                   
                   <Typography variant="subtitle2">Date Submitted</Typography>
-                  <Typography variant="body1" gutterBottom>{selectedReport.date}</Typography>
+                  <Typography variant="body1" gutterBottom>{formatDate(selectedReport.createdAt)}</Typography>
                   
                   <Typography variant="subtitle2">Category</Typography>
                   <Typography variant="body1" gutterBottom>{selectedReport.category}</Typography>
@@ -429,6 +501,23 @@ const Dashboard: React.FC = () => {
                     </>
                   )}
                 </Grid>
+
+                {selectedReport.adminNotes && selectedReport.adminNotes.length > 0 && (
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle2" sx={{ mt: 2, mb: 1 }}>Admin Notes</Typography>
+                    <Paper variant="outlined" sx={{ p: 2 }}>
+                      {selectedReport.adminNotes.map((note, index) => (
+                        <Box key={index} sx={{ mb: index !== selectedReport.adminNotes!.length - 1 ? 2 : 0 }}>
+                          <Typography variant="body2">{note.text}</Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            Added on {formatDate(note.addedAt)}
+                          </Typography>
+                          {index !== selectedReport.adminNotes!.length - 1 && <Divider sx={{ my: 1 }} />}
+                        </Box>
+                      ))}
+                    </Paper>
+                  </Grid>
+                )}
               </Grid>
             </DialogContent>
             <DialogActions>
@@ -441,7 +530,7 @@ const Dashboard: React.FC = () => {
                     startIcon={<CheckCircleIcon />}
                     onClick={() => {
                       handleCloseDetails();
-                      openActionDialog(selectedReport, 'approve');
+                      openActionDialog(selectedReport, 'resolved');
                     }}
                   >
                     Approve
@@ -452,7 +541,7 @@ const Dashboard: React.FC = () => {
                     startIcon={<CancelIcon />}
                     onClick={() => {
                       handleCloseDetails();
-                      openActionDialog(selectedReport, 'reject');
+                      openActionDialog(selectedReport, 'rejected');
                     }}
                   >
                     Reject
@@ -472,11 +561,11 @@ const Dashboard: React.FC = () => {
         {selectedReport && actionType && (
           <>
             <DialogTitle>
-              {actionType === 'approve' ? 'Approve Report' : 'Reject Report'}
+              {actionType === 'resolved' ? 'Approve Report' : 'Reject Report'}
             </DialogTitle>
             <DialogContent>
               <DialogContentText>
-                {actionType === 'approve' 
+                {actionType === 'resolved' 
                   ? 'You are about to approve this report. You can add an action note or issue a fine if applicable.' 
                   : 'You are about to reject this report. Please provide a reason for rejection.'}
               </DialogContentText>
@@ -485,7 +574,7 @@ const Dashboard: React.FC = () => {
                 autoFocus
                 margin="dense"
                 id="note"
-                label={actionType === 'approve' ? 'Action Note (Optional)' : 'Reason for Rejection'}
+                label={actionType === 'resolved' ? 'Action Note (Optional)' : 'Reason for Rejection'}
                 type="text"
                 fullWidth
                 variant="outlined"
@@ -496,7 +585,7 @@ const Dashboard: React.FC = () => {
                 sx={{ mt: 2 }}
               />
               
-              {actionType === 'approve' && (
+              {actionType === 'resolved' && (
                 <Box sx={{ mt: 2 }}>
                   <Typography variant="subtitle2" gutterBottom>Select Action (Optional)</Typography>
                   <Stack direction="row" spacing={2}>
@@ -510,10 +599,10 @@ const Dashboard: React.FC = () => {
               <Button onClick={closeActionDialog}>Cancel</Button>
               <Button 
                 variant="contained" 
-                color={actionType === 'approve' ? 'success' : 'error'} 
+                color={actionType === 'resolved' ? 'success' : 'error'} 
                 onClick={completeAction}
               >
-                {actionType === 'approve' ? 'Approve' : 'Reject'}
+                {actionType === 'resolved' ? 'Approve' : 'Reject'}
               </Button>
             </DialogActions>
           </>

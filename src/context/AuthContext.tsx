@@ -17,6 +17,7 @@ interface AuthContextType {
   login: (token: string, user: User) => void;
   logout: () => void;
   getToken: () => string | null;
+  isAdmin: () => boolean;
 }
 
 // Create the context
@@ -26,7 +27,8 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
   login: () => {},
   logout: () => {},
-  getToken: () => null
+  getToken: () => null,
+  isAdmin: () => false
 });
 
 // Custom hook to use the auth context
@@ -42,7 +44,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Check if user is logged in on initial load
     const token = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
+    const adminToken = localStorage.getItem('adminToken');
+    const userRole = localStorage.getItem('userRole');
 
+    // Check for regular user authentication
     if (token && storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
@@ -56,6 +61,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.removeItem('token');
         localStorage.removeItem('user');
       }
+    } 
+    // Check for admin authentication
+    else if (adminToken && userRole === 'admin') {
+      // Create a temporary admin user object
+      const adminUser: User = {
+        id: 'admin-id',
+        name: 'Administrator',
+        email: 'admin@example.com',
+        role: 'admin'
+      };
+      setUser(adminUser);
+      setIsAuthenticated(true);
     }
 
     setLoading(false);
@@ -95,17 +112,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('userRole');
     setUser(null);
     setIsAuthenticated(false);
   };
 
   // Get token function
   const getToken = () => {
-    return localStorage.getItem('token');
+    const adminToken = localStorage.getItem('adminToken');
+    const regularToken = localStorage.getItem('token');
+    
+    // Prioritize admin token if it exists
+    return adminToken || regularToken;
+  };
+
+  // Check if user is an admin
+  const isAdmin = () => {
+    return user?.role === 'admin' || localStorage.getItem('userRole') === 'admin';
   };
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, loading, login, logout, getToken }}>
+    <AuthContext.Provider value={{ 
+      isAuthenticated, 
+      user, 
+      loading, 
+      login, 
+      logout, 
+      getToken,
+      isAdmin
+    }}>
       {children}
     </AuthContext.Provider>
   );

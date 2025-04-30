@@ -50,6 +50,8 @@ import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 import FeedbackIcon from '@mui/icons-material/Feedback';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import { useAuth } from '../context/AuthContext';
+import { REPORT_ENDPOINTS } from '../config';
 
 // Sample recent reports data
 const recentReports = [
@@ -144,6 +146,8 @@ const ReportPage: React.FC = () => {
   // Add beautiful background theme variables
   const bgGradient = `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)}, ${alpha(theme.palette.primary.light, 0.1)})`;
   const bgPattern = `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23${theme.palette.primary.main.replace('#', '')}' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E")`;
+
+  const { isAuthenticated, getToken } = useAuth();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -324,15 +328,77 @@ const ReportPage: React.FC = () => {
     setSubmitted(false);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (validateForm()) {
-      // Here we would normally handle report submission
-      console.log('Report submitted:', { type: reportType, ...formData });
-      
-      // Show success state instead of alert
-      setSubmitted(true);
+      try {
+        // Show loading or submission state
+        
+        // Format the data for submission
+        const reportData = {
+          title: formData.title,
+          description: formData.description,
+          type: reportType,
+          category: formData.category,
+          location: formData.location,
+          date: formData.date,
+          time: formData.time,
+          // Handle file evidence separately if needed
+        };
+        
+        // Get auth token
+        const token = getToken();
+        
+        if (!token) {
+          throw new Error('Authentication required. Please log in.');
+        }
+        
+        // Submit to API
+        const response = await fetch(REPORT_ENDPOINTS.CREATE, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(reportData)
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to submit report');
+        }
+        
+        const reportResult = await response.json();
+        
+        // If file is present, handle file upload
+        if (formData.file) {
+          // Create a form data object for file upload
+          const fileData = new FormData();
+          fileData.append('file', formData.file);
+          
+          // Upload the file
+          const fileResponse = await fetch(REPORT_ENDPOINTS.UPLOAD_EVIDENCE(reportResult._id), {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            },
+            body: fileData
+          });
+          
+          if (!fileResponse.ok) {
+            console.error('File upload failed, but report was created');
+          }
+        }
+        
+        // Show success message
+        setSubmitted(true);
+        
+      } catch (error) {
+        console.error('Error submitting report:', error);
+        // Show error message to user
+        alert(error instanceof Error ? error.message : 'Failed to submit report');
+      }
     }
   };
 
