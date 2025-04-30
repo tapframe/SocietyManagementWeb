@@ -425,7 +425,7 @@ const Header: React.FC = () => {
                   display: 'flex', 
                   alignItems: 'center', 
                   cursor: 'pointer',
-                  mr: { xs: 1, md: 2 }
+                  mr: { xs: 1, md: 2, lg: 4 }
                 }}
                 onClick={() => navigate('/')}
               >
@@ -463,6 +463,7 @@ const Header: React.FC = () => {
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
+                    mx: { md: 2, lg: 4 }
                   }}
                 >
                   {visibleMenuItems.map((item) => (
