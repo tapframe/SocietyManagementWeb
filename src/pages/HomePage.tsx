@@ -248,32 +248,63 @@ const HomePage: React.FC = () => {
                     letterSpacing: '-0.02em',
                   }}
                 >
-                  <Box component="span" sx={{ color: '#e91e63' }}>Transform</Box>
-                  {' '}
-                  <Box component="span" sx={{ color: '#212121' }}>Your</Box>
-                  {' '}
-                  <Box component="span" sx={{ 
-                    display: 'inline-block', 
-                    position: 'relative',
-                    color: '#2196f3' 
-                  }}>
-                    Community
-                    <Box 
-                      component="span" 
-                      sx={{ 
-                        position: 'absolute', 
-                        height: '10px', 
-                        width: '100%', 
-                        background: 'rgba(33, 150, 243, 0.3)', 
-                        bottom: '10px', 
-                        left: 0, 
-                        zIndex: -1,
-                        borderRadius: '6px'
-                      }} 
-                    />
-                  </Box>
-                  {' '}
-                  <Box component="span" sx={{ color: '#06b6d4' }}>Together</Box>
+                  {isAuthenticated ? (
+                    <>
+                      <Box component="span" sx={{ color: '#e91e63' }}>Welcome</Box>
+                      {' '}
+                      <Box component="span" sx={{ color: '#212121' }}>Back,</Box>
+                      {' '}
+                      <Box component="span" sx={{ 
+                        display: 'inline-block', 
+                        position: 'relative',
+                        color: '#2196f3' 
+                      }}>
+                        {user?.name}
+                        <Box 
+                          component="span" 
+                          sx={{ 
+                            position: 'absolute', 
+                            height: '10px', 
+                            width: '100%', 
+                            background: 'rgba(33, 150, 243, 0.3)', 
+                            bottom: '10px', 
+                            left: 0, 
+                            zIndex: -1,
+                            borderRadius: '6px'
+                          }} 
+                        />
+                      </Box>
+                    </>
+                  ) : (
+                    <>
+                      <Box component="span" sx={{ color: '#e91e63' }}>Transform</Box>
+                      {' '}
+                      <Box component="span" sx={{ color: '#212121' }}>Your</Box>
+                      {' '}
+                      <Box component="span" sx={{ 
+                        display: 'inline-block', 
+                        position: 'relative',
+                        color: '#2196f3' 
+                      }}>
+                        Community
+                        <Box 
+                          component="span" 
+                          sx={{ 
+                            position: 'absolute', 
+                            height: '10px', 
+                            width: '100%', 
+                            background: 'rgba(33, 150, 243, 0.3)', 
+                            bottom: '10px', 
+                            left: 0, 
+                            zIndex: -1,
+                            borderRadius: '6px'
+                          }} 
+                        />
+                      </Box>
+                      {' '}
+                      <Box component="span" sx={{ color: '#06b6d4' }}>Together</Box>
+                    </>
+                  )}
                 </Typography>
               </Box>
               
@@ -304,7 +335,10 @@ const HomePage: React.FC = () => {
                       fontSize: { xs: '1.1rem', md: '1.35rem' }
                     }}
                   >
-                    A digital platform connecting citizens and authorities for better social governance and community development.
+                    {isAuthenticated 
+                      ? `Your active participation helps build a stronger, more engaged community.`
+                      : `A digital platform connecting citizens and authorities for better social governance and community development.`
+                    }
                   </Typography>
                 </Box>
                 
@@ -314,11 +348,18 @@ const HomePage: React.FC = () => {
                   gap: 3, 
                   mb: 5,
                 }}>
-                  {[
-                    { icon: <CommunityIcon sx={{ fontSize: '1.4rem' }} />, text: "Engage Citizens" },
-                    { icon: <SecurityIcon sx={{ fontSize: '1.4rem' }} />, text: "Solve Issues" },
-                    { icon: <IdeaIcon sx={{ fontSize: '1.4rem' }} />, text: "Share Ideas" }
-                  ].map((item, index) => (
+                  {(isAuthenticated 
+                    ? [
+                        { icon: <ReportIcon sx={{ fontSize: '1.4rem' }} />, text: "Report Issues" },
+                        { icon: <IdeaIcon sx={{ fontSize: '1.4rem' }} />, text: "Share Ideas" },
+                        { icon: <RuleIcon sx={{ fontSize: '1.4rem' }} />, text: "View Rules" }
+                      ]
+                    : [
+                        { icon: <CommunityIcon sx={{ fontSize: '1.4rem' }} />, text: "Engage Citizens" },
+                        { icon: <SecurityIcon sx={{ fontSize: '1.4rem' }} />, text: "Solve Issues" },
+                        { icon: <IdeaIcon sx={{ fontSize: '1.4rem' }} />, text: "Share Ideas" }
+                      ]
+                  ).map((item, index) => (
                     <Box 
                       key={index} 
                       sx={{ 
@@ -367,71 +408,155 @@ const HomePage: React.FC = () => {
                     '100%': { transform: 'translateY(0)', opacity: 1 }
                   }
                 }}>
-                  <Button 
-                    variant="contained" 
-                    color="primary" 
-                    component={Link} 
-                    to="/register"
-                    size="large"
-                    sx={{ 
-                      borderRadius: '50px', 
-                      px: 4, 
-                      py: 2,
-                      fontWeight: 'bold',
-                      fontSize: '1.1rem',
-                      boxShadow: `0 10px 25px ${alpha(theme.palette.primary.main, 0.4)}`,
-                      transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                      backgroundColor: theme.palette.primary.main,
-                      backgroundImage: `linear-gradient(90deg, ${theme.palette.primary.main}, ${alpha(theme.palette.secondary.main, 0.9)})`,
-                      '&:hover': {
-                        transform: 'translateY(-5px)',
-                        boxShadow: `0 15px 35px ${alpha(theme.palette.primary.main, 0.5)}`
-                      }
-                    }}
-                  >
-                    Join Now
-                  </Button>
-                  <Button 
-                    variant="outlined" 
-                    component={Link} 
-                    to="/report"
-                    size="large"
-                    sx={{ 
-                      borderRadius: '50px', 
-                      px: 4, 
-                      py: 2,
-                      borderWidth: '2px',
-                      fontSize: '1.1rem',
-                      fontWeight: 'bold',
-                      borderColor: alpha(theme.palette.primary.main, 0.5),
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        borderWidth: '2px',
-                        borderColor: theme.palette.primary.main,
-                        background: alpha(theme.palette.primary.main, 0.08),
-                        transform: 'translateY(-5px)'
-                      }
-                    }}
-                    endIcon={<ArrowForwardIcon />}
-                  >
-                    Report Issue
-                  </Button>
-                  
-                  <Tooltip title="Watch Demo">
-                    <IconButton 
-                      color="primary" 
-                      sx={{ 
-                        width: '60px', 
-                        height: '60px', 
-                        border: `2px solid ${alpha(theme.palette.primary.main, 0.5)}`,
-                        '&:hover': {
-                          backgroundColor: alpha(theme.palette.primary.main, 0.1)
-                        }
-                      }}
-                    >
-                      <PlayArrowIcon fontSize="large" />
-                    </IconButton>
-                  </Tooltip>
+                  {isAuthenticated ? (
+                    <>
+                      <Button 
+                        variant="contained" 
+                        color="primary" 
+                        component={Link} 
+                        to="/report"
+                        size="large"
+                        sx={{ 
+                          borderRadius: '50px', 
+                          px: 4, 
+                          py: 2,
+                          fontWeight: 'bold',
+                          fontSize: '1.1rem',
+                          boxShadow: `0 10px 25px ${alpha(theme.palette.primary.main, 0.4)}`,
+                          transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                          backgroundColor: theme.palette.primary.main,
+                          backgroundImage: `linear-gradient(90deg, ${theme.palette.primary.main}, ${alpha(theme.palette.secondary.main, 0.9)})`,
+                          '&:hover': {
+                            transform: 'translateY(-5px)',
+                            boxShadow: `0 15px 35px ${alpha(theme.palette.primary.main, 0.5)}`
+                          }
+                        }}
+                      >
+                        Report Issue
+                      </Button>
+                      <Button 
+                        variant="outlined" 
+                        component={Link} 
+                        to="/ideas"
+                        size="large"
+                        sx={{ 
+                          borderRadius: '50px', 
+                          px: 4, 
+                          py: 2,
+                          borderWidth: '2px',
+                          fontSize: '1.1rem',
+                          fontWeight: 'bold',
+                          borderColor: alpha(theme.palette.primary.main, 0.5),
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            borderWidth: '2px',
+                            borderColor: theme.palette.primary.main,
+                            background: alpha(theme.palette.primary.main, 0.08),
+                            transform: 'translateY(-5px)'
+                          }
+                        }}
+                        endIcon={<ArrowForwardIcon />}
+                      >
+                        Share Ideas
+                      </Button>
+                      {user?.role === 'admin' && (
+                        <Button 
+                          variant="outlined" 
+                          component={Link} 
+                          to="/admin"
+                          size="large"
+                          color="secondary"
+                          sx={{ 
+                            borderRadius: '50px', 
+                            px: 4, 
+                            py: 2,
+                            borderWidth: '2px',
+                            fontSize: '1.1rem',
+                            fontWeight: 'bold',
+                            borderColor: alpha(theme.palette.secondary.main, 0.5),
+                            transition: 'all 0.3s ease',
+                            '&:hover': {
+                              borderWidth: '2px',
+                              borderColor: theme.palette.secondary.main,
+                              background: alpha(theme.palette.secondary.main, 0.08),
+                              transform: 'translateY(-5px)'
+                            }
+                          }}
+                          endIcon={<SecurityIcon />}
+                        >
+                          Admin Panel
+                        </Button>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <Button 
+                        variant="contained" 
+                        color="primary" 
+                        component={Link} 
+                        to="/register"
+                        size="large"
+                        sx={{ 
+                          borderRadius: '50px', 
+                          px: 4, 
+                          py: 2,
+                          fontWeight: 'bold',
+                          fontSize: '1.1rem',
+                          boxShadow: `0 10px 25px ${alpha(theme.palette.primary.main, 0.4)}`,
+                          transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                          backgroundColor: theme.palette.primary.main,
+                          backgroundImage: `linear-gradient(90deg, ${theme.palette.primary.main}, ${alpha(theme.palette.secondary.main, 0.9)})`,
+                          '&:hover': {
+                            transform: 'translateY(-5px)',
+                            boxShadow: `0 15px 35px ${alpha(theme.palette.primary.main, 0.5)}`
+                          }
+                        }}
+                      >
+                        Join Now
+                      </Button>
+                      <Button 
+                        variant="outlined" 
+                        component={Link} 
+                        to="/report"
+                        size="large"
+                        sx={{ 
+                          borderRadius: '50px', 
+                          px: 4, 
+                          py: 2,
+                          borderWidth: '2px',
+                          fontSize: '1.1rem',
+                          fontWeight: 'bold',
+                          borderColor: alpha(theme.palette.primary.main, 0.5),
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            borderWidth: '2px',
+                            borderColor: theme.palette.primary.main,
+                            background: alpha(theme.palette.primary.main, 0.08),
+                            transform: 'translateY(-5px)'
+                          }
+                        }}
+                        endIcon={<ArrowForwardIcon />}
+                      >
+                        Report Issue
+                      </Button>
+                      
+                      <Tooltip title="Watch Demo">
+                        <IconButton 
+                          color="primary" 
+                          sx={{ 
+                            width: '60px', 
+                            height: '60px', 
+                            border: `2px solid ${alpha(theme.palette.primary.main, 0.5)}`,
+                            '&:hover': {
+                              backgroundColor: alpha(theme.palette.primary.main, 0.1)
+                            }
+                          }}
+                        >
+                          <PlayArrowIcon fontSize="large" />
+                        </IconButton>
+                      </Tooltip>
+                    </>
+                  )}
                 </Box>
               </Box>
             </Box>
