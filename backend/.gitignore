@@ -1,0 +1,29 @@
+# Dependency directories
+node_modules/
+
+# Environment variables
+.env
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Coverage directory used by tools like istanbul
+coverage
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Build files
+dist/
+build/
+
+# Misc
+.DS_Store
+.vscode/
+*.swp
+*.swo 

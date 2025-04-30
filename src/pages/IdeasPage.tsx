@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Avatar,
   Box,
@@ -15,14 +15,28 @@ import {
   IconButton,
   Chip,
   Snackbar,
-  Alert
+  Alert,
+  useTheme,
+  alpha,
+  CardActionArea,
+  Grow,
+  MenuItem,
+  InputAdornment,
+  Slide,
+  CircularProgress,
+  Skeleton
 } from '@mui/material';
 import { GridLegacy as Grid } from '@mui/material';
 import LightbulbIcon from '@mui/icons-material/Lightbulb';
-import ThumbUpAltIcon from '@mui/icons-material/ThumbUpAlt';
+import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 import CommentIcon from '@mui/icons-material/Comment';
 import ShareIcon from '@mui/icons-material/Share';
+import CategoryIcon from '@mui/icons-material/Category';
+import TitleIcon from '@mui/icons-material/Title';
+import DescriptionIcon from '@mui/icons-material/Description';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import { TransitionProps } from '@mui/material/transitions';
 
 // Sample ideas data
 const sampleIdeas = [
@@ -84,7 +98,18 @@ const categories = [
   'Other'
 ];
 
+// Slide transition for Snackbar
+const SlideTransition = React.forwardRef(function Transition(
+  props: TransitionProps & {
+    children: React.ReactElement;
+  },
+  ref: React.Ref<unknown>,
+) {
+  return <Slide {...props} direction="up" ref={ref} />;
+});
+
 const IdeasPage: React.FC = () => {
+  const theme = useTheme();
   const [ideas, setIdeas] = useState(sampleIdeas);
   const [newIdea, setNewIdea] = useState({
     title: '',
@@ -101,6 +126,18 @@ const IdeasPage: React.FC = () => {
     message: '',
     severity: 'success' as 'success' | 'error'
   });
+  const [filter, setFilter] = useState('');
+  const [voted, setVoted] = useState<number[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Simulate loading of ideas
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -155,40 +192,50 @@ const IdeasPage: React.FC = () => {
     e.preventDefault();
 
     if (validateForm()) {
-      // In a real app, we would send this to an API
-      const newIdeaObject = {
-        id: ideas.length + 1,
-        title: newIdea.title,
-        description: newIdea.description,
-        category: newIdea.category,
-        author: 'Current User', // In a real app, this would be the logged-in user
-        date: new Date().toISOString().split('T')[0],
-        upvotes: 0,
-        comments: 0,
-        avatar: 'U'
-      };
+      setSubmitting(true);
+      
+      // Simulate API call
+      setTimeout(() => {
+        // In a real app, we would send this to an API
+        const newIdeaObject = {
+          id: ideas.length + 1,
+          title: newIdea.title,
+          description: newIdea.description,
+          category: newIdea.category,
+          author: 'Current User', // In a real app, this would be the logged-in user
+          date: new Date().toISOString().split('T')[0],
+          upvotes: 0,
+          comments: 0,
+          avatar: 'U'
+        };
 
-      setIdeas(prev => [newIdeaObject, ...prev]);
-      setNewIdea({
-        title: '',
-        description: '',
-        category: ''
-      });
+        setIdeas(prev => [newIdeaObject, ...prev]);
+        setNewIdea({
+          title: '',
+          description: '',
+          category: ''
+        });
 
-      setSnackbar({
-        open: true,
-        message: 'Your idea has been successfully submitted!',
-        severity: 'success'
-      });
+        setSnackbar({
+          open: true,
+          message: 'Your idea has been successfully submitted!',
+          severity: 'success'
+        });
+        
+        setSubmitting(false);
+      }, 800);
     }
   };
 
   const handleUpvote = (id: number) => {
+    if (voted.includes(id)) return;
+    
     setIdeas(prev => 
       prev.map(idea => 
         idea.id === id ? { ...idea, upvotes: idea.upvotes + 1 } : idea
       )
     );
+    setVoted(prev => [...prev, id]);
   };
 
   const handleSnackbarClose = () => {
@@ -198,44 +245,207 @@ const IdeasPage: React.FC = () => {
     }));
   };
 
-  return (
-    <Container maxWidth="lg">
-      <Grid container spacing={4} sx={{ my: 4 }}>
-        <Grid item xs={12}>
-          <Typography component="h1" variant="h4" align="center" gutterBottom>
-            Share Your Ideas for a Better Society
-          </Typography>
-          <Typography variant="subtitle1" align="center" color="text.secondary">
-            Contribute your thoughts and suggestions for improving the community
-          </Typography>
-        </Grid>
+  const filteredIdeas = filter 
+    ? ideas.filter(idea => idea.category === filter)
+    : ideas;
 
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFilter(e.target.value);
+  };
+
+  const getRandomGradient = (seed: number) => {
+    const colors = [
+      [theme.palette.primary.light, theme.palette.primary.main],
+      [theme.palette.secondary.light, theme.palette.secondary.main],
+      ['#4dabf5', '#1976d2'],
+      ['#ff9800', '#ed6c02'],
+      ['#66bb6a', '#2e7d32']
+    ];
+    return `linear-gradient(135deg, ${colors[seed % colors.length][0]} 0%, ${colors[seed % colors.length][1]} 100%)`;
+  };
+
+  return (
+    <Container maxWidth="lg" sx={{ py: 6 }}>
+      <Box 
+        sx={{ 
+          mb: 7, 
+          textAlign: 'center',
+          position: 'relative',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: -40,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '150px',
+            height: '150px',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(33,150,243,0.1) 0%, rgba(33,203,243,0.05) 70%, rgba(255,255,255,0) 100%)',
+            zIndex: -1
+          }
+        }}
+      >
+        <Typography 
+          component="h1" 
+          variant="h2" 
+          gutterBottom
+          sx={{
+            fontWeight: '800',
+            background: 'linear-gradient(45deg, #2196F3 20%, #21CBF3 90%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            letterSpacing: '-0.5px',
+            mb: 2
+          }}
+        >
+          Innovate Together
+        </Typography>
+        <Typography 
+          variant="h6" 
+          color="text.secondary" 
+          sx={{ 
+            maxWidth: 600, 
+            mx: 'auto', 
+            mb: 3, 
+            fontWeight: 400,
+            lineHeight: 1.5,
+            color: alpha(theme.palette.text.primary, 0.7)
+          }}
+        >
+          Share brilliant ideas and shape the future of our community
+        </Typography>
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            gap: 2, 
+            justifyContent: 'center', 
+            flexWrap: 'wrap',
+            mb: 2
+          }}
+        >
+          {categories.slice(0, 5).map(category => (
+            <Chip
+              key={category}
+              label={category}
+              color="primary"
+              variant="outlined"
+              size="medium"
+              sx={{
+                borderRadius: 5,
+                px: 1,
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                  transform: 'translateY(-2px)',
+                }
+              }}
+              onClick={() => setFilter(category)}
+            />
+          ))}
+        </Box>
+      </Box>
+
+      <Grid container spacing={4}>
         {/* Submit new idea section */}
         <Grid item xs={12} md={4}>
-          <Paper elevation={3} sx={{ p: 3, height: '100%' }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <LightbulbIcon color="primary" sx={{ mr: 1 }} />
-              <Typography variant="h6">Submit New Idea</Typography>
+          <Paper 
+            elevation={0} 
+            sx={{ 
+              p: 4, 
+              height: '100%', 
+              borderRadius: 3,
+              background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 0.9)} 100%)`,
+              backdropFilter: 'blur(10px)',
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+              boxShadow: `0 10px 40px -10px ${alpha(theme.palette.primary.main, 0.12)}`,
+              transition: 'all 0.3s ease',
+              position: 'relative',
+              overflow: 'hidden',
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                width: '100px',
+                height: '100px',
+                background: `radial-gradient(circle, ${alpha(theme.palette.primary.light, 0.2)} 0%, transparent 70%)`,
+                zIndex: 0
+              },
+              '&:hover': {
+                transform: 'translateY(-5px)',
+                boxShadow: `0 20px 40px -15px ${alpha(theme.palette.primary.main, 0.2)}`,
+              }
+            }}
+          >
+            <Box sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              mb: 3,
+              position: 'relative',
+              zIndex: 1
+            }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: 50,
+                  height: 50,
+                  borderRadius: '50%',
+                  background: alpha(theme.palette.primary.main, 0.1),
+                  mr: 2
+                }}
+              >
+                <LightbulbIcon 
+                  color="primary" 
+                  sx={{ 
+                    fontSize: '1.8rem',
+                  }} 
+                />
+              </Box>
+              <Box>
+                <Typography variant="h5" fontWeight="700">Share Your Idea</Typography>
+                <Typography variant="body2" color="text.secondary">Help improve our community</Typography>
+              </Box>
             </Box>
-            <Divider sx={{ mb: 3 }} />
+            <Divider sx={{ mb: 4 }} />
             
-            <Box component="form" onSubmit={handleSubmit} noValidate>
+            <Box component="form" onSubmit={handleSubmit} noValidate sx={{ position: 'relative', zIndex: 1 }}>
               <TextField
-                margin="normal"
                 required
                 fullWidth
                 id="title"
-                label="Idea Title"
+                label="Title"
                 name="title"
                 autoFocus
                 value={newIdea.title}
                 onChange={handleInputChange}
                 error={!!errors.title}
                 helperText={errors.title}
+                variant="outlined"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <TitleIcon color="primary" sx={{ fontSize: '1.1rem' }} />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{ 
+                  mb: 3.5,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    transition: 'all 0.2s',
+                    '&:hover, &.Mui-focused': {
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: theme.palette.primary.main,
+                        borderWidth: '1px',
+                      }
+                    },
+                  }
+                }}
               />
               
               <TextField
-                margin="normal"
                 required
                 fullWidth
                 select
@@ -245,42 +455,104 @@ const IdeasPage: React.FC = () => {
                 value={newIdea.category}
                 onChange={handleInputChange}
                 error={!!errors.category}
-                helperText={errors.category || "Select the most relevant category for your idea"}
-                SelectProps={{
-                  native: true,
+                helperText={errors.category || "Select the most relevant category"}
+                variant="outlined"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <CategoryIcon color="primary" sx={{ fontSize: '1.1rem' }} />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{ 
+                  mb: 3.5,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    transition: 'all 0.2s',
+                    '&:hover, &.Mui-focused': {
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: theme.palette.primary.main,
+                        borderWidth: '1px',
+                      }
+                    },
+                  }
                 }}
               >
-                <option value=""></option>
+                <MenuItem value="">
+                  <em>Select a category</em>
+                </MenuItem>
                 {categories.map(option => (
-                  <option key={option} value={option}>
+                  <MenuItem key={option} value={option} sx={{
+                    borderLeft: option === newIdea.category ? `3px solid ${theme.palette.primary.main}` : 'none',
+                    backgroundColor: option === newIdea.category ? alpha(theme.palette.primary.main, 0.05) : 'transparent',
+                    transition: 'all 0.2s'
+                  }}>
                     {option}
-                  </option>
+                  </MenuItem>
                 ))}
               </TextField>
               
               <TextField
-                margin="normal"
                 required
                 fullWidth
                 id="description"
                 name="description"
-                label="Idea Description"
+                label="Description"
                 multiline
                 rows={5}
                 value={newIdea.description}
                 onChange={handleInputChange}
                 error={!!errors.description}
-                helperText={errors.description || "Provide details of your idea and how it can help the community"}
+                helperText={errors.description || "How would your idea benefit the community?"}
+                variant="outlined"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start" sx={{ alignSelf: 'flex-start', mt: 1.5 }}>
+                      <DescriptionIcon color="primary" sx={{ fontSize: '1.1rem' }} />
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{ 
+                  mb: 3.5,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    transition: 'all 0.2s',
+                    '&:hover, &.Mui-focused': {
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: theme.palette.primary.main,
+                        borderWidth: '1px',
+                      }
+                    },
+                  }
+                }}
               />
               
               <Button
                 type="submit"
                 fullWidth
                 variant="contained"
-                sx={{ mt: 3, mb: 2 }}
-                startIcon={<LightbulbIcon />}
+                size="large"
+                disableElevation
+                disabled={submitting}
+                sx={{ 
+                  mt: 2, 
+                  mb: 2,
+                  py: 1.5,
+                  borderRadius: 2,
+                  background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                  boxShadow: '0 6px 20px rgba(33, 203, 243, .25)',
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    transform: 'translateY(-3px)',
+                    boxShadow: '0 10px 20px rgba(33, 203, 243, .3)',
+                  }
+                }}
+                startIcon={submitting ? 
+                  <CircularProgress size={20} color="inherit" /> : 
+                  <LightbulbIcon />
+                }
               >
-                Submit Idea
+                {submitting ? 'Submitting...' : 'Submit Idea'}
               </Button>
             </Box>
           </Paper>
@@ -288,80 +560,285 @@ const IdeasPage: React.FC = () => {
 
         {/* Ideas list section */}
         <Grid item xs={12} md={8}>
-          <Typography variant="h6" gutterBottom>
-            Community Ideas
-          </Typography>
-          
-          {ideas.map(idea => (
-            <Card key={idea.id} sx={{ mb: 3 }}>
-              <CardHeader
-                avatar={
-                  <Avatar aria-label="author">
-                    {idea.avatar}
-                  </Avatar>
-                }
-                title={
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography variant="subtitle1" fontWeight="bold">
-                      {idea.title}
-                    </Typography>
-                    <Chip 
-                      label={idea.category} 
-                      size="small" 
-                      color="primary" 
-                      variant="outlined"
-                    />
-                  </Box>
-                }
-                subheader={`Posted by ${idea.author} on ${idea.date}`}
-              />
-              <CardContent>
-                <Typography variant="body1" paragraph>
-                  {idea.description}
-                </Typography>
-                
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Button 
-                      size="small" 
-                      startIcon={<ThumbUpOffAltIcon />}
-                      onClick={() => handleUpvote(idea.id)}
-                    >
-                      Upvote ({idea.upvotes})
-                    </Button>
-                    <Button size="small" startIcon={<CommentIcon />}>
-                      Comments ({idea.comments})
-                    </Button>
-                    <IconButton size="small">
-                      <ShareIcon fontSize="small" />
-                    </IconButton>
-                  </Box>
-                  
-                  <Rating 
-                    name={`rating-${idea.id}`} 
-                    defaultValue={0} 
-                    precision={0.5} 
-                    size="small"
-                  />
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+            <Box>
+              <Typography variant="h5" fontWeight="700" sx={{ mb: 0.5 }}>
+                Community Ideas 
+                <Box component="span" sx={{ 
+                  ml: 1, 
+                  color: theme.palette.primary.main, 
+                  fontSize: '0.9rem',
+                  fontWeight: 'bold',
+                  bgcolor: alpha(theme.palette.primary.main, 0.1),
+                  px: 1.5,
+                  py: 0.5,
+                  borderRadius: 10
+                }}>
+                  {filteredIdeas.length}
                 </Box>
-              </CardContent>
-            </Card>
-          ))}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {filter ? `Showing ${filter} ideas` : 'Browse all community ideas'}
+              </Typography>
+            </Box>
+            
+            <TextField
+              select
+              size="small"
+              value={filter}
+              onChange={handleFilterChange}
+              label="Filter by category"
+              variant="outlined"
+              sx={{ 
+                minWidth: 200,
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: theme.palette.primary.main,
+                  }
+                }
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <FilterListIcon color="primary" fontSize="small" />
+                  </InputAdornment>
+                ),
+              }}
+            >
+              <MenuItem value="">All Categories</MenuItem>
+              {categories.map(category => (
+                <MenuItem key={category} value={category} sx={{
+                  borderLeft: category === filter ? `3px solid ${theme.palette.primary.main}` : 'none',
+                  backgroundColor: category === filter ? alpha(theme.palette.primary.main, 0.05) : 'transparent',
+                }}>
+                  {category}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Box>
+          
+          {loading ? (
+            // Loading skeleton
+            Array.from(new Array(3)).map((_, index) => (
+              <Card key={index} sx={{ mb: 3, borderRadius: 3, overflow: 'hidden' }}>
+                <Box sx={{ height: 6, background: getRandomGradient(index) }} />
+                <CardHeader
+                  avatar={<Skeleton variant="circular" width={40} height={40} />}
+                  title={<Skeleton variant="text" width="70%" height={30} />}
+                  subheader={<Skeleton variant="text" width="40%" />}
+                />
+                <CardContent>
+                  <Skeleton variant="rectangular" height={80} sx={{ mb: 2, borderRadius: 1 }} />
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Skeleton variant="rectangular" width={80} height={36} sx={{ borderRadius: 10 }} />
+                      <Skeleton variant="rectangular" width={80} height={36} sx={{ borderRadius: 10 }} />
+                    </Box>
+                    <Skeleton variant="rectangular" width={120} height={30} />
+                  </Box>
+                </CardContent>
+              </Card>
+            ))
+          ) : filteredIdeas.length === 0 ? (
+            <Box 
+              sx={{ 
+                textAlign: 'center', 
+                py: 8, 
+                px: 3,
+                borderRadius: 4,
+                border: `1px dashed ${alpha(theme.palette.primary.main, 0.2)}`
+              }}
+            >
+              <LightbulbIcon sx={{ fontSize: 60, color: alpha(theme.palette.text.secondary, 0.3), mb: 2 }} />
+              <Typography variant="h6" color="text.secondary" gutterBottom>
+                No ideas found in this category
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                Be the first to share an idea in the {filter} category
+              </Typography>
+              <Button 
+                variant="outlined" 
+                color="primary"
+                onClick={() => setFilter('')}
+              >
+                View all ideas
+              </Button>
+            </Box>
+          ) : (
+            filteredIdeas.map((idea, index) => (
+              <Grow in={true} key={idea.id} timeout={(index + 1) * 200}>
+                <Card 
+                  sx={{ 
+                    mb: 3, 
+                    borderRadius: 3,
+                    overflow: 'hidden',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                    transition: 'all 0.3s ease',
+                    border: `1px solid ${alpha(theme.palette.divider, 0.8)}`,
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: '0 12px 20px rgba(0,0,0,0.1)',
+                    }
+                  }}
+                >
+                  <Box
+                    sx={{
+                      height: 6,
+                      background: getRandomGradient(idea.id),
+                    }}
+                  />
+                  <CardHeader
+                    avatar={
+                      <Avatar 
+                        aria-label="author"
+                        sx={{ 
+                          background: getRandomGradient(idea.id + 1),
+                          fontWeight: 'bold',
+                          boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
+                        }}
+                      >
+                        {idea.avatar}
+                      </Avatar>
+                    }
+                    title={
+                      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                          {idea.title}
+                        </Typography>
+                        <Chip 
+                          label={idea.category} 
+                          size="small" 
+                          color="primary" 
+                          sx={{ 
+                            borderRadius: 1,
+                            fontWeight: 500,
+                            background: alpha(theme.palette.primary.main, 0.1),
+                            color: theme.palette.primary.dark
+                          }}
+                        />
+                      </Box>
+                    }
+                    subheader={
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                        Posted by {idea.author} on {idea.date}
+                      </Typography>
+                    }
+                  />
+                  <CardContent>
+                    <Typography 
+                      variant="body1" 
+                      sx={{ 
+                        mb: 3, 
+                        color: alpha(theme.palette.text.primary, 0.8),
+                        lineHeight: 1.6,
+                        fontSize: '0.95rem'
+                      }}
+                    >
+                      {idea.description}
+                    </Typography>
+                    
+                    <Divider sx={{ mb: 2 }} />
+                    
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Button 
+                          size="small"
+                          variant={voted.includes(idea.id) ? "contained" : "outlined"}
+                          color={voted.includes(idea.id) ? "primary" : "inherit"}
+                          startIcon={voted.includes(idea.id) ? <ThumbUpIcon /> : <ThumbUpOffAltIcon />}
+                          onClick={() => handleUpvote(idea.id)}
+                          sx={{ 
+                            borderRadius: 6,
+                            px: 2,
+                            transition: 'all 0.2s ease',
+                            ...(voted.includes(idea.id) && {
+                              background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`
+                            })
+                          }}
+                        >
+                          {idea.upvotes}
+                        </Button>
+                        
+                        <Button 
+                          size="small"
+                          variant="outlined"
+                          color="inherit"
+                          startIcon={<CommentIcon />}
+                          sx={{ 
+                            borderRadius: 6,
+                            px: 2
+                          }}
+                        >
+                          {idea.comments}
+                        </Button>
+                        
+                        <IconButton 
+                          size="small"
+                          sx={{ 
+                            ml: 1,
+                            color: theme.palette.text.secondary,
+                            '&:hover': {
+                              color: theme.palette.primary.main,
+                              backgroundColor: alpha(theme.palette.primary.main, 0.1)
+                            }
+                          }}
+                        >
+                          <ShareIcon fontSize="small" />
+                        </IconButton>
+                      </Box>
+                      
+                      <Rating 
+                        name={`rating-${idea.id}`} 
+                        defaultValue={0} 
+                        precision={0.5} 
+                        size="medium"
+                      />
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grow>
+            ))
+          )}
         </Grid>
       </Grid>
       
       <Snackbar 
         open={snackbar.open} 
-        autoHideDuration={6000} 
+        autoHideDuration={4000} 
         onClose={handleSnackbarClose}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        TransitionComponent={SlideTransition}
+        sx={{
+          '& .MuiSnackbarContent-root': {
+            borderRadius: 2
+          }
+        }}
       >
         <Alert 
           onClose={handleSnackbarClose} 
           severity={snackbar.severity} 
           variant="filled"
+          elevation={6}
+          iconMapping={{
+            success: <ThumbUpIcon fontSize="inherit" />,
+            error: <React.Fragment />
+          }}
+          sx={{ 
+            width: '100%', 
+            boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
+            borderRadius: 2,
+            py: 1,
+            ...(snackbar.severity === 'success' && {
+              background: 'linear-gradient(90deg, #4caf50, #2e7d32)'
+            })
+          }}
         >
-          {snackbar.message}
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Typography fontWeight="500">
+              {snackbar.message}
+            </Typography>
+          </Box>
         </Alert>
       </Snackbar>
     </Container>

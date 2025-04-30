@@ -23,7 +23,15 @@ import {
   Alert,
   IconButton,
   Tooltip,
-  useMediaQuery
+  useMediaQuery,
+  Card,
+  CardContent,
+  CardActionArea,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  Avatar
 } from '@mui/material';
 import { GridLegacy as Grid } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -38,12 +46,53 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ReportProblemIcon from '@mui/icons-material/ReportProblem';
+import FeedbackIcon from '@mui/icons-material/Feedback';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+
+// Sample recent reports data
+const recentReports = [
+  {
+    id: 'VR-2023-0012',
+    title: 'Unauthorized parking in reserved space',
+    type: 'violation',
+    date: '2023-10-15',
+    status: 'resolved',
+    location: 'Block B Parking Area'
+  },
+  {
+    id: 'CP-2023-0034',
+    title: 'Water leakage in hallway',
+    type: 'complaint',
+    date: '2023-10-12',
+    status: 'in-progress',
+    location: 'Tower C, 3rd Floor'
+  },
+  {
+    id: 'VR-2023-0011',
+    title: 'Noise disturbance after hours',
+    type: 'violation',
+    date: '2023-10-10',
+    status: 'resolved',
+    location: 'Block A, Apartment 304'
+  },
+  {
+    id: 'CP-2023-0033',
+    title: 'Elevator malfunction',
+    type: 'complaint',
+    date: '2023-10-08',
+    status: 'resolved',
+    location: 'Tower B'
+  }
+];
 
 const ReportPage: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   const [activeStep, setActiveStep] = useState(0);
+  const [reportType, setReportType] = useState<'violation' | 'complaint' | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -63,7 +112,7 @@ const ReportPage: React.FC = () => {
 
   const [submitted, setSubmitted] = useState(false);
 
-  const categories = [
+  const violationCategories = [
     'Traffic Violation',
     'Public Nuisance',
     'Illegal Construction',
@@ -73,9 +122,22 @@ const ReportPage: React.FC = () => {
     'Other'
   ];
 
+  const complaintCategories = [
+    'Service Issue',
+    'Facility Maintenance',
+    'Staff Behavior',
+    'Security Concern',
+    'Noise Complaint',
+    'Utility Problem',
+    'Other'
+  ];
+
+  // Choose categories based on report type
+  const categories = reportType === 'violation' ? violationCategories : complaintCategories;
+
   const steps = [
     { label: 'Basic Information', icon: <InfoIcon /> },
-    { label: 'Violation Details', icon: <DescriptionIcon /> },
+    { label: reportType === 'violation' ? 'Violation Details' : 'Complaint Details', icon: <DescriptionIcon /> },
     { label: 'Evidence Upload', icon: <FileUploadIcon /> }
   ];
 
@@ -152,6 +214,15 @@ const ReportPage: React.FC = () => {
         file: e.target.files![0]
       }));
     }
+  };
+
+  const handleReportTypeSelect = (type: 'violation' | 'complaint') => {
+    setReportType(type);
+    // Reset form data when changing report type
+    setFormData({
+      ...formData,
+      category: '' // Reset category as the options will change
+    });
   };
 
   const validateCurrentStep = () => {
@@ -240,6 +311,7 @@ const ReportPage: React.FC = () => {
 
   const handleReset = () => {
     setActiveStep(0);
+    setReportType(null);
     setFormData({
       title: '',
       description: '',
@@ -257,12 +329,465 @@ const ReportPage: React.FC = () => {
     
     if (validateForm()) {
       // Here we would normally handle report submission
-      console.log('Report submitted:', formData);
+      console.log('Report submitted:', { type: reportType, ...formData });
       
       // Show success state instead of alert
       setSubmitted(true);
     }
   };
+
+  // Render the report type selection screen
+  const renderReportTypeSelection = () => (
+    <Box sx={{ 
+      mt: 4, 
+      animation: 'fadeIn 0.5s ease-out forwards',
+      '@keyframes fadeIn': {
+        '0%': { opacity: 0 },
+        '100%': { opacity: 1 }
+      }
+    }}>
+      <Box sx={{ mb: 5 }}>
+        <Chip 
+          label="Help us improve our community"
+          color="primary"
+          sx={{ 
+            mb: 2,
+            px: 2, 
+            py: 2.5,
+            fontSize: '0.85rem',
+            fontWeight: 600,
+            borderRadius: 8
+          }}
+        />
+        <Typography variant="h4" gutterBottom align="center" sx={{ 
+          mb: 3, 
+          fontWeight: 700,
+          background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+        }}>
+          What would you like to report?
+        </Typography>
+        <Typography variant="body1" align="center" color="text.secondary" sx={{ maxWidth: 750, mx: 'auto', mb: 4 }}>
+          Please select the appropriate option below. Your input helps maintain our community standards and improve services for everyone.
+        </Typography>
+      </Box>
+      
+      <Grid container spacing={4} justifyContent="center">
+        <Grid item xs={12} sm={6} md={5}>
+          <Card 
+            elevation={4} 
+            sx={{ 
+              borderRadius: 4,
+              transform: 'scale(1)',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: 'scale(1.03)',
+                boxShadow: `0 12px 30px ${alpha(theme.palette.error.main, 0.2)}`
+              }
+            }}
+          >
+            <CardActionArea 
+              onClick={() => handleReportTypeSelect('violation')}
+              sx={{ 
+                p: 3,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                borderRadius: 4
+              }}
+            >
+              <Box 
+                sx={{ 
+                  backgroundColor: alpha(theme.palette.error.main, 0.1),
+                  borderRadius: '50%',
+                  p: 2,
+                  mb: 2,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}
+              >
+                <ReportProblemIcon sx={{ fontSize: 60, color: theme.palette.error.main }} />
+              </Box>
+              <Typography variant="h5" gutterBottom align="center" sx={{ fontWeight: 600 }}>
+                Report a Violation
+              </Typography>
+              <Typography variant="body1" color="text.secondary" align="center">
+                Report violations of society rules, illegal activities, or improper behavior within the society premises.
+              </Typography>
+              <Box sx={{ width: '100%', mt: 3 }}>
+                <Chip 
+                  size="small" 
+                  label="Response time: 24-48 hours" 
+                  sx={{ 
+                    mt: 2, 
+                    bgcolor: alpha(theme.palette.error.main, 0.1),
+                    color: theme.palette.error.main,
+                    fontWeight: 500
+                  }} 
+                />
+              </Box>
+            </CardActionArea>
+          </Card>
+        </Grid>
+        
+        <Grid item xs={12} sm={6} md={5}>
+          <Card 
+            elevation={4} 
+            sx={{ 
+              borderRadius: 4,
+              transform: 'scale(1)',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: 'scale(1.03)',
+                boxShadow: `0 12px 30px ${alpha(theme.palette.info.main, 0.2)}`
+              }
+            }}
+          >
+            <CardActionArea 
+              onClick={() => handleReportTypeSelect('complaint')}
+              sx={{ 
+                p: 3,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                borderRadius: 4
+              }}
+            >
+              <Box 
+                sx={{ 
+                  backgroundColor: alpha(theme.palette.info.main, 0.1),
+                  borderRadius: '50%',
+                  p: 2,
+                  mb: 2,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}
+              >
+                <FeedbackIcon sx={{ fontSize: 60, color: theme.palette.info.main }} />
+              </Box>
+              <Typography variant="h5" gutterBottom align="center" sx={{ fontWeight: 600 }}>
+                Register a Complaint
+              </Typography>
+              <Typography variant="body1" color="text.secondary" align="center">
+                Submit complaints about services, facilities, staff behavior, or any other issues affecting your experience.
+              </Typography>
+              <Box sx={{ width: '100%', mt: 3 }}>
+                <Chip 
+                  size="small" 
+                  label="Response time: 3-5 days" 
+                  sx={{ 
+                    mt: 2, 
+                    bgcolor: alpha(theme.palette.info.main, 0.1),
+                    color: theme.palette.info.main,
+                    fontWeight: 500
+                  }} 
+                />
+              </Box>
+            </CardActionArea>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* Recent Reports Summary */}
+      <Box sx={{ mt: 6, mb: 3 }}>
+        <Divider sx={{ mb: 4 }}>
+          <Chip label="Recent Activity" />
+        </Divider>
+        
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={4}>
+            <Paper elevation={0} sx={{ p: 3, borderRadius: 3, bgcolor: alpha(theme.palette.primary.main, 0.04) }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <Box sx={{ 
+                  width: 50, 
+                  height: 50, 
+                  borderRadius: '50%', 
+                  bgcolor: alpha(theme.palette.error.main, 0.1),
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  mr: 2
+                }}>
+                  <ReportProblemIcon sx={{ color: theme.palette.error.main }} />
+                </Box>
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 600, lineHeight: 1.2 }}>
+                    23
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Violations Reported
+                  </Typography>
+                </Box>
+              </Box>
+              <Typography variant="body2" color="text.secondary">
+                This Month
+              </Typography>
+            </Paper>
+          </Grid>
+          
+          <Grid item xs={12} md={4}>
+            <Paper elevation={0} sx={{ p: 3, borderRadius: 3, bgcolor: alpha(theme.palette.primary.main, 0.04) }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <Box sx={{ 
+                  width: 50, 
+                  height: 50, 
+                  borderRadius: '50%', 
+                  bgcolor: alpha(theme.palette.info.main, 0.1),
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  mr: 2
+                }}>
+                  <FeedbackIcon sx={{ color: theme.palette.info.main }} />
+                </Box>
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 600, lineHeight: 1.2 }}>
+                    17
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Complaints Registered
+                  </Typography>
+                </Box>
+              </Box>
+              <Typography variant="body2" color="text.secondary">
+                This Month
+              </Typography>
+            </Paper>
+          </Grid>
+          
+          <Grid item xs={12} md={4}>
+            <Paper elevation={0} sx={{ p: 3, borderRadius: 3, bgcolor: alpha(theme.palette.primary.main, 0.04) }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <Box sx={{ 
+                  width: 50, 
+                  height: 50, 
+                  borderRadius: '50%', 
+                  bgcolor: alpha(theme.palette.success.main, 0.1),
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  mr: 2
+                }}>
+                  <Box component="span" sx={{ 
+                    color: theme.palette.success.main,
+                    fontWeight: 'bold',
+                    fontSize: '1.5rem'
+                  }}>85%</Box>
+                </Box>
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 600, lineHeight: 1.2 }}>
+                    Resolution Rate
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Average response time: 36 hours
+                  </Typography>
+                </Box>
+              </Box>
+              <Typography variant="body2" color="text.secondary">
+                Last 30 Days
+              </Typography>
+            </Paper>
+          </Grid>
+        </Grid>
+      </Box>
+      
+      {/* Recent Reports List */}
+      <Box sx={{ mt: 5 }}>
+        <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+          Recent Reports & Their Status
+        </Typography>
+        <Paper elevation={0} sx={{ borderRadius: 3, overflow: 'hidden', border: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
+          <List sx={{ p: 0 }}>
+            {recentReports.map((report, index) => (
+              <React.Fragment key={report.id}>
+                {index > 0 && <Divider component="li" />}
+                <ListItem
+                  sx={{ 
+                    py: 2,
+                    px: 3,
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.03)
+                    }
+                  }}
+                >
+                  <ListItemIcon sx={{ minWidth: 56 }}>
+                    <Avatar 
+                      sx={{ 
+                        bgcolor: report.type === 'violation' 
+                          ? alpha(theme.palette.error.main, 0.1) 
+                          : alpha(theme.palette.info.main, 0.1),
+                        color: report.type === 'violation' 
+                          ? theme.palette.error.main 
+                          : theme.palette.info.main
+                      }}
+                    >
+                      {report.type === 'violation' 
+                        ? <ReportProblemIcon fontSize="small" /> 
+                        : <FeedbackIcon fontSize="small" />}
+                    </Avatar>
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary={
+                      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
+                        <Typography component="span" sx={{ fontWeight: 600 }}>
+                          {report.title}
+                        </Typography>
+                        <Chip 
+                          size="small" 
+                          label={report.id} 
+                          sx={{ 
+                            height: 20, 
+                            fontSize: '0.7rem',
+                            fontWeight: 600
+                          }} 
+                        />
+                      </Box>
+                    }
+                    secondary={
+                      <Box sx={{ mt: 0.5 }}>
+                        <Box component="span" sx={{ display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.8rem' }}>
+                          <LocationOnIcon fontSize="inherit" />
+                          {report.location}
+                        </Box>
+                      </Box>
+                    }
+                  />
+                  <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column', minWidth: 100, textAlign: 'right' }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5 }}>
+                      {report.date}
+                    </Typography>
+                    <Chip
+                      size="small"
+                      icon={report.status === 'resolved' ? <CheckCircleIcon fontSize="small" /> : <AccessTimeIcon fontSize="small" />}
+                      label={report.status === 'resolved' ? 'Resolved' : 'In Progress'}
+                      color={report.status === 'resolved' ? 'success' : 'warning'}
+                      sx={{ height: 24, fontSize: '0.7rem' }}
+                    />
+                  </Box>
+                </ListItem>
+              </React.Fragment>
+            ))}
+          </List>
+        </Paper>
+      </Box>
+
+      {/* FAQ Section */}
+      <Box sx={{ mt: 6 }}>
+        <Divider sx={{ mb: 4 }}>
+          <Chip label="Frequently Asked Questions" />
+        </Divider>
+        
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={6}>
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
+                What happens after I submit a report?
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Your report is reviewed by our team within the stated response time. 
+                You'll receive a confirmation email with a reference number for tracking your report.
+              </Typography>
+            </Box>
+            
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
+                Can I submit an anonymous report?
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Yes, you can choose to remain anonymous when submitting violations. However, 
+                for complaints that require follow-up, we'll need your contact information.
+              </Typography>
+            </Box>
+          </Grid>
+          
+          <Grid item xs={12} md={6}>
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
+                How can I track the status of my report?
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                You can use the reference number provided after submission to check the status 
+                of your report through the Society Management Dashboard or by contacting the management office.
+              </Typography>
+            </Box>
+            
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
+                What if my issue doesn't fit either category?
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                You can still submit using the "Other" category in either form. For urgent issues 
+                requiring immediate attention, please contact our emergency hotline directly.
+              </Typography>
+            </Box>
+          </Grid>
+        </Grid>
+      </Box>
+
+      {/* Emergency Contact Banner */}
+      <Box 
+        sx={{ 
+          mt: 6,
+          p: 3,
+          borderRadius: 3,
+          backgroundColor: alpha(theme.palette.warning.main, 0.1),
+          border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`,
+          display: 'flex',
+          alignItems: 'center',
+          flexDirection: { xs: 'column', sm: 'row' },
+          gap: 2
+        }}
+      >
+        <Box 
+          sx={{ 
+            bgcolor: alpha(theme.palette.warning.main, 0.2), 
+            borderRadius: '50%',
+            width: 60,
+            height: 60,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0
+          }}
+        >
+          <Typography 
+            variant="h5" 
+            component="span" 
+            sx={{ 
+              fontWeight: 'bold', 
+              color: theme.palette.warning.dark 
+            }}
+          >!</Typography>
+        </Box>
+        <Box sx={{ flexGrow: 1 }}>
+          <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.warning.dark, mb: 0.5 }}>
+            For Emergencies
+          </Typography>
+          <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mb: 1 }}>
+            This form is not for reporting emergencies. For immediate assistance with urgent matters, please use the emergency contact below.
+          </Typography>
+          <Button 
+            variant="contained"
+            color="warning"
+            sx={{ 
+              borderRadius: 8,
+              px: 3,
+              fontWeight: 600,
+              boxShadow: `0 4px 10px ${alpha(theme.palette.warning.main, 0.3)}`
+            }}
+          >
+            Emergency Hotline: 1800-123-4567
+          </Button>
+        </Box>
+      </Box>
+    </Box>
+  );
 
   const renderStepContent = (step: number) => {
     switch (step) {
@@ -284,8 +809,8 @@ const ReportPage: React.FC = () => {
                     fullWidth
                     id="title"
                     name="title"
-                    label="Report Title"
-                    placeholder="Brief title describing the violation"
+                    label={reportType === 'violation' ? "Violation Title" : "Complaint Title"}
+                    placeholder={reportType === 'violation' ? "Brief title describing the violation" : "Brief title describing your complaint"}
                     value={formData.title}
                     onChange={handleChange}
                     error={!!errors.title}
@@ -501,7 +1026,9 @@ const ReportPage: React.FC = () => {
                   id="location"
                   name="location"
                   label="Location"
-                  placeholder="Where did this violation occur?"
+                  placeholder={reportType === 'violation' 
+                    ? "Where did this violation occur?" 
+                    : "Where did this issue occur?"}
                   value={formData.location}
                   onChange={handleChange}
                   error={!!errors.location}
@@ -520,7 +1047,9 @@ const ReportPage: React.FC = () => {
                   id="description"
                   name="description"
                   label="Description"
-                  placeholder="Provide a detailed description of the violation..."
+                  placeholder={reportType === 'violation'
+                    ? "Provide a detailed description of the violation..."
+                    : "Provide a detailed description of your complaint..."}
                   multiline
                   rows={6}
                   value={formData.description}
@@ -546,9 +1075,9 @@ const ReportPage: React.FC = () => {
                 >
                   <InfoIcon color="info" sx={{ mt: 0.5 }} />
                   <Typography variant="body2" color="text.secondary">
-                    Please provide as much detail as possible, including specific time, exact location, 
-                    individuals involved (if applicable), and any other relevant information that might 
-                    help authorities address the issue effectively.
+                    {reportType === 'violation'
+                      ? "Please provide as much detail as possible, including specific time, exact location, individuals involved (if applicable), and any other relevant information that might help authorities address the issue effectively."
+                      : "Please provide as much detail as possible about your complaint, including when it happened, who was involved, and what specific issues you experienced. This will help us address your concerns more effectively."}
                   </Typography>
                 </Box>
               </Grid>
@@ -675,8 +1204,9 @@ const ReportPage: React.FC = () => {
                 >
                   <HelpOutlineIcon color="warning" sx={{ mt: 0.5 }} />
                   <Typography variant="body2" color="text.secondary">
-                    Providing evidence such as photos or videos can significantly help in addressing the violation. 
-                    However, this is optional if you don't have any evidence to upload.
+                    {reportType === 'violation'
+                      ? "Providing evidence such as photos or videos can significantly help in addressing the violation. However, this is optional if you don't have any evidence to upload."
+                      : "Supporting documentation or images related to your complaint can help us understand and resolve the issue more effectively. This step is optional if you don't have any materials to upload."}
                   </Typography>
                 </Box>
               </Grid>
@@ -767,7 +1297,7 @@ const ReportPage: React.FC = () => {
           }
         }}
       >
-        Report Submitted Successfully!
+        {reportType === 'violation' ? 'Violation Report Submitted!' : 'Complaint Registered Successfully!'}
       </Typography>
       <Typography 
         variant="h6" 
@@ -780,8 +1310,9 @@ const ReportPage: React.FC = () => {
           opacity: 0
         }}
       >
-        Thank you for your contribution to maintaining social order. 
-        Your report has been received and will be reviewed by the authorities.
+        {reportType === 'violation' 
+          ? 'Thank you for your contribution to maintaining social order. Your violation report has been received and will be reviewed by the authorities.'
+          : 'Thank you for sharing your concerns with us. Your complaint has been registered and will be addressed by our team.'}
       </Typography>
       
       <Box sx={{ 
@@ -825,7 +1356,7 @@ const ReportPage: React.FC = () => {
           }
         }}
       >
-        Submit Another Report
+        Submit Another {reportType === 'violation' ? 'Report' : 'Complaint'}
       </Button>
     </Box>
   );
@@ -849,365 +1380,268 @@ const ReportPage: React.FC = () => {
         '0%': { backgroundPosition: '0% 50%' },
         '100%': { backgroundPosition: '100% 50%' }
       },
-      backgroundSize: '200% 200%',
       '&::before': {
         content: '""',
         position: 'absolute',
         top: 0,
         left: 0,
-        right: 0,
-        bottom: 0,
+        width: '100%',
+        height: '100%',
         backgroundImage: bgPattern,
-        opacity: 0.3,
-        zIndex: 0,
-        pointerEvents: 'none',
-      },
-      '&::after': {
-        content: '""',
-        position: 'absolute',
-        top: '-50%',
-        left: '-50%',
-        right: '-50%',
-        bottom: '-50%',
-        background: 'radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%)',
+        backgroundSize: '200px 200px',
         opacity: 0.5,
-        zIndex: 0,
-        pointerEvents: 'none',
-        animation: 'pulse 10s ease-in-out infinite',
-        '@keyframes pulse': {
-          '0%': { transform: 'scale(1)', opacity: 0.3 },
-          '50%': { transform: 'scale(1.2)', opacity: 0.5 },
-          '100%': { transform: 'scale(1)', opacity: 0.3 }
-        }
-      },
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      alignItems: 'center',
-      margin: 0,
-      padding: 0,
-      boxSizing: 'border-box'
+        zIndex: 0
+      }
     }}>
-      {/* Decorative elements */}
-      <Box sx={{
-        position: 'absolute',
-        top: '10%',
-        left: '10%',
-        width: '300px',
-        height: '300px',
-        borderRadius: '50%',
-        background: `radial-gradient(circle, ${alpha(theme.palette.primary.main, 0.15)} 0%, transparent 70%)`,
-        zIndex: 0,
-        filter: 'blur(50px)',
-        animation: 'float 20s ease-in-out infinite alternate',
-        '@keyframes float': {
-          '0%': { transform: 'translate(0, 0)' },
-          '50%': { transform: 'translate(30px, -30px)' },
-          '100%': { transform: 'translate(0, 0)' }
-        }
-      }} />
-      
-      <Box sx={{
-        position: 'absolute',
-        bottom: '10%',
-        right: '10%',
-        width: '250px',
-        height: '250px',
-        borderRadius: '50%',
-        background: `radial-gradient(circle, ${alpha(theme.palette.secondary.main, 0.15)} 0%, transparent 70%)`,
-        zIndex: 0,
-        filter: 'blur(50px)',
-        animation: 'float2 15s ease-in-out infinite alternate-reverse',
-        '@keyframes float2': {
-          '0%': { transform: 'translate(0, 0)' },
-          '50%': { transform: 'translate(-20px, 20px)' },
-          '100%': { transform: 'translate(0, 0)' }
-        }
-      }} />
-
-      <Box 
-        sx={{ 
-          position: 'relative', 
-          zIndex: 1,
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          py: { xs: 3, md: 4 },
-          px: { xs: 2, sm: 3, md: 4 },
-          mx: 'auto',
-          maxWidth: { xs: '100%', sm: '95%', md: '900px', lg: '1100px' },
-        }}
-      >
-        <Paper 
-          elevation={4} 
+      <Container maxWidth="lg">
+        <Box 
+          component="main" 
           sx={{ 
-            p: { xs: 2, sm: 3, md: 5 }, 
-            my: { xs: 2, md: 3 }, 
-            borderRadius: '24px',
-            backgroundColor: alpha(theme.palette.background.paper, 0.8),
-            backdropFilter: 'blur(20px)',
             position: 'relative',
-            overflow: 'hidden',
-            transition: 'all 0.3s ease',
-            border: `1px solid ${alpha(theme.palette.common.white, 0.2)}`,
-            boxShadow: `0 20px 80px ${alpha(theme.palette.common.black, 0.15)}`,
-            width: '100%',
-            maxWidth: '100%',
-            display: 'flex',
-            flexDirection: 'column',
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundImage: `
-                linear-gradient(120deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, transparent 40%),
-                radial-gradient(circle at top right, ${alpha(theme.palette.primary.light, 0.12)}, transparent 60%),
-                radial-gradient(circle at bottom left, ${alpha(theme.palette.secondary.light, 0.1)}, transparent 60%)
-              `,
-              zIndex: 0,
-            }
+            pt: { xs: 3, sm: 4 },
+            pb: { xs: 8, sm: 12 },
+            px: { xs: 2, sm: 4 },
+            zIndex: 1
           }}
         >
-          <Box sx={{ position: 'relative', zIndex: 1, width: '100%', height: '100%' }}>
-            <Box sx={{ mb: 5, textAlign: 'center' }}>
-              <Box sx={{ 
-                display: 'inline-block',
-                animation: 'slideDown 0.5s ease-out forwards',
-                '@keyframes slideDown': {
-                  '0%': { transform: 'translateY(-20px)', opacity: 0 },
-                  '100%': { transform: 'translateY(0)', opacity: 1 }
-                }
-              }}>
-                <Chip 
-                  label="Help Us Improve" 
-                  color="primary" 
-                  sx={{ 
-                    mb: 2, 
-                    fontWeight: 'bold',
-                    px: 2.5,
-                    py: 2.5,
-                    fontSize: '0.9rem',
-                    borderRadius: '50px',
-                    boxShadow: `0 6px 16px ${alpha(theme.palette.primary.main, 0.25)}`,
-                    background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.info.main})`,
-                  }} 
-                />
-              </Box>
-              <Typography 
-                component="h1" 
-                variant="h3" 
-                align="center" 
-                gutterBottom
-                sx={{ 
-                  fontWeight: 800,
-                  mb: 1,
-                  background: `linear-gradient(90deg, ${theme.palette.secondary.main}, ${theme.palette.primary.main})`,
+          {!submitted ? (
+            <>
+              <Paper
+                elevation={0}
+                sx={{
+                  p: { xs: 3, sm: 4 },
+                  mb: 4,
+                  backgroundColor: alpha('#fff', 0.9),
+                  backdropFilter: 'blur(8px)',
+                  borderRadius: { xs: 2, sm: 4 }
+                }}
+              >
+                <Typography variant="h4" component="h1" gutterBottom sx={{ 
+                  fontWeight: 800, 
+                  mb: { xs: 2, sm: 3 },
+                  textAlign: 'center',
+                  background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
-                  animation: 'fadeIn 0.5s ease-out forwards 0.2s',
-                  opacity: 0,
+                  animation: 'fadeIn 0.8s ease-out',
                   '@keyframes fadeIn': {
-                    '0%': { opacity: 0 },
-                    '100%': { opacity: 1 }
-                  }
-                }}
-              >
-                Report a Violation
-              </Typography>
-              <Typography 
-                variant="h6" 
-                align="center" 
-                color="text.secondary" 
-                sx={{ 
-                  mb: 1,
-                  maxWidth: '600px',
-                  mx: 'auto',
-                  animation: 'fadeIn 0.5s ease-out forwards 0.3s',
-                  opacity: 0,
-                  lineHeight: 1.5
-                }}
-              >
-                Help maintain social order by reporting violations of rules and regulations
-              </Typography>
-              <Box 
-                sx={{ 
-                  display: 'flex', 
-                  justifyContent: 'center', 
-                  mt: 3, 
-                  mb: 4,
-                  animation: 'widthGrow 0.6s ease-out forwards 0.4s',
-                  '@keyframes widthGrow': {
-                    '0%': { width: '0', opacity: 0 },
-                    '100%': { width: '80px', opacity: 1 }
-                  },
-                  mx: 'auto',
-                  height: '4px',
-                  background: `linear-gradient(90deg, ${theme.palette.secondary.main}, ${theme.palette.info.main})`,
-                  borderRadius: '2px'
-                }} 
-              />
-            </Box>
-            
-            {!submitted ? (
-              <Box component="form" onSubmit={handleSubmit} noValidate sx={{ 
-                position: 'relative',
-                animation: 'fadeScale 0.5s ease-out forwards 0.6s',
-                '@keyframes fadeScale': {
-                  '0%': { transform: 'scale(0.95)', opacity: 0 },
-                  '100%': { transform: 'scale(1)', opacity: 1 }
-                },
-                opacity: 0
-              }}>
-                <Box sx={{
-                  position: 'relative',
-                  mb: 6,
-                  pb: 2,
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: '1px',
-                    background: `linear-gradient(90deg, 
-                      transparent 0%, 
-                      ${alpha(theme.palette.divider, 0.3)} 20%, 
-                      ${alpha(theme.palette.divider, 0.7)} 50%, 
-                      ${alpha(theme.palette.divider, 0.3)} 80%, 
-                      transparent 100%
-                    )`,
+                    '0%': { opacity: 0, transform: 'translateY(-10px)' },
+                    '100%': { opacity: 1, transform: 'translateY(0)' }
                   }
                 }}>
-                  <Stepper 
-                    activeStep={activeStep} 
-                    alternativeLabel={!isMobile}
-                    orientation={isMobile ? 'vertical' : 'horizontal'}
-                    sx={{ 
-                      '& .MuiStepLabel-root .Mui-completed': {
-                        color: theme.palette.primary.main,
-                      },
-                      '& .MuiStepLabel-root .Mui-active': {
-                        color: theme.palette.secondary.main,
-                      },
-                      '& .MuiStepConnector-line': {
-                        borderColor: alpha(theme.palette.divider, 0.5),
-                      },
-                      '& .MuiStepConnector-root.Mui-active .MuiStepConnector-line': {
-                        borderColor: theme.palette.primary.main,
-                      },
-                      '& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line': {
-                        borderColor: theme.palette.primary.main,
-                      },
-                      '& .MuiStepLabel-label': {
-                        fontWeight: 500,
-                        mt: 1
-                      },
-                      '& .MuiStepLabel-iconContainer': {
-                        background: alpha(theme.palette.background.paper, 0.8),
-                        borderRadius: '50%',
-                        p: 0.5,
-                        svg: {
-                          fontSize: 24
-                        }
-                      }
-                    }}
-                  >
-                    {steps.map((step, index) => (
-                      <Step key={step.label}>
-                        <StepLabel
-                          StepIconProps={{
-                            icon: step.icon
-                          }}
-                        >
-                          {step.label}
-                        </StepLabel>
-                      </Step>
-                    ))}
-                  </Stepper>
-                </Box>
+                  {reportType === null ? 'Report an Issue' : 
+                   reportType === 'violation' ? 'Report a Violation' : 'Register a Complaint'}
+                </Typography>
                 
-                <Box sx={{ 
-                  animation: 'fadeUp 0.3s ease-out',
-                  '@keyframes fadeUp': {
-                    '0%': { transform: 'translateY(20px)', opacity: 0 },
-                    '100%': { transform: 'translateY(0)', opacity: 1 }
-                  },
-                }}>
-                  {renderStepContent(activeStep)}
-                </Box>
+                {/* Instruction panel shown only when no report type is selected */}
+                {!reportType && (
+                  <Box sx={{ 
+                    mb: 4, 
+                    backgroundColor: alpha(theme.palette.background.paper, 0.5),
+                    borderRadius: 2,
+                    p: 2,
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
+                  }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      <InfoIcon color="primary" sx={{ mr: 1 }} />
+                      <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                        How to use this page
+                      </Typography>
+                    </Box>
+                    <Typography variant="body2" color="text.secondary">
+                      Use this page to report violations of community rules or register complaints about services. 
+                      Choose the appropriate option below, then follow the guided steps to provide details. 
+                      Remember to be specific and include evidence where possible.
+                    </Typography>
+                  </Box>
+                )}
                 
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 5 }}>
-                  <Button
-                    disabled={activeStep === 0}
-                    onClick={handleBack}
-                    startIcon={<ArrowBackIcon />}
-                    sx={{ 
-                      borderRadius: 8,
-                      visibility: activeStep === 0 ? 'hidden' : 'visible',
-                      px: 3,
-                      py: 1.2,
-                      fontSize: '0.9rem',
-                      fontWeight: 600,
-                      transition: 'all 0.3s ease',
-                      boxShadow: '0 4px 10px rgba(0,0,0,0.07)',
-                      '&:hover': {
-                        transform: 'translateX(-3px)',
-                        boxShadow: '0 6px 15px rgba(0,0,0,0.1)',
-                      }
-                    }}
-                  >
-                    Back
-                  </Button>
-                  <Box>
-                    <Button
-                      variant="contained"
-                      color={activeStep === steps.length - 1 ? "success" : "primary"}
-                      onClick={activeStep === steps.length - 1 ? handleSubmit : handleNext}
-                      endIcon={activeStep === steps.length - 1 ? <SendIcon /> : <ArrowForwardIcon />}
+                {!reportType ? (
+                  renderReportTypeSelection()
+                ) : (
+                  <>
+                    <Stepper 
+                      activeStep={activeStep} 
+                      alternativeLabel={!isMobile}
+                      orientation={isMobile ? 'vertical' : 'horizontal'}
                       sx={{ 
-                        borderRadius: 8,
-                        px: 4,
-                        py: 1.5,
-                        fontSize: '1rem',
-                        fontWeight: 600,
-                        transition: 'all 0.2s ease',
-                        backgroundImage: activeStep === steps.length - 1 
-                          ? `linear-gradient(90deg, ${theme.palette.success.main}, ${theme.palette.info.main})` 
-                          : `linear-gradient(90deg, ${theme.palette.secondary.main}, ${theme.palette.primary.main})`,
-                        boxShadow: `0 10px 20px ${alpha(
-                          activeStep === steps.length - 1 
-                            ? theme.palette.success.main 
-                            : theme.palette.primary.main,
-                          0.3
-                        )}`,
-                        '&:hover': {
-                          transform: 'translateY(-3px)',
-                          boxShadow: `0 14px 28px ${alpha(
-                            activeStep === steps.length - 1 
-                              ? theme.palette.success.main 
-                              : theme.palette.primary.main,
-                            0.4
-                          )}`,
+                        mb: 4,
+                        '& .MuiStepLabel-label': {
+                          mt: 0.5,
+                          fontWeight: 500
+                        },
+                        '& .MuiStepIcon-root': {
+                          fontSize: 32,
+                          '&.Mui-active': {
+                            color: theme.palette.secondary.main,
+                            filter: `drop-shadow(0 4px 8px ${alpha(theme.palette.secondary.main, 0.5)})`
+                          },
+                          '&.Mui-completed': {
+                            color: theme.palette.primary.main,
+                          }
                         }
                       }}
                     >
-                      {activeStep === steps.length - 1 ? 'Submit Report' : 'Continue'}
-                    </Button>
-                  </Box>
-                </Box>
-              </Box>
-            ) : (
-              renderSuccessScreen()
-            )}
-          </Box>
-        </Paper>
-      </Box>
+                      {steps.map((step, index) => (
+                        <Step key={step.label}>
+                          <StepLabel 
+                            StepIconComponent={({ active, completed }) => (
+                              <Box
+                                sx={{
+                                  width: 40,
+                                  height: 40,
+                                  borderRadius: '50%',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  backgroundColor: active 
+                                    ? alpha(theme.palette.secondary.main, 0.1)
+                                    : completed 
+                                      ? alpha(theme.palette.primary.main, 0.1)
+                                      : theme.palette.grey[100],
+                                  color: active 
+                                    ? theme.palette.secondary.main
+                                    : completed 
+                                      ? theme.palette.primary.main
+                                      : theme.palette.text.secondary,
+                                  transition: 'all 0.3s ease',
+                                  boxShadow: active 
+                                    ? `0 4px 12px ${alpha(theme.palette.secondary.main, 0.25)}`
+                                    : 'none',
+                                }}
+                              >
+                                {React.cloneElement(step.icon, { 
+                                  sx: { 
+                                    fontSize: 24,
+                                    animation: active ? 'pulse 2s infinite' : 'none',
+                                    '@keyframes pulse': {
+                                      '0%': { transform: 'scale(1)' },
+                                      '50%': { transform: 'scale(1.1)' },
+                                      '100%': { transform: 'scale(1)' }
+                                    }
+                                  } 
+                                })}
+                              </Box>
+                            )}
+                          >
+                            {step.label}
+                          </StepLabel>
+                        </Step>
+                      ))}
+                    </Stepper>
+                    
+                    <form onSubmit={handleSubmit}>
+                      {renderStepContent(activeStep)}
+                      
+                      <Stack 
+                        direction={{ xs: 'column', sm: 'row' }} 
+                        spacing={2} 
+                        sx={{ 
+                          mt: 4, 
+                          justifyContent: 'space-between',
+                          flexDirection: isMobile ? 'column' : (activeStep === 0 ? 'row-reverse' : 'row')
+                        }}
+                      >
+                        {activeStep === 0 ? (
+                          <Button
+                            variant="outlined"
+                            onClick={() => setReportType(null)}
+                            startIcon={<ArrowBackIcon />}
+                            sx={{
+                              borderRadius: 8,
+                              px: 3,
+                              py: 1.25,
+                              fontWeight: 600,
+                              borderWidth: 2,
+                              textTransform: 'none',
+                              width: isMobile ? '100%' : 'auto',
+                              '&:hover': {
+                                borderWidth: 2,
+                              }
+                            }}
+                          >
+                            Back to Selection
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outlined"
+                            onClick={handleBack}
+                            startIcon={<ArrowBackIcon />}
+                            sx={{
+                              borderRadius: 8,
+                              px: 3,
+                              py: 1.25,
+                              fontWeight: 600,
+                              borderWidth: 2,
+                              textTransform: 'none',
+                              width: isMobile ? '100%' : 'auto',
+                              '&:hover': {
+                                borderWidth: 2,
+                              }
+                            }}
+                          >
+                            Back
+                          </Button>
+                        )}
+
+                        {activeStep === steps.length - 1 ? (
+                          <Button
+                            type="submit"
+                            variant="contained"
+                            endIcon={<SendIcon />}
+                            sx={{
+                              borderRadius: 8,
+                              px: 4,
+                              py: 1.5,
+                              fontWeight: 600,
+                              boxShadow: `0 8px 20px ${alpha(theme.palette.primary.main, 0.25)}`,
+                              background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                              textTransform: 'none',
+                              width: isMobile ? '100%' : 'auto',
+                              transition: 'all 0.2s ease',
+                              '&:hover': {
+                                transform: 'translateY(-3px)',
+                                boxShadow: `0 12px 25px ${alpha(theme.palette.primary.main, 0.35)}`,
+                              }
+                            }}
+                          >
+                            Submit {reportType === 'violation' ? 'Violation Report' : 'Complaint'}
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="contained"
+                            onClick={handleNext}
+                            endIcon={<ArrowForwardIcon />}
+                            sx={{
+                              borderRadius: 8,
+                              px: 4,
+                              py: 1.5,
+                              fontWeight: 600,
+                              boxShadow: `0 8px 20px ${alpha(theme.palette.primary.main, 0.25)}`,
+                              background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                              textTransform: 'none',
+                              width: isMobile ? '100%' : 'auto',
+                              transition: 'all 0.2s ease',
+                              '&:hover': {
+                                transform: 'translateY(-3px)',
+                                boxShadow: `0 12px 25px ${alpha(theme.palette.primary.main, 0.35)}`,
+                              }
+                            }}
+                          >
+                            Continue
+                          </Button>
+                        )}
+                      </Stack>
+                    </form>
+                  </>
+                )}
+              </Paper>
+            </>
+          ) : (
+            renderSuccessScreen()
+          )}
+        </Box>
+      </Container>
     </Box>
   );
 };

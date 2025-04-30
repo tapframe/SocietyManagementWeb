@@ -1,70 +1,86 @@
 # Society Management System
 
-A comprehensive web-based platform designed to promote social order, awareness, and active community participation in India. The system connects citizens and administrators (police officers and advocates) to collaboratively address social issues.
-
-## Features
-
-### For Citizens
-- Report violations of social rules or laws by uploading videos or descriptions
-- Learn about important laws and regulations through an educational section
-- Share ideas for community improvement and social betterment
-
-### For Admins
-- Review citizen-submitted reports
-- Take action on violations (approve/reject reports)
-- Issue fines or legal notices
-- Manage the community platform
-
-## Technology Stack
-
-- **Frontend**: React with TypeScript
-- **UI Library**: Material UI v7
-- **Routing**: React Router v7
-- **Build Tool**: Vite
+A comprehensive web-based platform designed to promote social order, awareness, and active community participation. The system is structured around two primary user roles: normal citizens and admins (police officers and advocates).
 
 ## Project Structure
 
-- **Layouts**: Contains the main application layout with navigation
-- **Pages**: All page components (Home, Login, Register, Report, Rules, Ideas, Admin Dashboard)
+The project is organized into two main parts:
 
-## Getting Started
+### Frontend (React)
+
+- Located in the root directory
+- Built with React, TypeScript, and Material UI
+- Includes pages for login, registration, reporting issues, and more
+- Implements JWT authentication with protected routes
+
+### Backend (Node.js/Express)
+
+- Located in the `backend` directory
+- Built with Node.js, Express, and MongoDB
+- Provides API endpoints for authentication and data management
+- Implements JWT-based authentication and role-based access control
+
+## Setup Instructions
 
 ### Prerequisites
-- Node.js (v16+)
-- npm or yarn
 
-### Installation
+- Node.js (v14 or higher)
+- MongoDB (local installation or MongoDB Atlas account)
+- npm (Node Package Manager)
 
-1. Clone the repository:
-```bash
-git clone https://github.com/tapframe/SocietyManagementWeb.git
-cd SocietyManagementWeb
-```
+### Frontend Setup
+
+1. Install dependencies:
+   ```
+   npm install
+   ```
+
+2. Start the development server:
+   ```
+   npm run dev
+   ```
+
+### Backend Setup
+
+1. Navigate to the backend directory:
+   ```
+   cd backend
+   ```
 
 2. Install dependencies:
-```bash
-npm install
-# or
-yarn
-```
+   ```
+   npm install
+   ```
 
-3. Start the development server:
-```bash
-npm run dev
-# or
-yarn dev
-```
+3. Create a `.env` file with the following variables:
+   ```
+   PORT=5000
+   MONGODB_URI=mongodb://localhost:27017/society-management
+   JWT_SECRET=your_jwt_secret_key_change_this_in_production
+   ```
 
-4. Open your browser and navigate to `http://localhost:5173`
+4. Start the server:
+   ```
+   npm run dev
+   ```
 
-## Future Plans
+## Features
 
-- Backend implementation with database integration
-- Authentication system
-- File upload functionality
-- Admin notification system
-- Mobile application
+- User authentication (login/register)
+- Role-based access control (citizen/admin)
+- Protected routes based on authentication and roles
+- JWT token-based auth system
+- Secure password hashing with bcrypt
+- Responsive UI with Material UI
 
-## License
+## Documentation
 
-This project is licensed under the MIT License - see the LICENSE file for details. 
+For more detailed information, please refer to:
+
+- [Backend Documentation](backend/README.md)
+- [API Documentation](backend/README.md#api-endpoints)
+- [Database Schema](sms.md#database-schema)
+
+## Development
+
+The project follows the repository pattern with clear separation between frontend and backend. Please refer to [sms.md](sms.md) for comprehensive documentation on the project architecture and design. 

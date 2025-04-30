@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  Alert,
   Avatar,
   Box,
   Button,
@@ -16,9 +17,14 @@ import {
 } from '@mui/material';
 import { GridLegacy as Grid } from '@mui/material';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { AUTH_ENDPOINTS } from '../config';
 
 const RegisterPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -42,6 +48,9 @@ const RegisterPage: React.FC = () => {
     phone: ''
   });
 
+  const [isLoading, setIsLoading] = useState(false);
+  const [registrationError, setRegistrationError] = useState('');
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -55,6 +64,11 @@ const RegisterPage: React.FC = () => {
         ...prev,
         [name]: ''
       }));
+    }
+    
+    // Clear registration error
+    if (registrationError) {
+      setRegistrationError('');
     }
   };
 
@@ -110,15 +124,57 @@ const RegisterPage: React.FC = () => {
     return valid;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (validateForm()) {
-      // Here we would normally handle registration process
-      console.log('Registration form submitted:', formData);
-
-      // For demo purposes, just show a success message
-      alert('Registration successful! (Demo only)');
+      setIsLoading(true);
+      setRegistrationError('');
+      
+      try {
+        // Map the role from userType
+        let role = 'citizen';
+        if (formData.userType === 'advocate' || formData.userType === 'police') {
+          role = 'admin';
+        }
+        
+        // Prepare data for API
+        const userData = {
+          name: `${formData.firstName} ${formData.lastName}`,
+          email: formData.email,
+          password: formData.password,
+          role
+        };
+        
+        const response = await fetch(AUTH_ENDPOINTS.REGISTER, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(userData),
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to register');
+        }
+        
+        // Login the user with the returned token and user data
+        login(data.token, data.user);
+        
+        // Redirect based on user role
+        if (data.user.role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/');
+        }
+      } catch (error) {
+        console.error('Registration error:', error);
+        setRegistrationError(error instanceof Error ? error.message : 'Registration failed. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -141,6 +197,12 @@ const RegisterPage: React.FC = () => {
         <Typography component="h1" variant="h5">
           Create an Account
         </Typography>
+        
+        {registrationError && (
+          <Alert severity="error" sx={{ width: '100%', mt: 2 }}>
+            {registrationError}
+          </Alert>
+        )}
         
         <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 3, width: '100%' }}>
           <FormControl component="fieldset" sx={{ mb: 2 }}>
@@ -171,6 +233,7 @@ const RegisterPage: React.FC = () => {
                 onChange={handleChange}
                 error={!!errors.firstName}
                 helperText={errors.firstName}
+                disabled={isLoading}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -185,6 +248,7 @@ const RegisterPage: React.FC = () => {
                 onChange={handleChange}
                 error={!!errors.lastName}
                 helperText={errors.lastName}
+                disabled={isLoading}
               />
             </Grid>
             <Grid item xs={12}>
@@ -199,6 +263,7 @@ const RegisterPage: React.FC = () => {
                 onChange={handleChange}
                 error={!!errors.email}
                 helperText={errors.email}
+                disabled={isLoading}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -214,6 +279,7 @@ const RegisterPage: React.FC = () => {
                 onChange={handleChange}
                 error={!!errors.password}
                 helperText={errors.password}
+                disabled={isLoading}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -228,6 +294,7 @@ const RegisterPage: React.FC = () => {
                 onChange={handleChange}
                 error={!!errors.confirmPassword}
                 helperText={errors.confirmPassword}
+                disabled={isLoading}
               />
             </Grid>
             <Grid item xs={12}>
@@ -241,6 +308,7 @@ const RegisterPage: React.FC = () => {
                 onChange={handleChange}
                 error={!!errors.phone}
                 helperText={errors.phone}
+                disabled={isLoading}
               />
             </Grid>
             <Grid item xs={12}>
@@ -252,6 +320,7 @@ const RegisterPage: React.FC = () => {
                 autoComplete="address-line1"
                 value={formData.address}
                 onChange={handleChange}
+                disabled={isLoading}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -263,6 +332,7 @@ const RegisterPage: React.FC = () => {
                 autoComplete="address-level2"
                 value={formData.city}
                 onChange={handleChange}
+                disabled={isLoading}
               />
             </Grid>
             <Grid item xs={12} sm={3}>
@@ -274,6 +344,7 @@ const RegisterPage: React.FC = () => {
                 autoComplete="address-level1"
                 value={formData.state}
                 onChange={handleChange}
+                disabled={isLoading}
               />
             </Grid>
             <Grid item xs={12} sm={3}>
@@ -285,27 +356,26 @@ const RegisterPage: React.FC = () => {
                 autoComplete="postal-code"
                 value={formData.zipCode}
                 onChange={handleChange}
+                disabled={isLoading}
               />
             </Grid>
           </Grid>
-          
           <Button
             type="submit"
             fullWidth
             variant="contained"
             sx={{ mt: 3, mb: 2 }}
+            disabled={isLoading}
           >
-            Register
+            {isLoading ? 'Creating Account...' : 'Register'}
           </Button>
-          
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-            <Typography variant="body2">
-              Already have an account?{' '}
+          <Grid container justifyContent="flex-end">
+            <Grid item>
               <Link to="/login" style={{ textDecoration: 'none', color: 'primary.main' }}>
-                Sign in
+                Already have an account? Sign in
               </Link>
-            </Typography>
-          </Box>
+            </Grid>
+          </Grid>
         </Box>
       </Paper>
     </Container>

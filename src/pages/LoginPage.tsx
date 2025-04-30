@@ -11,9 +11,13 @@ import {
   Typography 
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { AUTH_ENDPOINTS } from '../config';
 
 const LoginPage: React.FC = () => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -23,6 +27,9 @@ const LoginPage: React.FC = () => {
     email: '',
     password: ''
   });
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [loginError, setLoginError] = useState('');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -37,6 +44,10 @@ const LoginPage: React.FC = () => {
         ...prev,
         [name]: ''
       }));
+    }
+    // Clear login error
+    if (loginError) {
+      setLoginError('');
     }
   };
 
@@ -62,15 +73,50 @@ const LoginPage: React.FC = () => {
     return !newErrors.email && !newErrors.password;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (validateForm()) {
-      // Here we would normally handle login authentication
-      console.log('Login form submitted:', formData);
+      setIsLoading(true);
+      setLoginError('');
       
-      // For demo purposes, just show a success message
-      alert('Login successful! (Demo only)');
+      try {
+        const response = await fetch(AUTH_ENDPOINTS.LOGIN, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to login');
+        }
+        
+        // Use the login function from AuthContext
+        login(data.token, data.user);
+        
+        // Redirect based on user role
+        if (data.user.role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/');
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        setLoginError(error instanceof Error ? error.message : 'Login failed. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const handleRoleSelect = (role: string) => {
+    // This is a simplified example - in a real app, you would need proper admin authentication
+    if (role === 'admin') {
+      navigate('/admin');
     }
   };
 
@@ -93,6 +139,12 @@ const LoginPage: React.FC = () => {
           Sign In
         </Typography>
         
+        {loginError && (
+          <Alert severity="error" sx={{ width: '100%', mt: 2 }}>
+            {loginError}
+          </Alert>
+        )}
+        
         <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 3, width: '100%' }}>
           <TextField
             margin="normal"
@@ -107,6 +159,7 @@ const LoginPage: React.FC = () => {
             onChange={handleChange}
             error={!!errors.email}
             helperText={errors.email}
+            disabled={isLoading}
           />
           <TextField
             margin="normal"
@@ -121,6 +174,7 @@ const LoginPage: React.FC = () => {
             onChange={handleChange}
             error={!!errors.password}
             helperText={errors.password}
+            disabled={isLoading}
           />
           
           <Button
@@ -128,8 +182,9 @@ const LoginPage: React.FC = () => {
             fullWidth
             variant="contained"
             sx={{ mt: 3, mb: 2 }}
+            disabled={isLoading}
           >
-            Sign In
+            {isLoading ? 'Signing In...' : 'Sign In'}
           </Button>
           
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
@@ -149,10 +204,18 @@ const LoginPage: React.FC = () => {
             Select User Role:
           </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'space-around', mt: 2 }}>
-            <Button variant="outlined" component={Link} to="/login">
+            <Button 
+              variant="outlined" 
+              onClick={() => handleRoleSelect('citizen')}
+              disabled={isLoading}
+            >
               Citizen
             </Button>
-            <Button variant="outlined" component={Link} to="/admin">
+            <Button 
+              variant="outlined" 
+              onClick={() => handleRoleSelect('admin')}
+              disabled={isLoading}
+            >
               Admin
             </Button>
           </Box>

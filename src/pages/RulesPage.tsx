@@ -1,24 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Accordion,
   AccordionDetails,
   AccordionSummary,
   Box,
   Button,
-  Container,
   Divider,
-  Paper,
   Typography,
   InputAdornment,
   TextField,
   Chip,
-  Stack
+  Stack,
+  alpha,
+  Fade,
+  useTheme,
+  Grow,
+  useMediaQuery,
+  Avatar
 } from '@mui/material';
 import { GridLegacy as Grid } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import SearchIcon from '@mui/icons-material/Search';
 import GavelIcon from '@mui/icons-material/Gavel';
 import InfoIcon from '@mui/icons-material/Info';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import DescriptionIcon from '@mui/icons-material/Description';
+import WarningIcon from '@mui/icons-material/Warning';
+import FilterAltIcon from '@mui/icons-material/FilterAlt';
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 
 // Sample rules data
 const rulesData = [
@@ -89,9 +98,30 @@ const rulesData = [
 ];
 
 const RulesPage: React.FC = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedId, setExpandedId] = useState<number | false>(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [fadeIn, setFadeIn] = useState(false);
+
+  useEffect(() => {
+    setFadeIn(true);
+    
+    // Automatically close accordions when scrolling down
+    const handleScroll = () => {
+      if (window.scrollY > 300 && expandedId !== false) {
+        setExpandedId(false);
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [expandedId]);
+
+  // Background theme variables (matching HomePage)
+  const bgGradient = `linear-gradient(to bottom right, ${alpha(theme.palette.background.paper, 0.9)}, ${alpha(theme.palette.background.default, 0.8)})`;
+  const bgPattern = `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23${theme.palette.primary.main.replace('#', '')}' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E")`;
 
   const categories = [...new Set(rulesData.map(rule => rule.category))];
 
@@ -119,20 +149,166 @@ const RulesPage: React.FC = () => {
     setSelectedCategory(prevCategory => prevCategory === category ? null : category);
   };
 
-  return (
-    <Container maxWidth="lg">
-      <Paper elevation={3} sx={{ p: 4, my: 4 }}>
-        <Box sx={{ mb: 4, textAlign: 'center' }}>
-          <Typography component="h1" variant="h4" gutterBottom>
-            Know Your Rules & Rights
-          </Typography>
-          <Typography variant="subtitle1" color="text.secondary">
-            Learn about important laws and regulations to become a more informed citizen
-          </Typography>
-        </Box>
+  const getCategoryColor = (category: string) => {
+    switch(category) {
+      case 'Traffic':
+        return '#3f51b5';
+      case 'Public Safety':
+        return '#4caf50';
+      case 'Environmental':
+        return '#009688';
+      case 'Property':
+        return '#ff9800';
+      case 'Civil Rights':
+        return '#2196f3';
+      default:
+        return theme.palette.primary.main;
+    }
+  };
 
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
+  return (
+    <Box 
+      sx={{ 
+        width: '100%', 
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        position: 'relative',
+        backgroundImage: bgGradient,
+        backgroundAttachment: 'fixed',
+        pb: 8,
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: bgPattern,
+          opacity: 0.3,
+          zIndex: 0,
+          pointerEvents: 'none',
+          willChange: 'opacity'
+        }
+      }}
+    >
+      {/* Header with gradient background */}
+      <Box 
+        sx={{ 
+          position: 'relative',
+          overflow: 'hidden',
+          p: { xs: 4, md: 8 },
+          pt: { xs: 6, md: 10 },
+          pb: { xs: 8, md: 12 },
+          textAlign: 'center',
+          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.85)} 0%, ${alpha(theme.palette.secondary.main, 0.75)} 100%)`,
+          color: 'white',
+          boxShadow: '0 4px 30px rgba(0,0,0,0.2)',
+          mb: 8,
+          borderRadius: { xs: 0, md: '0 0 30px 30px' },
+          clipPath: { xs: 'none', md: 'inset(0 0 -10% 0)' } // Creates a slight overlap effect
+        }}
+      >
+        {/* Animated decorative elements */}
+        <Box sx={{ 
+          position: 'absolute', 
+          top: -100, 
+          right: -100, 
+          width: 300, 
+          height: 300, 
+          borderRadius: '50%', 
+          bgcolor: 'white', 
+          opacity: 0.05,
+          animation: 'float 15s ease-in-out infinite',
+          '@keyframes float': {
+            '0%, 100%': { transform: 'translateY(0) scale(1)' },
+            '50%': { transform: 'translateY(20px) scale(1.05)' }
+          }
+        }} />
+        <Box sx={{ 
+          position: 'absolute', 
+          bottom: -50, 
+          left: -50, 
+          width: 200, 
+          height: 200, 
+          borderRadius: '50%', 
+          bgcolor: 'white', 
+          opacity: 0.08,
+          animation: 'float 12s ease-in-out infinite reverse'
+        }} />
+        
+        <Fade in={fadeIn} timeout={1000}>
+          <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
+              <Box 
+                sx={{ 
+                  width: 60, 
+                  height: 60, 
+                  borderRadius: '14px', 
+                  bgcolor: 'white', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  boxShadow: '0 8px 25px rgba(0,0,0,0.2)',
+                  mr: 2,
+                  transform: 'rotate(-5deg)'
+                }}
+              >
+                <GavelIcon sx={{ fontSize: 32, color: theme.palette.primary.main }} />
+              </Box>
+              <Typography 
+                component="h1" 
+                variant="h2" 
+                gutterBottom 
+                sx={{ 
+                  fontWeight: 800,
+                  textShadow: '0 2px 10px rgba(0,0,0,0.2)',
+                  letterSpacing: 1,
+                  mb: 0,
+                  fontSize: { xs: '2.2rem', md: '3.2rem' }
+                }}
+              >
+                Know Your Rules & Rights
+              </Typography>
+            </Box>
+            <Typography 
+              variant="h6" 
+              sx={{ 
+                maxWidth: '800px', 
+                mx: 'auto', 
+                opacity: 0.9,
+                mb: 1,
+                fontWeight: 400,
+                fontSize: { xs: '1rem', md: '1.2rem' },
+                letterSpacing: 0.5
+              }}
+            >
+              Learn about important laws and regulations to become a more informed citizen
+            </Typography>
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                maxWidth: '650px', 
+                mx: 'auto', 
+                opacity: 0.8,
+                fontStyle: 'italic',
+                mt: 1
+              }}
+            >
+              "Knowledge of the law is the first step towards empowerment and justice."
+            </Typography>
+          </Box>
+        </Fade>
+
+        <Fade in={fadeIn} timeout={1500}>
+          <Box sx={{ 
+            maxWidth: '650px', 
+            mx: 'auto', 
+            position: 'relative',
+            transform: 'translateY(50%)',
+            zIndex: 2
+          }}>
             <TextField
               fullWidth
               placeholder="Search for rules, laws, or regulations..."
@@ -146,120 +322,530 @@ const RulesPage: React.FC = () => {
                   </InputAdornment>
                 ),
               }}
-            />
-          </Grid>
-
-          <Grid item xs={12}>
-            <Stack 
-              direction="row" 
-              spacing={1} 
               sx={{ 
-                flexWrap: 'wrap', 
-                gap: 1, 
-                mb: 2,
-                '& > *': {
-                  mb: 1
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 8,
+                  bgcolor: 'background.paper',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+                  '&:hover': {
+                    boxShadow: '0 12px 36px rgba(0,0,0,0.2)',
+                  },
+                  '& fieldset': {
+                    borderColor: 'transparent',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'transparent',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: 'primary.main',
+                  },
+                  transition: 'all 0.3s ease-in-out',
+                  height: 60,
+                  fontSize: '1.1rem'
                 }
               }}
-            >
-              {categories.map(category => (
-                <Chip
-                  key={category}
-                  label={category}
-                  color={selectedCategory === category ? "primary" : "default"}
-                  onClick={() => handleCategorySelect(category)}
-                  clickable
-                />
-              ))}
-            </Stack>
-          </Grid>
+            />
+          </Box>
+        </Fade>
+      </Box>
 
+      <Box sx={{ 
+        maxWidth: '1400px', 
+        mx: 'auto', 
+        width: '100%', 
+        px: { xs: 2, sm: 4 },
+        mt: { xs: 12, md: 10 },
+        position: 'relative',
+        zIndex: 1
+      }}>
+        {/* Decorative floating elements (matching HomePage) */}
+        <Box sx={{
+          position: 'absolute',
+          top: '-50px',
+          right: '10%',
+          width: '150px',
+          height: '150px',
+          borderRadius: '20px',
+          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.light, 0.4)}, ${alpha(theme.palette.primary.main, 0.1)})`,
+          transform: 'rotate(15deg)',
+          filter: 'blur(2px)',
+          zIndex: -1,
+          opacity: 0.6,
+          willChange: 'opacity',
+        }} />
+        
+        <Box sx={{
+          position: 'absolute',
+          bottom: '10%',
+          left: '5%',
+          width: '100px',
+          height: '100px',
+          borderRadius: '50%',
+          background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.light, 0.3)}, ${alpha(theme.palette.secondary.main, 0.1)})`,
+          filter: 'blur(2px)',
+          zIndex: -1,
+          opacity: 0.6,
+          willChange: 'opacity',
+        }} />
+
+        <Grid container spacing={3}>
           <Grid item xs={12}>
-            {filteredRules.length > 0 ? (
-              filteredRules.map((rule) => (
-                <Accordion
-                  key={rule.id}
-                  expanded={expandedId === rule.id}
-                  onChange={handleAccordionChange(rule.id)}
-                  sx={{ mb: 2 }}
-                >
-                  <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
-                    aria-controls={`panel${rule.id}-content`}
-                    id={`panel${rule.id}-header`}
-                  >
-                    <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
-                      <GavelIcon sx={{ mr: 2, color: 'primary.main' }} />
-                      <Box>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                          {rule.title}
-                        </Typography>
-                        <Chip 
-                          label={rule.category} 
-                          size="small" 
-                          sx={{ mt: 0.5 }}
-                        />
-                      </Box>
-                    </Box>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    <Box>
-                      <Typography variant="body1" paragraph>
-                        {rule.description}
-                      </Typography>
-                      
-                      <Box sx={{ bgcolor: 'background.paper', p: 2, borderRadius: 1, mb: 2 }}>
-                        <Typography variant="subtitle2" color="primary" gutterBottom>
-                          Penalty/Consequence:
-                        </Typography>
-                        <Typography variant="body2">
-                          {rule.penalty}
-                        </Typography>
-                      </Box>
-                      
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <InfoIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
-                        <Typography variant="body2" color="text.secondary">
-                          Law Reference: {rule.lawReference}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </AccordionDetails>
-                </Accordion>
-              ))
-            ) : (
-              <Box sx={{ textAlign: 'center', py: 4 }}>
-                <Typography variant="h6" color="text.secondary">
-                  No rules found matching your search criteria.
-                </Typography>
-                <Button 
-                  variant="text" 
-                  onClick={() => {
-                    setSearchTerm('');
-                    setSelectedCategory(null);
+            <Fade in={fadeIn} timeout={2000}>
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: 'column',
+                alignItems: 'center', 
+                mb: 6
+              }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                  <FilterAltIcon sx={{ mr: 1, color: 'text.secondary' }} />
+                  <Typography variant="h6" color="text.secondary" fontWeight={500}>
+                    Filter by Category
+                  </Typography>
+                </Box>
+
+                <Stack 
+                  direction="row" 
+                  spacing={1} 
+                  sx={{ 
+                    flexWrap: 'wrap', 
+                    gap: 1.5,
+                    justifyContent: 'center',
+                    '& > *': {
+                      mb: 1
+                    }
                   }}
-                  sx={{ mt: 2 }}
                 >
-                  Clear Search
-                </Button>
+                  {categories.map((category, index) => (
+                    <Grow 
+                      in={fadeIn} 
+                      timeout={(index + 1) * 200 + 1000}
+                      key={category}
+                    >
+                      <Chip
+                        avatar={
+                          <Avatar 
+                            sx={{ 
+                              bgcolor: selectedCategory === category ? 'white' : alpha(getCategoryColor(category), 0.2),
+                              color: selectedCategory === category ? getCategoryColor(category) : 'inherit'
+                            }}
+                          >
+                            {category.charAt(0)}
+                          </Avatar>
+                        }
+                        label={category}
+                        color={selectedCategory === category ? "primary" : "default"}
+                        onClick={() => handleCategorySelect(category)}
+                        clickable
+                        sx={{ 
+                          borderRadius: 8,
+                          px: 1,
+                          height: 42,
+                          fontWeight: selectedCategory === category ? 'bold' : 'normal',
+                          fontSize: '0.95rem',
+                          boxShadow: selectedCategory === category ? 3 : 1,
+                          border: '1px solid',
+                          borderColor: selectedCategory === category 
+                            ? 'primary.main' 
+                            : alpha(theme.palette.text.primary, 0.08),
+                          transition: 'all 0.3s ease-in-out',
+                          '&:hover': {
+                            transform: 'translateY(-3px)',
+                            boxShadow: 5,
+                          },
+                          backdropFilter: 'blur(4px)',
+                          backgroundColor: selectedCategory === category 
+                            ? getCategoryColor(category)
+                            : alpha(theme.palette.background.paper, 0.8),
+                          color: selectedCategory === category ? 'white' : 'text.primary',
+                          pl: 0.5
+                        }}
+                      />
+                    </Grow>
+                  ))}
+                </Stack>
               </Box>
-            )}
+            </Fade>
           </Grid>
 
           <Grid item xs={12}>
-            <Divider sx={{ mb: 3 }} />
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                Disclaimer: The information provided here is for educational purposes only and should not be considered as legal advice.
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                For specific legal inquiries, please consult with a qualified legal professional.
-              </Typography>
+            <Box sx={{ 
+              maxWidth: '950px', 
+              mx: 'auto', 
+              position: 'relative',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                left: '50%',
+                top: 0,
+                bottom: 0,
+                width: '2px',
+                backgroundImage: `linear-gradient(to bottom, transparent, ${alpha(theme.palette.primary.main, 0.2)}, ${alpha(theme.palette.primary.main, 0.2)}, transparent)`,
+                zIndex: -1,
+                display: { xs: 'none', md: 'block' }
+              }
+            }}>
+              {filteredRules.length > 0 ? (
+                filteredRules.map((rule, index) => (
+                  <Fade 
+                    in={fadeIn} 
+                    timeout={(index + 1) * 300 + 1000} 
+                    key={rule.id}
+                  >
+                    <Accordion
+                      expanded={expandedId === rule.id}
+                      onChange={handleAccordionChange(rule.id)}
+                      sx={{ 
+                        mb: 4,
+                        borderRadius: '20px', 
+                        overflow: 'hidden',
+                        border: 'none',
+                        boxShadow: expandedId === rule.id 
+                          ? '0 18px 40px rgba(0,0,0,0.15)' 
+                          : '0 6px 18px rgba(0,0,0,0.08)',
+                        '&:before': {
+                          display: 'none',
+                        },
+                        transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                        '&:hover': {
+                          boxShadow: '0 12px 30px rgba(0,0,0,0.12)',
+                          transform: expandedId === rule.id ? 'none' : 'translateY(-5px)'
+                        },
+                        backdropFilter: 'blur(10px)',
+                        backgroundColor: alpha(theme.palette.background.paper, 0.85),
+                        transform: expandedId === rule.id ? 'scale(1.02)' : 'none',
+                        ml: { xs: 0, md: index % 2 === 0 ? '5%' : 0 },
+                        mr: { xs: 0, md: index % 2 === 1 ? '5%' : 0 },
+                        width: { xs: '100%', md: '95%' }
+                      }}
+                      disableGutters
+                    >
+                      <AccordionSummary
+                        expandIcon={
+                          <ExpandMoreIcon sx={{ 
+                            transition: 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                            transform: expandedId === rule.id ? 'rotate(180deg)' : 'rotate(0deg)',
+                            color: expandedId === rule.id ? 'primary.main' : 'text.secondary',
+                            fontSize: 28
+                          }} />
+                        }
+                        aria-controls={`panel${rule.id}-content`}
+                        id={`panel${rule.id}-header`}
+                        sx={{ 
+                          py: 2,
+                          px: { xs: 2, md: 3 },
+                          bgcolor: expandedId === rule.id 
+                            ? alpha(getCategoryColor(rule.category), 0.05)
+                            : 'transparent',
+                          '&:hover': {
+                            bgcolor: alpha(getCategoryColor(rule.category), 0.07),
+                          },
+                          transition: 'background-color 0.3s',
+                        }}
+                      >
+                        <Box sx={{ display: 'flex', alignItems: 'center', flexGrow: 1 }}>
+                          <Box 
+                            sx={{ 
+                              mr: 3, 
+                              display: 'flex', 
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: { xs: 45, md: 56 },
+                              height: { xs: 45, md: 56 },
+                              borderRadius: '14px',
+                              background: `linear-gradient(135deg, ${getCategoryColor(rule.category)} 0%, ${alpha(getCategoryColor(rule.category), 0.8)} 100%)`,
+                              color: 'white',
+                              boxShadow: expandedId === rule.id 
+                                ? `0 8px 25px ${alpha(getCategoryColor(rule.category), 0.3)}` 
+                                : `0 5px 15px ${alpha(getCategoryColor(rule.category), 0.2)}`,
+                              transition: 'all 0.3s'
+                            }}
+                          >
+                            <GavelIcon fontSize={isMobile ? "small" : "medium"} />
+                          </Box>
+                          <Box>
+                            <Typography 
+                              variant={isMobile ? "subtitle1" : "h6"} 
+                              sx={{ 
+                                fontWeight: 600,
+                                color: expandedId === rule.id 
+                                  ? getCategoryColor(rule.category) 
+                                  : 'text.primary',
+                                lineHeight: 1.3
+                              }}
+                            >
+                              {rule.title}
+                            </Typography>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5, flexWrap: 'wrap' }}>
+                              <Chip 
+                                label={rule.category} 
+                                size="small" 
+                                sx={{ 
+                                  borderRadius: 5,
+                                  height: 24,
+                                  fontSize: '0.75rem',
+                                  bgcolor: alpha(getCategoryColor(rule.category), 0.1),
+                                  color: getCategoryColor(rule.category),
+                                  border: '1px solid',
+                                  borderColor: alpha(getCategoryColor(rule.category), 0.2),
+                                  mr: 1.5
+                                }}
+                              />
+                              <Typography 
+                                variant="caption" 
+                                color="text.secondary"
+                                sx={{ 
+                                  display: 'flex', 
+                                  alignItems: 'center',
+                                  mt: { xs: isMobile ? 0.5 : 0, sm: 0 }
+                                }}
+                              >
+                                <InfoIcon 
+                                  fontSize="small" 
+                                  sx={{ mr: 0.5, fontSize: '0.875rem', color: alpha(theme.palette.text.secondary, 0.7) }} 
+                                />
+                                {rule.lawReference}
+                              </Typography>
+                              {!isMobile && (
+                                <Button 
+                                  size="small" 
+                                  startIcon={<BookmarkBorderIcon />} 
+                                  sx={{ 
+                                    ml: 'auto', 
+                                    color: 'text.secondary',
+                                    '&:hover': {
+                                      bgcolor: alpha(theme.palette.primary.main, 0.05),
+                                      color: theme.palette.primary.main
+                                    }
+                                  }}
+                                >
+                                  Save
+                                </Button>
+                              )}
+                            </Box>
+                          </Box>
+                        </Box>
+                      </AccordionSummary>
+                      <AccordionDetails sx={{ 
+                        p: { xs: 2, md: 4 }, 
+                        bgcolor: alpha(theme.palette.background.paper, 0.5),
+                        pb: 4
+                      }}>
+                        <Grid container spacing={3}>
+                          <Grid item xs={12}>
+                            <Box 
+                              sx={{ 
+                                display: 'flex', 
+                                alignItems: 'flex-start',
+                                mb: 3,
+                                borderLeft: '3px solid',
+                                borderColor: alpha(getCategoryColor(rule.category), 0.5),
+                                pl: 2,
+                                py: 0.5
+                              }}
+                            >
+                              <Typography 
+                                variant="body1" 
+                                sx={{ 
+                                  lineHeight: 1.7, 
+                                  color: alpha(theme.palette.text.primary, 0.87),
+                                  fontSize: '1.05rem'
+                                }}
+                              >
+                                {rule.description}
+                              </Typography>
+                            </Box>
+                          </Grid>
+                          
+                          <Grid item xs={12}>
+                            <Box 
+                              sx={{ 
+                                p: 3, 
+                                borderRadius: 4, 
+                                mb: 3,
+                                background: `linear-gradient(135deg, ${alpha('#f44336', 0.05)} 0%, ${alpha('#f44336', 0.1)} 100%)`,
+                                border: '1px solid',
+                                borderColor: alpha('#f44336', 0.15),
+                                display: 'flex',
+                                position: 'relative',
+                                overflow: 'hidden'
+                              }}
+                            >
+                              <Box 
+                                sx={{
+                                  position: 'absolute',
+                                  top: 0,
+                                  right: 0,
+                                  width: '100px',
+                                  height: '100%',
+                                  background: `linear-gradient(to right, transparent, ${alpha('#f44336', 0.02)})`,
+                                  zIndex: 0
+                                }}
+                              />
+                              <WarningIcon 
+                                sx={{ 
+                                  mr: 2, 
+                                  color: '#d32f2f',
+                                  mt: 0.5,
+                                  fontSize: 28
+                                }} 
+                              />
+                              <Box sx={{ position: 'relative', zIndex: 1 }}>
+                                <Typography 
+                                  variant="subtitle1" 
+                                  color="#d32f2f" 
+                                  fontWeight="bold" 
+                                  gutterBottom
+                                  sx={{ fontSize: '1.1rem' }}
+                                >
+                                  Penalty/Consequence:
+                                </Typography>
+                                <Typography 
+                                  variant="body1" 
+                                  sx={{ 
+                                    color: alpha(theme.palette.text.primary, 0.87),
+                                    lineHeight: 1.6
+                                  }}
+                                >
+                                  {rule.penalty}
+                                </Typography>
+                              </Box>
+                            </Box>
+                          </Grid>
+                          
+                          <Grid item xs={12}>
+                            <Box 
+                              sx={{ 
+                                display: 'flex', 
+                                alignItems: 'center',
+                                bgcolor: alpha(theme.palette.background.default, 0.7),
+                                p: 2,
+                                borderRadius: 3,
+                                border: '1px solid',
+                                borderColor: alpha(theme.palette.divider, 0.1)
+                              }}
+                            >
+                              <InfoIcon fontSize="small" sx={{ mr: 1, color: getCategoryColor(rule.category) }} />
+                              <Typography 
+                                variant="body2" 
+                                sx={{ color: alpha(theme.palette.text.secondary, 0.9) }}
+                              >
+                                Legal Reference: <Box 
+                                  component="span" 
+                                  sx={{ 
+                                    fontWeight: 'bold',
+                                    color: alpha(theme.palette.text.primary, 0.9)
+                                  }}
+                                >
+                                  {rule.lawReference}
+                                </Box>
+                              </Typography>
+                            </Box>
+                          </Grid>
+                        </Grid>
+                      </AccordionDetails>
+                    </Accordion>
+                  </Fade>
+                ))
+              ) : (
+                <Fade in={fadeIn} timeout={1500}>
+                  <Box sx={{ 
+                    textAlign: 'center', 
+                    py: 10, 
+                    px: 4,
+                    borderRadius: 6,
+                    bgcolor: alpha(theme.palette.background.paper, 0.85),
+                    backdropFilter: 'blur(8px)',
+                    border: '1px dashed',
+                    borderColor: alpha(theme.palette.text.primary, 0.1),
+                    boxShadow: '0 4px 30px rgba(0,0,0,0.07)'
+                  }}>
+                    <Box 
+                      sx={{ 
+                        width: 70, 
+                        height: 70, 
+                        borderRadius: '20px',
+                        bgcolor: alpha(theme.palette.primary.light, 0.1),
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        mx: 'auto',
+                        mb: 3,
+                        border: '1px solid',
+                        borderColor: alpha(theme.palette.primary.main, 0.2)
+                      }}
+                    >
+                      <SearchIcon sx={{ fontSize: 30, color: theme.palette.primary.main }} />
+                    </Box>
+                    <Typography variant="h5" color="text.primary" fontWeight={600} gutterBottom>
+                      No rules found matching your search criteria.
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+                      Try adjusting your search term or clearing the category filter.
+                    </Typography>
+                    <Button 
+                      variant="contained" 
+                      onClick={() => {
+                        setSearchTerm('');
+                        setSelectedCategory(null);
+                      }}
+                      sx={{ 
+                        mt: 2,
+                        borderRadius: 3,
+                        px: 4,
+                        py: 1.5,
+                        boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
+                        '&:hover': {
+                          boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+                          transform: 'translateY(-2px)'
+                        },
+                        transition: 'all 0.3s'
+                      }}
+                      startIcon={<ArrowBackIosNewIcon />}
+                    >
+                      Reset Search
+                    </Button>
+                  </Box>
+                </Fade>
+              )}
             </Box>
           </Grid>
+
+          <Grid item xs={12}>
+            <Divider sx={{ 
+              my: 6,
+              width: '80%',
+              mx: 'auto',
+              '&::before, &::after': {
+                borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+              }
+            }} />
+            <Fade in={fadeIn} timeout={2500}>
+              <Box sx={{ 
+                textAlign: 'center', 
+                maxWidth: '800px', 
+                mx: 'auto',
+                bgcolor: alpha(theme.palette.background.paper, 0.5),
+                backdropFilter: 'blur(6px)',
+                p: 4,
+                borderRadius: 4,
+                border: '1px solid',
+                borderColor: alpha(theme.palette.divider, 0.08),
+                boxShadow: `0 10px 30px ${alpha(theme.palette.common.black, 0.05)}`
+              }}>
+                <Typography variant="h6" color="text.secondary" fontWeight={500} gutterBottom>
+                  Legal Disclaimer
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ maxWidth: '600px', mx: 'auto', lineHeight: 1.7 }}>
+                  The information provided here is for educational purposes only and should not be considered as legal advice.
+                  For specific legal inquiries, please consult with a qualified legal professional.
+                </Typography>
+              </Box>
+            </Fade>
+          </Grid>
         </Grid>
-      </Paper>
-    </Container>
+      </Box>
+    </Box>
   );
 };
 

@@ -61,16 +61,30 @@ const themeBase = createTheme({
     borderRadius: 8,
   },
   components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        'html, body': {
+          margin: 0,
+          padding: 0,
+          width: '100vw',
+          height: '100vh'
+        },
+        '#app': {
+          height: '100vh',
+          width: '100vw'
+        }
+      }
+    },
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 50,
-          boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
+          borderRadius: 0,
+          boxShadow: 'none',
           padding: '8px 22px',
           transition: 'all 0.2s ease-in-out',
           '&:hover': {
-            transform: 'translateY(-2px)',
-            boxShadow: '0 6px 15px rgba(0, 0, 0, 0.15)',
+            transform: 'none',
+            boxShadow: 'none',
           },
         },
         containedPrimary: {
@@ -79,6 +93,17 @@ const themeBase = createTheme({
         containedSecondary: {
           background: 'linear-gradient(45deg, #f50057 30%, #ff4081 90%)',
         },
+        outlined: {
+          borderColor: 'transparent',
+          '&:hover': {
+            borderColor: 'transparent',
+          }
+        },
+        text: {
+          '&:hover': {
+            backgroundColor: 'transparent',
+          }
+        }
       },
     },
     MuiCard: {
