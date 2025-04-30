@@ -31,39 +31,58 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+
+interface Feature {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  link: string;
+  color: string;
+  requiresAuth: boolean;
+}
 
 const HomePage: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const isMedium = useMediaQuery(theme.breakpoints.down('md'));
+  const { isAuthenticated, user } = useAuth();
 
   // Add beautiful background theme variables
   const bgGradient = `linear-gradient(to bottom right, ${alpha(theme.palette.background.paper, 0.9)}, ${alpha(theme.palette.background.default, 0.8)})`;
   const bgPattern = `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23${theme.palette.primary.main.replace('#', '')}' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E")`;
 
-  const features = [
+  const features: Feature[] = [
     {
       title: 'Report Issues',
       description: 'Report violations of social rules or laws by uploading videos or descriptions. Help maintain order in your community.',
       icon: <ReportIcon fontSize="large" sx={{ color: theme.palette.primary.main }} />,
       link: '/report',
-      color: theme.palette.primary.light
+      color: theme.palette.primary.light,
+      requiresAuth: true
     },
     {
       title: 'Know Your Rules',
       description: 'Learn about important laws and regulations to become a more informed citizen and understand your rights and responsibilities.',
       icon: <RuleIcon fontSize="large" sx={{ color: theme.palette.secondary.main }} />,
       link: '/rules',
-      color: theme.palette.secondary.light
+      color: theme.palette.secondary.light,
+      requiresAuth: false
     },
     {
       title: 'Share Ideas',
       description: 'Contribute your thoughts and suggestions for improving the community and fostering positive social change.',
       icon: <IdeaIcon fontSize="large" sx={{ color: theme.palette.success.main }} />,
       link: '/ideas',
-      color: theme.palette.success.light
+      color: theme.palette.success.light,
+      requiresAuth: true
     }
   ];
+
+  // Filter features based on authentication status
+  const filteredFeatures = isAuthenticated 
+    ? features 
+    : features.filter(feature => !feature.requiresAuth);
 
   const stats = [
     { value: '10K+', label: 'Active Citizens', icon: <CommunityIcon fontSize="large" /> },
@@ -947,6 +966,136 @@ const HomePage: React.FC = () => {
         </Grid>
       </Container>
 
+      {/* Authenticated User Section */}
+      {isAuthenticated && (
+        <Box
+          sx={{
+            py: 8,
+            my: 4,
+            borderRadius: 4,
+            backgroundImage: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)}, ${alpha(theme.palette.secondary.main, 0.1)})`,
+            backdropFilter: 'blur(8px)',
+            boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.1)}`,
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+        >
+          <Container maxWidth="lg">
+            <Grid container spacing={4} alignItems="center">
+              <Grid item xs={12} md={6}>
+                <Fade in={true} timeout={1000}>
+                  <Box>
+                    <Typography
+                      variant="h4"
+                      component="h2"
+                      sx={{
+                        fontWeight: 'bold',
+                        mb: 3
+                      }}
+                    >
+                      Welcome, {user?.name}!
+                    </Typography>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        mb: 4,
+                        fontWeight: 'normal',
+                        color: 'text.secondary'
+                      }}
+                    >
+                      Your contribution makes our community better. Here's how you can continue to make a difference:
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        component={Link}
+                        to="/report"
+                        startIcon={<ReportIcon />}
+                        sx={{
+                          py: 1.5,
+                          textAlign: 'left',
+                          justifyContent: 'flex-start',
+                          borderRadius: 2,
+                          textTransform: 'none',
+                          fontSize: '1rem'
+                        }}
+                      >
+                        Report a New Issue
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="primary"
+                        component={Link}
+                        to="/ideas"
+                        startIcon={<IdeaIcon />}
+                        sx={{
+                          py: 1.5,
+                          textAlign: 'left',
+                          justifyContent: 'flex-start',
+                          borderRadius: 2,
+                          textTransform: 'none',
+                          fontSize: '1rem'
+                        }}
+                      >
+                        Share a New Idea
+                      </Button>
+                      {user?.role === 'admin' && (
+                        <Button
+                          variant="outlined"
+                          color="secondary"
+                          component={Link}
+                          to="/admin"
+                          startIcon={<SecurityIcon />}
+                          sx={{
+                            py: 1.5,
+                            textAlign: 'left',
+                            justifyContent: 'flex-start',
+                            borderRadius: 2,
+                            textTransform: 'none',
+                            fontSize: '1rem'
+                          }}
+                        >
+                          Go to Admin Dashboard
+                        </Button>
+                      )}
+                    </Box>
+                  </Box>
+                </Fade>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Zoom in={true} timeout={1000}>
+                  <Box
+                    sx={{
+                      textAlign: 'center',
+                      p: 2
+                    }}
+                  >
+                    <Box
+                      component="img"
+                      src="/images/community-illustration.svg"
+                      alt="Community Illustration"
+                      sx={{
+                        width: '100%',
+                        maxWidth: '400px',
+                        height: 'auto',
+                        filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.1))'
+                      }}
+                      onError={(e) => {
+                        // Fallback if image doesn't exist
+                        const target = e.target as HTMLImageElement;
+                        target.src = 'https://via.placeholder.com/400x300?text=Community';
+                      }}
+                    />
+                  </Box>
+                </Zoom>
+              </Grid>
+            </Grid>
+          </Container>
+        </Box>
+      )}
+
       {/* Features Section */}
       <Box sx={{ 
         py: 10, 
@@ -1015,7 +1164,7 @@ const HomePage: React.FC = () => {
                 color: theme.palette.text.primary
               }}
             >
-              How It Works
+              {isAuthenticated ? 'Your Community Tools' : 'Our Features'}
             </Typography>
             <Typography 
               variant="h6" 
@@ -1027,7 +1176,9 @@ const HomePage: React.FC = () => {
                 fontWeight: 400
               }}
             >
-              The Society Management System empowers citizens and authorities to work together for a better community
+              {isAuthenticated
+                ? 'Access all the tools you need to contribute to your community and make a difference.'
+                : 'Discover tools designed to empower citizens and communities for better governance and social harmony.'}
             </Typography>
             <Box 
               sx={{ 
@@ -1041,96 +1192,76 @@ const HomePage: React.FC = () => {
           </Box>
           
           <Grid container spacing={4}>
-            {features.map((feature, index) => (
+            {filteredFeatures.map((feature, index) => (
               <Grid item xs={12} sm={6} md={4} key={feature.title}>
-                <Grow in={true} timeout={(index + 1) * 500}>
+                <Grow 
+                  in={true} 
+                  style={{ transformOrigin: '0 0 0' }}
+                  timeout={(index + 1) * 500}
+                >
                   <Card 
                     sx={{ 
                       height: '100%', 
                       display: 'flex', 
                       flexDirection: 'column',
-                      borderRadius: 3,
-                      overflow: 'hidden',
+                      borderRadius: 4,
                       transition: 'all 0.3s ease',
-                      border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-                      boxShadow: 'none',
-                      backdropFilter: 'blur(8px)',
-                      backgroundColor: alpha(theme.palette.background.paper, 0.7),
-                      position: 'relative',
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: '100%',
-                        background: `linear-gradient(135deg, ${alpha(feature.color, 0.1)}, transparent 80%)`,
-                        zIndex: 0
-                      },
+                      boxShadow: 3,
+                      overflow: 'visible',
                       '&:hover': {
                         transform: 'translateY(-8px)',
-                        boxShadow: `0 15px 30px ${alpha(theme.palette.primary.main, 0.15)}`,
-                        borderColor: alpha(feature.color, 0.2),
-                        '& .feature-icon-wrapper': {
-                          transform: 'scale(1.1)',
-                        }
+                        boxShadow: 8
                       },
+                      position: 'relative'
                     }}
                   >
-                    <CardContent sx={{ flexGrow: 1, p: 4, pt: 3 }}>
-                      <Box 
-                        className="feature-icon-wrapper"
-                        sx={{ 
-                          display: 'inline-flex', 
-                          p: 2, 
-                          borderRadius: '16px', 
-                          mb: 3,
-                          backgroundColor: alpha(feature.color, 0.12),
-                          transition: 'transform 0.3s ease',
-                        }}
-                      >
-                        {feature.icon}
-                      </Box>
-                      <Typography 
-                        gutterBottom 
-                        variant="h5" 
-                        component="h3" 
-                        sx={{ 
-                          fontWeight: 'bold',
-                          mb: 1.5 
-                        }}
-                      >
+                    <Box 
+                      sx={{ 
+                        position: 'absolute',
+                        top: -20,
+                        left: 'calc(50% - 30px)',
+                        width: 60,
+                        height: 60,
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: 2,
+                        backgroundColor: feature.color,
+                        zIndex: 1,
+                        transition: 'transform 0.3s ease',
+                        '&:hover': {
+                          transform: 'scale(1.1) rotate(10deg)'
+                        }
+                      }}
+                    >
+                      {feature.icon}
+                    </Box>
+                    <CardContent sx={{ pt: 6, pb: 2, px: 3, textAlign: 'center', flexGrow: 1 }}>
+                      <Typography variant="h5" component="h3" gutterBottom sx={{ fontWeight: 'bold' }}>
                         {feature.title}
                       </Typography>
-                      <Typography variant="body1" color="text.secondary" sx={{ mb: 3, lineHeight: 1.7 }}>
+                      <Typography variant="body1" color="textSecondary">
                         {feature.description}
                       </Typography>
                     </CardContent>
-                    <Box sx={{ 
-                      borderTop: '1px solid',
-                      borderColor: alpha(theme.palette.divider, 0.1),
-                      p: 0
-                    }}>
-                      <CardActions sx={{ p: 0 }}>
-                        <Button 
-                          component={Link} 
-                          to={feature.link}
-                          color="primary"
-                          endIcon={<ArrowForwardIcon />}
-                          sx={{ 
-                            fontWeight: 'medium',
-                            p: 2,
-                            width: '100%',
-                            justifyContent: 'space-between',
-                            '&:hover': {
-                              backgroundColor: alpha(theme.palette.primary.main, 0.05)
-                            }
-                          }}
-                        >
-                          Learn More
-                        </Button>
-                      </CardActions>
-                    </Box>
+                    <CardActions sx={{ p: 2, justifyContent: 'center' }}>
+                      <Button 
+                        component={Link} 
+                        to={feature.link}
+                        endIcon={<ArrowForwardIcon />}
+                        color="primary"
+                        sx={{
+                          textTransform: 'none',
+                          fontWeight: 'bold',
+                          '&:hover .MuiSvgIcon-root': {
+                            transform: 'translateX(4px)'
+                          }
+                        }}
+                      >
+                        Learn More
+                      </Button>
+                    </CardActions>
                   </Card>
                 </Grow>
               </Grid>
@@ -1348,122 +1479,165 @@ const HomePage: React.FC = () => {
       </Box>
 
       {/* Call to Action */}
-      <Box sx={{ 
-        py: 12, 
-        textAlign: 'center',
-        background: 'transparent',
-        color: theme.palette.text.primary,
-        position: 'relative',
-        overflow: 'hidden',
-        zIndex: 1,
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)}, ${alpha(theme.palette.secondary.main, 0.05)})`,
-          zIndex: -1
-        }
-      }}>
-        {/* Animated decorative elements */}
-        <Box sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
+      <Box 
+        sx={{ 
+          position: 'relative',
+          py: 8,
+          backgroundImage: `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 0.9)}, ${alpha(theme.palette.primary.main, 0.8)}), ${bgPattern}`,
+          color: 'white',
           overflow: 'hidden',
-          zIndex: -1,
-          opacity: 0.4
-        }}>
-          {/* Animated particles */}
-          {[...Array(8)].map((_, i) => (
-            <Box
-              key={i}
-              sx={{
-                position: 'absolute',
-                width: ['20px', '30px', '40px', '25px', '35px', '45px', '50px', '25px'][i],
-                height: ['20px', '30px', '40px', '25px', '35px', '45px', '50px', '25px'][i],
-                borderRadius: '50%',
-                background: `radial-gradient(circle, ${alpha(
-                  [theme.palette.primary.light, theme.palette.secondary.light, theme.palette.primary.main, 
-                   theme.palette.secondary.main, theme.palette.primary.light, theme.palette.secondary.light,
-                   theme.palette.primary.main, theme.palette.secondary.main][i],
-                  0.6
-                )}, ${alpha(
-                  [theme.palette.primary.main, theme.palette.secondary.main, theme.palette.primary.light, 
-                   theme.palette.secondary.light, theme.palette.primary.main, theme.palette.secondary.main,
-                   theme.palette.primary.light, theme.palette.secondary.light][i],
-                  0.2
-                )})`,
-                top: [`${10 + i * 10}%`, `${80 - i * 9}%`, `${30 + i * 7}%`, `${60 - i * 8}%`, 
-                      `${50 + i * 6}%`, `${20 - i * 5}%`, `${70 + i * 3}%`, `${40 - i * 4}%`][i],
-                left: [`${20 + i * 8}%`, `${75 - i * 7}%`, `${40 + i * 6}%`, `${60 - i * 5}%`, 
-                       `${10 + i * 9}%`, `${90 - i * 4}%`, `${30 + i * 5}%`, `${80 - i * 6}%`][i],
-                filter: 'blur(3px)',
-                animation: `float-particle ${5 + i * 3}s ease-in-out infinite alternate-reverse`,
-                '@keyframes float-particle': {
-                  '0%': { 
-                    transform: 'translateY(0) translateX(0) scale(1)',
-                    opacity: 0.7
-                  },
-                  '50%': { 
-                    transform: `translateY(${10 + i * 5}px) translateX(${5 + i * 3}px) scale(${0.8 + i * 0.05})`,
-                    opacity: 0.9
-                  },
-                  '100%': { 
-                    transform: `translateY(${-10 - i * 5}px) translateX(${-5 - i * 3}px) scale(1)`,
-                    opacity: 0.7
-                  }
-                }
-              }}
-            />
-          ))}
-        </Box>
-
-        <Container maxWidth="md" sx={{ position: 'relative', zIndex: 2 }}>
-          <Fade in={true} timeout={1000}>
-            <Box>
-              <Typography 
-                variant="h3" 
-                component="h2" 
-                sx={{ 
-                  fontWeight: 'bold', 
-                  mb: 3,
-                  color: theme.palette.text.primary,
-                  textShadow: 'none'
-                }}
-              >
-                Ready to make a difference?
-              </Typography>
-              <Typography variant="h6" sx={{ mb: 5, color: theme.palette.text.secondary, maxWidth: '800px', mx: 'auto' }}>
-                Join thousands of citizens committed to building a better society through active participation and collaboration.
-              </Typography>
-              <Button 
-                variant="contained" 
-                color="primary" 
-                size="large" 
-                component={Link} 
-                to="/register"
-                sx={{ 
-                  borderRadius: '50px', 
-                  px: 6, 
-                  py: 2,
-                  fontSize: '1.1rem',
-                  fontWeight: 'bold',
-                  boxShadow: `0 8px 25px ${alpha(theme.palette.primary.main, 0.3)}`,
-                  '&:hover': {
-                    transform: 'translateY(-5px)',
-                    boxShadow: `0 12px 30px ${alpha(theme.palette.primary.main, 0.4)}`
-                  }
-                }}
-              >
-                Get Started Today
-              </Button>
-            </Box>
-          </Fade>
+          borderRadius: { xs: 0, md: '16px' },
+          mx: { xs: 0, md: 3 },
+          mb: { xs: 0, md: 3 },
+          boxShadow: (theme) => 
+            `0 20px 40px ${alpha(theme.palette.common.black, 0.2)}`,
+        }}
+      >
+        <Container maxWidth="lg">
+          <Box sx={{ position: 'relative', zIndex: 2 }}>
+            <Fade in={true} timeout={1000}>
+              <Box textAlign="center">
+                <Typography
+                  variant="h3"
+                  component="h2"
+                  gutterBottom
+                  sx={{ 
+                    fontWeight: 'bold',
+                    mb: 3,
+                    color: 'white'
+                  }}
+                >
+                  {isAuthenticated 
+                    ? "Let's Build Our Community Together" 
+                    : "Join the Community Movement Today"}
+                </Typography>
+                <Typography
+                  variant="h6"
+                  sx={{ 
+                    maxWidth: '800px', 
+                    mx: 'auto',
+                    mb: 5,
+                    color: alpha(theme.palette.common.white, 0.85)
+                  }}
+                >
+                  {isAuthenticated
+                    ? "Your contribution matters. Continue making a difference in your community by actively participating and sharing ideas."
+                    : "Be part of something bigger than yourself. Join thousands of citizens who are working together to create safer, more connected, and inclusive communities."}
+                </Typography>
+                {!isAuthenticated ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, flexWrap: 'wrap' }}>
+                    <Button
+                      component={Link}
+                      to="/register"
+                      size="large"
+                      variant="contained"
+                      color="secondary"
+                      sx={{ 
+                        px: 4, 
+                        py: 1.5,
+                        borderRadius: '50px',
+                        fontSize: '1.1rem',
+                        fontWeight: 'bold',
+                        textTransform: 'none',
+                        backgroundColor: 'white',
+                        color: theme.palette.primary.main,
+                        '&:hover': {
+                          backgroundColor: alpha(theme.palette.common.white, 0.9),
+                          transform: 'translateY(-4px)',
+                          boxShadow: `0 8px 20px ${alpha(theme.palette.common.black, 0.25)}`
+                        },
+                        transition: 'all 0.3s ease'
+                      }}
+                    >
+                      Create an Account
+                    </Button>
+                    <Button
+                      component={Link}
+                      to="/login"
+                      size="large"
+                      variant="outlined"
+                      sx={{ 
+                        px: 4, 
+                        py: 1.5,
+                        borderRadius: '50px',
+                        fontSize: '1.1rem',
+                        fontWeight: 'bold',
+                        textTransform: 'none',
+                        borderColor: 'white',
+                        color: 'white',
+                        borderWidth: '2px',
+                        '&:hover': {
+                          borderColor: 'white',
+                          borderWidth: '2px',
+                          backgroundColor: alpha(theme.palette.common.white, 0.1),
+                          transform: 'translateY(-4px)',
+                          boxShadow: `0 8px 20px ${alpha(theme.palette.common.black, 0.25)}`
+                        },
+                        transition: 'all 0.3s ease'
+                      }}
+                    >
+                      Sign In
+                    </Button>
+                  </Box>
+                ) : (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', gap: 3, flexWrap: 'wrap' }}>
+                    <Button
+                      component={Link}
+                      to="/report"
+                      size="large"
+                      variant="contained"
+                      color="secondary"
+                      sx={{ 
+                        px: 4, 
+                        py: 1.5,
+                        borderRadius: '50px',
+                        fontSize: '1.1rem',
+                        fontWeight: 'bold',
+                        textTransform: 'none',
+                        backgroundColor: 'white',
+                        color: theme.palette.primary.main,
+                        '&:hover': {
+                          backgroundColor: alpha(theme.palette.common.white, 0.9),
+                          transform: 'translateY(-4px)',
+                          boxShadow: `0 8px 20px ${alpha(theme.palette.common.black, 0.25)}`
+                        },
+                        transition: 'all 0.3s ease'
+                      }}
+                    >
+                      Submit a Report
+                    </Button>
+                    <Button
+                      component={Link}
+                      to="/ideas"
+                      size="large"
+                      variant="outlined"
+                      sx={{ 
+                        px: 4, 
+                        py: 1.5,
+                        borderRadius: '50px',
+                        fontSize: '1.1rem',
+                        fontWeight: 'bold',
+                        textTransform: 'none',
+                        borderColor: 'white',
+                        color: 'white',
+                        borderWidth: '2px',
+                        '&:hover': {
+                          borderColor: 'white',
+                          borderWidth: '2px',
+                          backgroundColor: alpha(theme.palette.common.white, 0.1),
+                          transform: 'translateY(-4px)',
+                          boxShadow: `0 8px 20px ${alpha(theme.palette.common.black, 0.25)}`
+                        },
+                        transition: 'all 0.3s ease'
+                      }}
+                    >
+                      Share an Idea
+                    </Button>
+                  </Box>
+                )}
+              </Box>
+            </Fade>
+          </Box>
         </Container>
       </Box>
     </Box>
