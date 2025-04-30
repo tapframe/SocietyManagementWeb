@@ -19,11 +19,9 @@ import {
   Container,
   Tooltip,
   Avatar,
-  Fade,
-  Collapse,
-  alpha,
   Menu,
   MenuItem,
+  alpha,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import HomeIcon from '@mui/icons-material/Home';
@@ -34,7 +32,6 @@ import IdeaIcon from '@mui/icons-material/Lightbulb';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import CloseIcon from '@mui/icons-material/Close';
 import ApartmentIcon from '@mui/icons-material/Apartment';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -130,7 +127,7 @@ const Header: React.FC = () => {
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        background: alpha(theme.palette.background.paper, 0.9),
+        background: alpha(theme.palette.background.paper, 0.95),
         backdropFilter: 'blur(10px)',
       }}
       role="presentation"
@@ -376,285 +373,334 @@ const Header: React.FC = () => {
     </Box>
   );
 
-  // Desktop header with auth context integration
   return (
     <>
       <AppBar 
-        position="sticky" 
+        position="fixed"
         color="inherit" 
         elevation={0}
         sx={{
-          backdropFilter: 'blur(20px)',
-          backgroundColor: scrolled ? alpha(theme.palette.background.default, 0.8) : 'transparent',
-          borderBottom: scrolled ? `1px solid ${alpha(theme.palette.divider, 0.1)}` : 'none',
-          transition: 'background-color 0.3s, border-bottom 0.3s',
+          backdropFilter: 'blur(8px)',
+          backgroundColor: scrolled 
+            ? alpha(theme.palette.background.default, 0.9) 
+            : alpha(theme.palette.background.default, 0.8),
+          borderBottom: scrolled 
+            ? `1px solid ${alpha(theme.palette.divider, 0.1)}` 
+            : 'none',
+          transition: 'all 0.3s ease',
           zIndex: theme.zIndex.drawer + 1,
+          width: '100%',
         }}
       >
-        <Container maxWidth="xl">
-          <Toolbar disableGutters sx={{ height: 70 }}>
-            {/* Mobile menu button */}
-            {isMobile && (
-              <IconButton
-                size="large"
-                edge="start"
-                color="inherit"
-                aria-label="menu"
-                onClick={toggleDrawer(true)}
-                sx={{ mr: 1 }}
-              >
-                <MenuIcon />
-              </IconButton>
-            )}
+        <Container maxWidth={false} sx={{ px: { xs: 2, sm: 4, md: 6, lg: 8 } }}>
+          <Toolbar 
+            disableGutters 
+            sx={{ 
+              height: { xs: 64, md: 70 },
+              display: 'flex',
+              justifyContent: 'space-between',
+              width: '100%',
+              maxWidth: { lg: '1920px' },
+              mx: 'auto',
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              {/* Mobile menu button */}
+              {isMobile && (
+                <IconButton
+                  size="medium"
+                  edge="start"
+                  color="inherit"
+                  aria-label="menu"
+                  onClick={toggleDrawer(true)}
+                  sx={{ mr: 1 }}
+                >
+                  <MenuIcon />
+                </IconButton>
+              )}
 
-            {/* Logo */}
-            <Box 
-              sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                cursor: 'pointer' 
-              }}
-              onClick={() => navigate('/')}
-            >
-              <Avatar 
+              {/* Logo */}
+              <Box 
                 sx={{ 
-                  bgcolor: theme.palette.primary.main,
-                  width: 36, 
-                  height: 36, 
-                  mr: 1 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  cursor: 'pointer',
+                  mr: { xs: 1, md: 2 }
                 }}
+                onClick={() => navigate('/')}
               >
-                <ApartmentIcon />
-              </Avatar>
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  fontWeight: 700, 
-                  color: theme.palette.primary.main,
-                  display: { xs: 'none', sm: 'block' }
-                }}
-              >
-                Society Management
-              </Typography>
+                <Avatar 
+                  sx={{ 
+                    bgcolor: theme.palette.primary.main,
+                    width: { xs: 32, md: 38 }, 
+                    height: { xs: 32, md: 38 }, 
+                    mr: 1,
+                    transition: 'all 0.3s ease',
+                  }}
+                >
+                  <ApartmentIcon sx={{ fontSize: { xs: 18, md: 22 } }} />
+                </Avatar>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    fontWeight: 700, 
+                    fontSize: { xs: 18, md: 20 },
+                    color: theme.palette.primary.main,
+                    display: { xs: 'none', sm: 'block' },
+                    transition: 'all 0.3s ease',
+                  }}
+                >
+                  Society Management
+                </Typography>
+              </Box>
             </Box>
 
             {/* Desktop navigation menu */}
-            {!isMobile && (
-              <Box 
-                sx={{ 
-                  ml: 4, 
-                  flexGrow: 1,
-                  display: 'flex',
-                  justifyContent: isTablet ? 'flex-end' : 'center' 
-                }}
-              >
-                {visibleMenuItems.map((item) => (
-                  <Button
-                    key={item.text}
-                    component={Link}
-                    to={item.path}
-                    color="inherit"
-                    startIcon={!isTablet && item.icon}
-                    sx={{
-                      mx: isTablet ? 0.5 : 1.5,
-                      px: isTablet ? 1.5 : 2,
-                      py: 1,
-                      position: 'relative',
-                      fontWeight: 500,
-                      fontSize: isTablet ? 14 : 15,
-                      color: isActive(item.path) ? theme.palette.primary.main : theme.palette.text.primary,
-                      textTransform: 'none',
-                      '&::after': isActive(item.path) ? {
-                        content: '""',
-                        position: 'absolute',
-                        bottom: 0,
-                        left: isTablet ? '10%' : '20%',
-                        width: isTablet ? '80%' : '60%',
-                        height: '3px',
-                        borderRadius: '3px 3px 0 0',
-                        backgroundColor: theme.palette.primary.main,
-                      } : {
-                        content: hoveredItem === item.text ? '""' : 'none',
-                        position: 'absolute',
-                        bottom: 0,
-                        left: isTablet ? '10%' : '20%',
-                        width: isTablet ? '80%' : '60%',
-                        height: '3px',
-                        borderRadius: '3px 3px 0 0',
-                        backgroundColor: alpha(theme.palette.primary.main, 0.5),
-                        transition: 'all 0.3s ease',
-                      },
-                      '&:hover': {
-                        backgroundColor: 'transparent',
-                        color: theme.palette.primary.main,
-                      },
-                    }}
-                    onMouseEnter={() => setHoveredItem(item.text)}
-                    onMouseLeave={() => setHoveredItem(null)}
-                  >
-                    {item.text}
-                  </Button>
-                ))}
-                
-                {/* Admin Dashboard link for admin users */}
-                {!isMobile && user?.role === 'admin' && (
-                  <Button
-                    component={Link}
-                    to="/admin"
-                    color="inherit"
-                    startIcon={!isTablet && <DashboardIcon />}
-                    sx={{
-                      mx: isTablet ? 0.5 : 1.5,
-                      px: isTablet ? 1.5 : 2,
-                      py: 1,
-                      position: 'relative',
-                      fontWeight: 500,
-                      fontSize: isTablet ? 14 : 15,
-                      color: isActive('/admin') ? theme.palette.primary.main : theme.palette.text.primary,
-                      textTransform: 'none',
-                      '&::after': isActive('/admin') ? {
-                        content: '""',
-                        position: 'absolute',
-                        bottom: 0,
-                        left: isTablet ? '10%' : '20%',
-                        width: isTablet ? '80%' : '60%',
-                        height: '3px',
-                        borderRadius: '3px 3px 0 0',
-                        backgroundColor: theme.palette.primary.main,
-                      } : {
-                        content: hoveredItem === 'Admin' ? '""' : 'none',
-                        position: 'absolute',
-                        bottom: 0,
-                        left: isTablet ? '10%' : '20%',
-                        width: isTablet ? '80%' : '60%',
-                        height: '3px',
-                        borderRadius: '3px 3px 0 0',
-                        backgroundColor: alpha(theme.palette.primary.main, 0.5),
-                        transition: 'all 0.3s ease',
-                      },
-                      '&:hover': {
-                        backgroundColor: 'transparent',
-                        color: theme.palette.primary.main,
-                      },
-                    }}
-                    onMouseEnter={() => setHoveredItem('Admin')}
-                    onMouseLeave={() => setHoveredItem(null)}
-                  >
-                    Admin Dashboard
-                  </Button>
-                )}
-              </Box>
-            )}
-
-            {/* Authentication buttons */}
-            <Box 
-              sx={{ 
-                display: 'flex', 
-                alignItems: 'center',
-                ml: 2,
-                gap: 1
-              }}
-            >
-              {!isAuthenticated ? (
-                <>
-                  {!isMobile && (
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              {!isMobile && (
+                <Box 
+                  sx={{ 
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  {visibleMenuItems.map((item) => (
+                    <Button
+                      key={item.text}
+                      component={Link}
+                      to={item.path}
+                      color="inherit"
+                      startIcon={!isTablet && item.icon}
+                      sx={{
+                        mx: isTablet ? 0.75 : 1.25,
+                        px: isTablet ? 1 : 1.5,
+                        py: 0.75,
+                        position: 'relative',
+                        fontWeight: isActive(item.path) ? 600 : 500,
+                        fontSize: isTablet ? 14 : 15,
+                        color: isActive(item.path) ? theme.palette.primary.main : theme.palette.text.primary,
+                        textTransform: 'none',
+                        '&::after': isActive(item.path) ? {
+                          content: '""',
+                          position: 'absolute',
+                          bottom: 0,
+                          left: '20%',
+                          width: '60%',
+                          height: '3px',
+                          borderRadius: '3px 3px 0 0',
+                          backgroundColor: theme.palette.primary.main,
+                          transition: 'all 0.3s ease',
+                        } : {
+                          content: hoveredItem === item.text ? '""' : 'none',
+                          position: 'absolute',
+                          bottom: 0,
+                          left: '20%',
+                          width: '60%',
+                          height: '3px',
+                          borderRadius: '3px 3px 0 0',
+                          backgroundColor: alpha(theme.palette.primary.main, 0.5),
+                          transition: 'all 0.3s ease',
+                        },
+                        '&:hover': {
+                          backgroundColor: 'transparent',
+                          color: theme.palette.primary.main,
+                        },
+                      }}
+                      onMouseEnter={() => setHoveredItem(item.text)}
+                      onMouseLeave={() => setHoveredItem(null)}
+                    >
+                      {item.text}
+                    </Button>
+                  ))}
+                  
+                  {/* Admin Dashboard link for admin users */}
+                  {user?.role === 'admin' && (
                     <Button
                       component={Link}
-                      to="/login"
+                      to="/admin"
                       color="inherit"
+                      startIcon={!isTablet && <DashboardIcon />}
+                      sx={{
+                        mx: isTablet ? 0.75 : 1.25,
+                        px: isTablet ? 1 : 1.5,
+                        py: 0.75,
+                        position: 'relative',
+                        fontWeight: isActive('/admin') ? 600 : 500,
+                        fontSize: isTablet ? 14 : 15,
+                        color: isActive('/admin') ? theme.palette.primary.main : theme.palette.text.primary,
+                        textTransform: 'none',
+                        '&::after': isActive('/admin') ? {
+                          content: '""',
+                          position: 'absolute',
+                          bottom: 0,
+                          left: '20%',
+                          width: '60%',
+                          height: '3px',
+                          borderRadius: '3px 3px 0 0',
+                          backgroundColor: theme.palette.primary.main,
+                          transition: 'all 0.3s ease',
+                        } : {
+                          content: hoveredItem === 'Admin' ? '""' : 'none',
+                          position: 'absolute',
+                          bottom: 0,
+                          left: '20%',
+                          width: '60%',
+                          height: '3px',
+                          borderRadius: '3px 3px 0 0',
+                          backgroundColor: alpha(theme.palette.primary.main, 0.5),
+                          transition: 'all 0.3s ease',
+                        },
+                        '&:hover': {
+                          backgroundColor: 'transparent',
+                          color: theme.palette.primary.main,
+                        },
+                      }}
+                      onMouseEnter={() => setHoveredItem('Admin')}
+                      onMouseLeave={() => setHoveredItem(null)}
+                    >
+                      Admin Dashboard
+                    </Button>
+                  )}
+                </Box>
+              )}
+
+              {/* Authentication buttons */}
+              <Box 
+                sx={{ 
+                  display: 'flex', 
+                  alignItems: 'center',
+                  ml: 2,
+                  gap: { xs: 0.5, md: 1 }
+                }}
+              >
+                {!isAuthenticated ? (
+                  <>
+                    {!isMobile && (
+                      <Button
+                        component={Link}
+                        to="/login"
+                        color="inherit"
+                        sx={{
+                          fontWeight: 500,
+                          textTransform: 'none',
+                          fontSize: 15,
+                          px: 1.5,
+                        }}
+                      >
+                        Login
+                      </Button>
+                    )}
+                    <Button
+                      component={Link}
+                      to="/register"
+                      variant="contained"
+                      color="primary"
+                      size={isMobile ? "small" : "medium"}
                       sx={{
                         fontWeight: 500,
                         textTransform: 'none',
-                        fontSize: 15,
+                        boxShadow: 'none',
+                        borderRadius: 2,
+                        '&:hover': {
+                          boxShadow: `0 4px 10px ${alpha(theme.palette.primary.main, 0.35)}`,
+                        },
                       }}
                     >
-                      Login
+                      Register
                     </Button>
-                  )}
-                  <Button
-                    component={Link}
-                    to="/register"
-                    variant="contained"
-                    color="primary"
-                    size={isMobile ? "small" : "medium"}
-                    sx={{
-                      fontWeight: 500,
-                      textTransform: 'none',
-                      boxShadow: 'none',
-                      borderRadius: 2,
-                      '&:hover': {
-                        boxShadow: `0 4px 10px ${alpha(theme.palette.primary.main, 0.35)}`,
-                      },
-                    }}
-                  >
-                    Register
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Tooltip title="Account settings">
-                    <IconButton
-                      onClick={handleProfileMenuOpen}
-                      size="small"
-                      sx={{ ml: 2 }}
-                      aria-controls={open ? 'account-menu' : undefined}
-                      aria-haspopup="true"
-                      aria-expanded={open ? 'true' : undefined}
-                    >
-                      <Avatar 
-                        sx={{ 
-                          width: 35, 
-                          height: 35,
-                          bgcolor: theme.palette.primary.main,
-                          fontSize: 14,
-                          fontWeight: 'bold',
-                        }}
+                  </>
+                ) : (
+                  <>
+                    <Tooltip title="Account settings">
+                      <IconButton
+                        onClick={handleProfileMenuOpen}
+                        size="small"
+                        sx={{ ml: { xs: 1, md: 2 } }}
+                        aria-controls={open ? 'account-menu' : undefined}
+                        aria-haspopup="true"
+                        aria-expanded={open ? 'true' : undefined}
                       >
-                        {user?.name?.charAt(0) || <AccountCircleIcon />}
-                      </Avatar>
-                    </IconButton>
-                  </Tooltip>
-                  <Menu
-                    anchorEl={anchorEl}
-                    id="account-menu"
-                    open={open}
-                    onClose={handleProfileMenuClose}
-                    transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                    anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-                  >
-                    <Box sx={{ px: 2, py: 1 }}>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                        {user?.name}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {user?.email}
-                      </Typography>
-                      <Typography variant="caption" color="primary" sx={{ display: 'block', mt: 0.5 }}>
-                        {user?.role === 'admin' ? 'Administrator' : 'Citizen'}
-                      </Typography>
-                    </Box>
-                    <Divider />
-                    {user?.role === 'admin' && (
-                      <MenuItem onClick={handleAdminDashboard}>
+                        <Avatar 
+                          sx={{ 
+                            width: { xs: 32, md: 36 }, 
+                            height: { xs: 32, md: 36 },
+                            bgcolor: theme.palette.primary.main,
+                            fontSize: 14,
+                            fontWeight: 'bold',
+                          }}
+                        >
+                          {user?.name?.charAt(0) || <AccountCircleIcon />}
+                        </Avatar>
+                      </IconButton>
+                    </Tooltip>
+                    <Menu
+                      anchorEl={anchorEl}
+                      id="account-menu"
+                      open={open}
+                      onClose={handleProfileMenuClose}
+                      transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                      anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                      PaperProps={{
+                        elevation: 2,
+                        sx: {
+                          overflow: 'visible',
+                          mt: 1.5,
+                          boxShadow: '0px 5px 15px rgba(0, 0, 0, 0.1)',
+                          borderRadius: 2,
+                          width: 200,
+                          '&:before': {
+                            content: '""',
+                            display: 'block',
+                            position: 'absolute',
+                            top: 0,
+                            right: 14,
+                            width: 10,
+                            height: 10,
+                            bgcolor: 'background.paper',
+                            transform: 'translateY(-50%) rotate(45deg)',
+                            zIndex: 0,
+                          },
+                        },
+                      }}
+                    >
+                      <Box sx={{ px: 2, py: 1.5 }}>
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                          {user?.name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {user?.email}
+                        </Typography>
+                        <Typography variant="caption" color="primary" sx={{ display: 'block', mt: 0.5 }}>
+                          {user?.role === 'admin' ? 'Administrator' : 'Citizen'}
+                        </Typography>
+                      </Box>
+                      <Divider />
+                      {user?.role === 'admin' && (
+                        <MenuItem onClick={handleAdminDashboard}>
+                          <ListItemIcon>
+                            <DashboardIcon fontSize="small" />
+                          </ListItemIcon>
+                          Admin Dashboard
+                        </MenuItem>
+                      )}
+                      <MenuItem onClick={handleLogout}>
                         <ListItemIcon>
-                          <DashboardIcon fontSize="small" />
+                          <LogoutIcon fontSize="small" />
                         </ListItemIcon>
-                        Admin Dashboard
+                        Logout
                       </MenuItem>
-                    )}
-                    <MenuItem onClick={handleLogout}>
-                      <ListItemIcon>
-                        <LogoutIcon fontSize="small" />
-                      </ListItemIcon>
-                      Logout
-                    </MenuItem>
-                  </Menu>
-                </>
-              )}
+                    </Menu>
+                  </>
+                )}
+              </Box>
             </Box>
           </Toolbar>
         </Container>
       </AppBar>
+
+      {/* Toolbar spacer */}
+      <Toolbar sx={{ mb: 1 }} />
 
       {/* Mobile drawer */}
       <Drawer
@@ -666,7 +712,7 @@ const Header: React.FC = () => {
         }}
         sx={{
           '& .MuiDrawer-paper': {
-            boxShadow: 'none',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
           },
         }}
       >
