@@ -264,7 +264,7 @@ router.put('/admin/:id/status', authenticateToken, isAdmin, async (req, res) => 
     const { status, note } = req.body;
     
     // Validate status
-    const validStatuses = ['pending', 'approved', 'rejected'];
+    const validStatuses = ['pending', 'resolved', 'rejected'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ message: 'Invalid status value' });
     }
@@ -286,8 +286,8 @@ router.put('/admin/:id/status', authenticateToken, isAdmin, async (req, res) => 
       });
     }
     
-    // If status is approved or rejected, add resolution date
-    if (status === 'approved' || status === 'rejected') {
+    // If status is resolved or rejected, add resolution date
+    if (status === 'resolved' || status === 'rejected') {
       report.resolvedAt = new Date();
     }
     
@@ -304,7 +304,7 @@ router.get('/admin/stats', authenticateToken, isAdmin, async (req, res) => {
   try {
     const totalCount = await Report.countDocuments();
     const pendingCount = await Report.countDocuments({ status: 'pending' });
-    const approvedCount = await Report.countDocuments({ status: 'approved' });
+    const resolvedCount = await Report.countDocuments({ status: 'resolved' });
     const rejectedCount = await Report.countDocuments({ status: 'rejected' });
     
     // Get reports by category
@@ -322,7 +322,7 @@ router.get('/admin/stats', authenticateToken, isAdmin, async (req, res) => {
     res.status(200).json({
       total: totalCount,
       pending: pendingCount,
-      approved: approvedCount,
+      approved: resolvedCount,
       rejected: rejectedCount,
       categories,
       recentActivity

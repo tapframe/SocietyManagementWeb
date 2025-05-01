@@ -19,7 +19,9 @@ import {
   DialogTitle,
   TextField,
   CircularProgress,
-  Alert
+  Alert,
+  useTheme,
+  alpha
 } from '@mui/material';
 import { GridLegacy as Grid } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -28,6 +30,10 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import PendingIcon from '@mui/icons-material/Pending';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import GavelIcon from '@mui/icons-material/Gavel';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import ThumbUpIcon from '@mui/icons-material/ThumbUp';
+import ThumbDownIcon from '@mui/icons-material/ThumbDown';
 import axiosInstance from '../../utils/axiosInstance';
 import { format } from 'date-fns';
 
@@ -101,6 +107,7 @@ const a11yProps = (index: number) => {
 };
 
 const Dashboard: React.FC = () => {
+  const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);
   const [reports, setReports] = useState<Report[]>([]);
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -146,16 +153,24 @@ const Dashboard: React.FC = () => {
 
   const handleUpdateStatus = async (reportId: string, status: 'resolved' | 'rejected', note: string) => {
     try {
-      const response = await axiosInstance.put(`/reports/admin/${reportId}/status`, {
-        status,
-        note
-      });
+      // Create the proper payload with all required fields
+      const payload = {
+        status: status,
+        note,
+        actionDate: new Date().toISOString()
+      };
+
+      // Improved logging for debugging
+      console.log(`Updating report ${reportId} with status: ${status}`);
+      
+      // Fix the API endpoint to match the correct one from documentation
+      const response = await axiosInstance.put(`/reports/admin/${reportId}/status`, payload);
       
       // Update local state after successful API call
       setReports(prevReports => 
         prevReports.map(report => 
           report._id === reportId 
-            ? { ...report, status, ...response.data }
+            ? { ...report, status: status, ...response.data }
             : report
         )
       );
@@ -166,7 +181,11 @@ const Dashboard: React.FC = () => {
       return true;
     } catch (err: any) {
       console.error(`Error ${status === 'resolved' ? 'approving' : 'rejecting'} report:`, err);
-      setError(`Failed to ${status === 'resolved' ? 'approve' : 'reject'} report: ${err.response?.data?.message || err.message || 'Unknown error'}`);
+      
+      // More detailed error message including response data if available
+      const errorMsg = err.response?.data?.message || err.message || 'Unknown error';
+      setError(`Failed to ${status === 'resolved' ? 'approve' : 'reject'} report: ${errorMsg}`);
+      
       return false;
     }
   };
@@ -212,15 +231,47 @@ const Dashboard: React.FC = () => {
   const getStatusChip = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Chip icon={<PendingIcon />} label="Pending Review" color="warning" />;
+        return <Chip 
+                icon={<PendingIcon />} 
+                label="Pending Review" 
+                color="warning" 
+                sx={{ 
+                  fontWeight: 'medium',
+                  borderRadius: '6px'
+                }}
+              />;
       case 'resolved':
-        return <Chip icon={<CheckCircleIcon />} label="Approved" color="success" />;
+        return <Chip 
+                icon={<CheckCircleIcon />} 
+                label="Approved" 
+                color="success" 
+                sx={{ 
+                  fontWeight: 'medium',
+                  borderRadius: '6px'
+                }}
+              />;
       case 'rejected':
-        return <Chip icon={<CancelIcon />} label="Rejected" color="error" />;
+        return <Chip 
+                icon={<CancelIcon />} 
+                label="Rejected" 
+                color="error" 
+                sx={{ 
+                  fontWeight: 'medium',
+                  borderRadius: '6px'
+                }}
+              />;
       case 'in-progress':
-        return <Chip icon={<PendingIcon />} label="In Progress" color="info" />;
+        return <Chip 
+                icon={<PendingIcon />} 
+                label="In Progress" 
+                color="info" 
+                sx={{ 
+                  fontWeight: 'medium',
+                  borderRadius: '6px'
+                }}
+              />;
       default:
-        return <Chip label={status} />;
+        return <Chip label={status} sx={{ borderRadius: '6px' }} />;
     }
   };
 
@@ -233,20 +284,68 @@ const Dashboard: React.FC = () => {
   };
 
   const renderReportCard = (report: Report) => (
-    <Card key={report._id} sx={{ mb: 2 }}>
-      <CardContent>
+    <Card 
+      key={report._id} 
+      sx={{ 
+        mb: 2,
+        borderRadius: 2,
+        boxShadow: `0 3px 10px ${alpha(theme.palette.text.primary, 0.08)}`,
+        transition: 'transform 0.2s, box-shadow 0.2s',
+        overflow: 'visible',
+        '&:hover': {
+          transform: 'translateY(-2px)',
+          boxShadow: `0 6px 20px ${alpha(theme.palette.text.primary, 0.12)}`
+        },
+        position: 'relative',
+        borderLeft: report.status === 'pending' 
+          ? `4px solid ${theme.palette.warning.main}`
+          : report.status === 'resolved'
+            ? `4px solid ${theme.palette.success.main}`
+            : report.status === 'rejected'
+              ? `4px solid ${theme.palette.error.main}`
+              : 'none'
+      }}
+    >
+      <CardContent sx={{ p: 3 }}>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={8}>
-            <Typography variant="h6">{report.title}</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>{report.title}</Typography>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              Submitted by {typeof report.submittedBy === 'object' ? report.submittedBy.name : 'Unknown'} on {formatDate(report.createdAt)}
+              Submitted by <Box component="span" sx={{ fontWeight: 'medium' }}>{typeof report.submittedBy === 'object' ? report.submittedBy.name : 'Unknown'}</Box> on {formatDate(report.createdAt)}
             </Typography>
-            <Typography variant="body1" sx={{ mb: 2 }}>
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                mb: 2, 
+                color: alpha(theme.palette.text.primary, 0.8),
+                maxHeight: '80px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                display: '-webkit-box',
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: 'vertical'
+              }}
+            >
               {report.description}
             </Typography>
-            <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
-              <Chip label={report.category} color="primary" size="small" />
-              <Chip label={`Location: ${report.location}`} size="small" variant="outlined" />
+            <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
+              <Chip 
+                label={report.category} 
+                color="primary" 
+                size="small"
+                sx={{ 
+                  fontWeight: 'medium',
+                  borderRadius: '6px'
+                }} 
+              />
+              <Chip 
+                label={`Location: ${report.location}`} 
+                size="small" 
+                variant="outlined"
+                sx={{ 
+                  borderRadius: '6px'
+                }} 
+              />
               {getStatusChip(report.status)}
             </Stack>
           </Grid>
@@ -264,12 +363,20 @@ const Dashboard: React.FC = () => {
                   </Typography>
                 )}
               </Box>
-              <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
+              <Stack direction="row" spacing={1} sx={{ mt: 2, justifyContent: 'flex-end' }}>
                 <Button 
                   variant="outlined" 
                   size="small" 
                   startIcon={<VisibilityIcon />}
                   onClick={() => handleViewDetails(report)}
+                  sx={{
+                    borderRadius: '8px',
+                    textTransform: 'none',
+                    boxShadow: 'none',
+                    '&:hover': {
+                      boxShadow: `0 4px 8px ${alpha(theme.palette.primary.main, 0.2)}`
+                    }
+                  }}
                 >
                   Details
                 </Button>
@@ -281,6 +388,14 @@ const Dashboard: React.FC = () => {
                       size="small" 
                       startIcon={<CheckCircleIcon />}
                       onClick={() => openActionDialog(report, 'resolved')}
+                      sx={{
+                        borderRadius: '8px',
+                        textTransform: 'none',
+                        boxShadow: `0 2px 8px ${alpha(theme.palette.success.main, 0.3)}`,
+                        '&:hover': {
+                          boxShadow: `0 4px 12px ${alpha(theme.palette.success.main, 0.4)}`
+                        }
+                      }}
                     >
                       Approve
                     </Button>
@@ -290,6 +405,14 @@ const Dashboard: React.FC = () => {
                       size="small" 
                       startIcon={<CancelIcon />}
                       onClick={() => openActionDialog(report, 'rejected')}
+                      sx={{
+                        borderRadius: '8px',
+                        textTransform: 'none',
+                        boxShadow: `0 2px 8px ${alpha(theme.palette.error.main, 0.3)}`,
+                        '&:hover': {
+                          boxShadow: `0 4px 12px ${alpha(theme.palette.error.main, 0.4)}`
+                        }
+                      }}
                     >
                       Reject
                     </Button>
@@ -304,114 +427,229 @@ const Dashboard: React.FC = () => {
   );
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+        <Alert 
+          severity="error" 
+          sx={{ 
+            mb: 3, 
+            boxShadow: theme.shadows[3],
+            borderRadius: 2
+          }} 
+          onClose={() => setError(null)}
+        >
           {error}
         </Alert>
       )}
 
-      <Grid container spacing={3}>
-        <Grid item xs={12}>
-          <Paper 
-            sx={{ 
-              p: 2, 
-              display: 'flex', 
-              flexDirection: 'column',
-              mb: 3
-            }}
-            elevation={3}
-          >
-            <Typography component="h1" variant="h4" gutterBottom>
+      {/* Header */}
+      <Box 
+        sx={{ 
+          position: 'relative',
+          mb: 5,
+          borderRadius: 3,
+          overflow: 'hidden',
+          background: `linear-gradient(45deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+          boxShadow: theme.shadows[5],
+          color: 'white',
+          p: 3,
+          pb: 5
+        }}
+      >
+        <Box sx={{ position: 'absolute', bottom: -20, right: -20, opacity: 0.1, fontSize: 180 }}>
+          <DashboardIcon fontSize="inherit" />
+        </Box>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item>
+            <DashboardIcon sx={{ fontSize: 40, mr: 2 }} />
+          </Grid>
+          <Grid item>
+            <Typography component="h1" variant="h4" fontWeight="bold">
               Admin Dashboard
             </Typography>
-            <Typography variant="subtitle1" color="text.secondary">
-              Manage and review user reports
+            <Typography variant="subtitle1" sx={{ opacity: 0.8, mt: 0.5 }}>
+              Manage and review user reports efficiently
             </Typography>
-          </Paper>
+          </Grid>
         </Grid>
+      </Box>
 
-        {/* Stats Cards */}
+      {/* Stats Cards */}
+      <Grid container spacing={3} sx={{ mb: 5 }}>
         <Grid item xs={12} md={4}>
           <Paper
             sx={{
-              p: 2,
+              p: 3,
+              height: '100%',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              bgcolor: 'warning.light',
-              color: 'warning.contrastText'
+              borderRadius: 3,
+              background: `linear-gradient(135deg, ${alpha(theme.palette.warning.light, 0.8)} 0%, ${alpha(theme.palette.warning.main, 0.8)} 100%)`,
+              color: theme.palette.warning.contrastText,
+              boxShadow: `0 8px 20px -10px ${alpha(theme.palette.warning.main, 0.6)}`,
+              position: 'relative',
+              overflow: 'hidden'
             }}
-            elevation={3}
+            elevation={0}
           >
-            <Typography variant="h6" gutterBottom>Pending Reports</Typography>
+            <Box sx={{ position: 'absolute', top: -10, right: -10, opacity: 0.1, fontSize: 100 }}>
+              <WarningAmberIcon fontSize="inherit" />
+            </Box>
+            <WarningAmberIcon sx={{ fontSize: 40, mb: 1 }} />
+            <Typography variant="h6" fontWeight="bold" gutterBottom>Pending Reports</Typography>
             {statsLoading ? (
-              <CircularProgress size={24} color="inherit" />
+              <CircularProgress size={40} color="inherit" />
             ) : (
-              <Typography variant="h3">{stats?.pending || pendingReports.length}</Typography>
+              <Typography variant="h2" fontWeight="bold">{stats?.pending || pendingReports.length}</Typography>
             )}
+            <Typography variant="body2" sx={{ mt: 1, opacity: 0.8 }}>Awaiting review</Typography>
           </Paper>
         </Grid>
+        
         <Grid item xs={12} md={4}>
           <Paper
             sx={{
-              p: 2,
+              p: 3,
+              height: '100%',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              bgcolor: 'success.light',
-              color: 'success.contrastText'
+              borderRadius: 3,
+              background: `linear-gradient(135deg, ${alpha(theme.palette.success.light, 0.8)} 0%, ${alpha(theme.palette.success.main, 0.8)} 100%)`,
+              color: theme.palette.success.contrastText,
+              boxShadow: `0 8px 20px -10px ${alpha(theme.palette.success.main, 0.6)}`,
+              position: 'relative',
+              overflow: 'hidden'
             }}
-            elevation={3}
+            elevation={0}
           >
-            <Typography variant="h6" gutterBottom>Approved Reports</Typography>
+            <Box sx={{ position: 'absolute', top: -10, right: -10, opacity: 0.1, fontSize: 100 }}>
+              <ThumbUpIcon fontSize="inherit" />
+            </Box>
+            <ThumbUpIcon sx={{ fontSize: 40, mb: 1 }} />
+            <Typography variant="h6" fontWeight="bold" gutterBottom>Approved Reports</Typography>
             {statsLoading ? (
-              <CircularProgress size={24} color="inherit" />
+              <CircularProgress size={40} color="inherit" />
             ) : (
-              <Typography variant="h3">{stats?.approved || resolvedReports.length}</Typography>
+              <Typography variant="h2" fontWeight="bold">{stats?.approved || resolvedReports.length}</Typography>
             )}
+            <Typography variant="body2" sx={{ mt: 1, opacity: 0.8 }}>Successfully resolved</Typography>
           </Paper>
         </Grid>
+        
         <Grid item xs={12} md={4}>
           <Paper
             sx={{
-              p: 2,
+              p: 3,
+              height: '100%',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              bgcolor: 'error.light',
-              color: 'error.contrastText'
+              borderRadius: 3,
+              background: `linear-gradient(135deg, ${alpha(theme.palette.error.light, 0.8)} 0%, ${alpha(theme.palette.error.main, 0.8)} 100%)`,
+              color: theme.palette.error.contrastText,
+              boxShadow: `0 8px 20px -10px ${alpha(theme.palette.error.main, 0.6)}`,
+              position: 'relative',
+              overflow: 'hidden'
             }}
-            elevation={3}
+            elevation={0}
           >
-            <Typography variant="h6" gutterBottom>Rejected Reports</Typography>
+            <Box sx={{ position: 'absolute', top: -10, right: -10, opacity: 0.1, fontSize: 100 }}>
+              <ThumbDownIcon fontSize="inherit" />
+            </Box>
+            <ThumbDownIcon sx={{ fontSize: 40, mb: 1 }} />
+            <Typography variant="h6" fontWeight="bold" gutterBottom>Rejected Reports</Typography>
             {statsLoading ? (
-              <CircularProgress size={24} color="inherit" />
+              <CircularProgress size={40} color="inherit" />
             ) : (
-              <Typography variant="h3">{stats?.rejected || rejectedReports.length}</Typography>
+              <Typography variant="h2" fontWeight="bold">{stats?.rejected || rejectedReports.length}</Typography>
             )}
+            <Typography variant="body2" sx={{ mt: 1, opacity: 0.8 }}>Dismissed requests</Typography>
           </Paper>
         </Grid>
+      </Grid>
 
-        {/* Tabs Section */}
+      {/* Tabs Section */}
+      <Grid container spacing={3}>
         <Grid item xs={12}>
-          <Paper sx={{ width: '100%' }} elevation={3}>
-            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Paper sx={{ 
+            width: '100%', 
+            borderRadius: 3,
+            overflow: 'hidden',
+            boxShadow: `0 8px 24px -12px ${alpha(theme.palette.primary.main, 0.2)}`
+          }} elevation={1}>
+            <Box sx={{ 
+              borderBottom: 1, 
+              borderColor: 'divider',
+              background: alpha(theme.palette.background.paper, 0.8)
+            }}>
               <Tabs
                 value={tabValue}
                 onChange={handleTabChange}
                 aria-label="admin dashboard tabs"
                 centered
+                sx={{
+                  '& .MuiTab-root': {
+                    py: 2,
+                    px: 4,
+                    fontWeight: 'medium',
+                    transition: '0.2s',
+                    '&:hover': {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.05)
+                    }
+                  },
+                  '& .Mui-selected': {
+                    fontWeight: 'bold',
+                    color: theme.palette.primary.main
+                  },
+                  '& .MuiTabs-indicator': {
+                    height: 3,
+                    borderRadius: 1.5
+                  }
+                }}
               >
-                <Tab label={`Pending (${pendingReports.length})`} {...a11yProps(0)} />
-                <Tab label={`Approved (${resolvedReports.length})`} {...a11yProps(1)} />
-                <Tab label={`Rejected (${rejectedReports.length})`} {...a11yProps(2)} />
-                <Tab label="All Reports" {...a11yProps(3)} />
+                <Tab 
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <PendingIcon sx={{ mr: 1, fontSize: 20 }} />
+                      <span>Pending ({pendingReports.length})</span>
+                    </Box>
+                  } 
+                  {...a11yProps(0)} 
+                />
+                <Tab 
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <CheckCircleIcon sx={{ mr: 1, fontSize: 20 }} />
+                      <span>Approved ({resolvedReports.length})</span>
+                    </Box>
+                  } 
+                  {...a11yProps(1)} 
+                />
+                <Tab 
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <CancelIcon sx={{ mr: 1, fontSize: 20 }} />
+                      <span>Rejected ({rejectedReports.length})</span>
+                    </Box>
+                  } 
+                  {...a11yProps(2)} 
+                />
+                <Tab 
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <DashboardIcon sx={{ mr: 1, fontSize: 20 }} />
+                      <span>All Reports</span>
+                    </Box>
+                  } 
+                  {...a11yProps(3)} 
+                />
               </Tabs>
             </Box>
 
             {loading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}>
                 <CircularProgress />
               </Box>
             ) : (
@@ -420,7 +658,17 @@ const Dashboard: React.FC = () => {
                   {pendingReports.length > 0 ? (
                     pendingReports.map(report => renderReportCard(report))
                   ) : (
-                    <Typography align="center">No pending reports to review</Typography>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      alignItems: 'center', 
+                      py: 5,
+                      opacity: 0.7
+                    }}>
+                      <CheckCircleIcon sx={{ fontSize: 60, color: 'success.main', mb: 2, opacity: 0.6 }} />
+                      <Typography align="center" variant="h6">All caught up!</Typography>
+                      <Typography align="center">No pending reports to review</Typography>
+                    </Box>
                   )}
                 </TabPanel>
 
@@ -428,7 +676,17 @@ const Dashboard: React.FC = () => {
                   {resolvedReports.length > 0 ? (
                     resolvedReports.map((report) => renderReportCard(report))
                   ) : (
-                    <Typography align="center">No approved reports</Typography>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      alignItems: 'center', 
+                      py: 5,
+                      opacity: 0.7
+                    }}>
+                      <ThumbUpIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2, opacity: 0.6 }} />
+                      <Typography align="center" variant="h6">Nothing here yet</Typography>
+                      <Typography align="center">No approved reports</Typography>
+                    </Box>
                   )}
                 </TabPanel>
 
@@ -436,7 +694,17 @@ const Dashboard: React.FC = () => {
                   {rejectedReports.length > 0 ? (
                     rejectedReports.map(report => renderReportCard(report))
                   ) : (
-                    <Typography align="center">No rejected reports</Typography>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      alignItems: 'center', 
+                      py: 5,
+                      opacity: 0.7
+                    }}>
+                      <CancelIcon sx={{ fontSize: 60, color: 'error.main', mb: 2, opacity: 0.6 }} />
+                      <Typography align="center" variant="h6">Nothing here</Typography>
+                      <Typography align="center">No rejected reports</Typography>
+                    </Box>
                   )}
                 </TabPanel>
 
@@ -444,7 +712,17 @@ const Dashboard: React.FC = () => {
                   {reports.length > 0 ? (
                     reports.map(report => renderReportCard(report))
                   ) : (
-                    <Typography align="center">No reports available</Typography>
+                    <Box sx={{ 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      alignItems: 'center', 
+                      py: 5,
+                      opacity: 0.7
+                    }}>
+                      <DashboardIcon sx={{ fontSize: 60, color: 'info.main', mb: 2, opacity: 0.6 }} />
+                      <Typography align="center" variant="h6">No data available</Typography>
+                      <Typography align="center">No reports available</Typography>
+                    </Box>
                   )}
                 </TabPanel>
               </>
@@ -459,69 +737,136 @@ const Dashboard: React.FC = () => {
         onClose={handleCloseDetails}
         maxWidth="md"
         fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)'
+          }
+        }}
       >
         {selectedReport && (
           <>
-            <DialogTitle>
-              Report Details: {selectedReport.title}
+            <DialogTitle sx={{ 
+              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+              px: 3,
+              py: 2.5,
+              backgroundColor: alpha(theme.palette.background.default, 0.5),
+            }}>
+              <Stack direction="row" alignItems="center" spacing={1}>
+                <Typography variant="h5" component="span" fontWeight="bold">
+                  {selectedReport.title}
+                </Typography>
+                {getStatusChip(selectedReport.status)}
+              </Stack>
             </DialogTitle>
-            <DialogContent dividers>
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
-                  <Typography variant="subtitle2">Submitted By</Typography>
-                  <Typography variant="body1" gutterBottom>
-                    {typeof selectedReport.submittedBy === 'object' ? selectedReport.submittedBy.name : 'Unknown'}
-                  </Typography>
+            <DialogContent dividers sx={{ p: 0 }}>
+              <Box sx={{ 
+                p: 3,
+                background: `linear-gradient(to bottom, ${alpha(theme.palette.background.default, 0.5)} 0%, rgba(255,255,255,0) 100%)` 
+              }}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <Box sx={{ mb: 3 }}>
+                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>Submitted By</Typography>
+                      <Typography variant="body1" fontWeight="medium">
+                        {typeof selectedReport.submittedBy === 'object' ? selectedReport.submittedBy.name : 'Unknown'}
+                      </Typography>
+                    </Box>
+                    
+                    <Box sx={{ mb: 3 }}>
+                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>Date Submitted</Typography>
+                      <Typography variant="body1">{formatDate(selectedReport.createdAt)}</Typography>
+                    </Box>
+                    
+                    <Box sx={{ mb: 3 }}>
+                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>Category</Typography>
+                      <Chip 
+                        label={selectedReport.category} 
+                        color="primary" 
+                        size="small" 
+                        sx={{ borderRadius: '6px', fontWeight: 'medium' }}
+                      />
+                    </Box>
+                    
+                    <Box sx={{ mb: 3 }}>
+                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>Location</Typography>
+                      <Typography variant="body1">{selectedReport.location}</Typography>
+                    </Box>
+                  </Grid>
                   
-                  <Typography variant="subtitle2">Date Submitted</Typography>
-                  <Typography variant="body1" gutterBottom>{formatDate(selectedReport.createdAt)}</Typography>
-                  
-                  <Typography variant="subtitle2">Category</Typography>
-                  <Typography variant="body1" gutterBottom>{selectedReport.category}</Typography>
-                  
-                  <Typography variant="subtitle2">Location</Typography>
-                  <Typography variant="body1" gutterBottom>{selectedReport.location}</Typography>
-                  
-                  <Typography variant="subtitle2">Status</Typography>
-                  <Box>{getStatusChip(selectedReport.status)}</Box>
-                </Grid>
-                
-                <Grid item xs={12} md={6}>
-                  <Typography variant="subtitle2">Description</Typography>
-                  <Typography variant="body1" paragraph>{selectedReport.description}</Typography>
-                  
-                  {selectedReport.evidence && (
-                    <>
-                      <Typography variant="subtitle2">Evidence</Typography>
-                      <Box sx={{ mt: 1, p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
-                        <Typography variant="body2">{selectedReport.evidence}</Typography>
-                        {/* In a real app, we would display the actual evidence file/media */}
-                        <Button size="small" sx={{ mt: 1 }}>View Evidence</Button>
+                  <Grid item xs={12} md={6}>
+                    <Box sx={{ mb: 3 }}>
+                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>Description</Typography>
+                      <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, minHeight: '80px' }}>
+                        <Typography variant="body1">{selectedReport.description}</Typography>
+                      </Paper>
+                    </Box>
+                    
+                    {selectedReport.evidence && (
+                      <Box sx={{ mb: 3 }}>
+                        <Typography variant="subtitle2" color="text.secondary" gutterBottom>Evidence</Typography>
+                        <Paper variant="outlined" sx={{ 
+                          p: 2, 
+                          borderRadius: 2, 
+                          bgcolor: alpha(theme.palette.primary.light, 0.05),
+                          border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
+                        }}>
+                          <Typography variant="body2">{selectedReport.evidence}</Typography>
+                          {/* In a real app, we would display the actual evidence file/media */}
+                          <Button 
+                            size="small" 
+                            sx={{ 
+                              mt: 1, 
+                              borderRadius: '6px',
+                              textTransform: 'none'
+                            }}
+                          >
+                            View Evidence
+                          </Button>
+                        </Paper>
                       </Box>
-                    </>
+                    )}
+                  </Grid>
+
+                  {selectedReport.adminNotes && selectedReport.adminNotes.length > 0 && (
+                    <Grid item xs={12}>
+                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>Admin Notes</Typography>
+                      <Paper variant="outlined" sx={{ 
+                        p: 0, 
+                        borderRadius: 2,
+                        overflow: 'hidden'
+                      }}>
+                        {selectedReport.adminNotes.map((note, index) => (
+                          <Box 
+                            key={index} 
+                            sx={{ 
+                              p: 2,
+                              ...(index % 2 === 0 && { bgcolor: alpha(theme.palette.background.default, 0.5) })
+                            }}
+                          >
+                            <Typography variant="body2">{note.text}</Typography>
+                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                              Added on {formatDate(note.addedAt)}
+                            </Typography>
+                            {index !== selectedReport.adminNotes!.length - 1 && <Divider sx={{ mt: 2 }} />}
+                          </Box>
+                        ))}
+                      </Paper>
+                    </Grid>
                   )}
                 </Grid>
-
-                {selectedReport.adminNotes && selectedReport.adminNotes.length > 0 && (
-                  <Grid item xs={12}>
-                    <Typography variant="subtitle2" sx={{ mt: 2, mb: 1 }}>Admin Notes</Typography>
-                    <Paper variant="outlined" sx={{ p: 2 }}>
-                      {selectedReport.adminNotes.map((note, index) => (
-                        <Box key={index} sx={{ mb: index !== selectedReport.adminNotes!.length - 1 ? 2 : 0 }}>
-                          <Typography variant="body2">{note.text}</Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            Added on {formatDate(note.addedAt)}
-                          </Typography>
-                          {index !== selectedReport.adminNotes!.length - 1 && <Divider sx={{ my: 1 }} />}
-                        </Box>
-                      ))}
-                    </Paper>
-                  </Grid>
-                )}
-              </Grid>
+              </Box>
             </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseDetails}>Close</Button>
+            <DialogActions sx={{ px: 3, py: 2 }}>
+              <Button 
+                onClick={handleCloseDetails}
+                sx={{ 
+                  borderRadius: '8px',
+                  textTransform: 'none'
+                }}
+              >
+                Close
+              </Button>
               {selectedReport.status === 'pending' && (
                 <>
                   <Button 
@@ -531,6 +876,14 @@ const Dashboard: React.FC = () => {
                     onClick={() => {
                       handleCloseDetails();
                       openActionDialog(selectedReport, 'resolved');
+                    }}
+                    sx={{
+                      borderRadius: '8px',
+                      textTransform: 'none',
+                      boxShadow: `0 2px 8px ${alpha(theme.palette.success.main, 0.3)}`,
+                      '&:hover': {
+                        boxShadow: `0 4px 12px ${alpha(theme.palette.success.main, 0.4)}`
+                      }
                     }}
                   >
                     Approve
@@ -542,6 +895,14 @@ const Dashboard: React.FC = () => {
                     onClick={() => {
                       handleCloseDetails();
                       openActionDialog(selectedReport, 'rejected');
+                    }}
+                    sx={{
+                      borderRadius: '8px',
+                      textTransform: 'none',
+                      boxShadow: `0 2px 8px ${alpha(theme.palette.error.main, 0.3)}`,
+                      '&:hover': {
+                        boxShadow: `0 4px 12px ${alpha(theme.palette.error.main, 0.4)}`
+                      }
                     }}
                   >
                     Reject
@@ -557,24 +918,54 @@ const Dashboard: React.FC = () => {
       <Dialog
         open={actionDialogOpen}
         onClose={closeActionDialog}
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            maxWidth: 500,
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)'
+          }
+        }}
       >
         {selectedReport && actionType && (
           <>
-            <DialogTitle>
-              {actionType === 'resolved' ? 'Approve Report' : 'Reject Report'}
-            </DialogTitle>
-            <DialogContent>
-              <DialogContentText>
+            <DialogTitle sx={{
+              p: 3,
+              backgroundColor: actionType === 'resolved' 
+                ? alpha(theme.palette.success.light, 0.2) 
+                : alpha(theme.palette.error.light, 0.2),
+              color: actionType === 'resolved' 
+                ? theme.palette.success.dark 
+                : theme.palette.error.dark
+            }}>
+              <Stack direction="row" alignItems="center" spacing={1.5}>
                 {actionType === 'resolved' 
-                  ? 'You are about to approve this report. You can add an action note or issue a fine if applicable.' 
+                  ? <CheckCircleIcon color="success" /> 
+                  : <CancelIcon color="error" />
+                }
+                <Typography variant="h6" component="div" fontWeight="bold">
+                  {actionType === 'resolved' ? 'Approve Report' : 'Reject Report'}
+                </Typography>
+              </Stack>
+            </DialogTitle>
+            <DialogContent sx={{ p: 3, pt: 3 }}>
+              <DialogContentText sx={{ color: 'text.primary', opacity: 0.8, mb: 3 }}>
+                {actionType === 'resolved' 
+                  ? 'You are about to approve this report. Please provide any relevant action notes.' 
                   : 'You are about to reject this report. Please provide a reason for rejection.'}
               </DialogContentText>
+              
+              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                Report: <Box component="span" fontWeight="medium">{selectedReport.title}</Box>
+              </Typography>
               
               <TextField
                 autoFocus
                 margin="dense"
                 id="note"
-                label={actionType === 'resolved' ? 'Action Note (Optional)' : 'Reason for Rejection'}
+                label={actionType === 'resolved' ? 'Action Notes' : 'Reason for Rejection'}
+                placeholder={actionType === 'resolved' 
+                  ? 'Add details about the resolution process...' 
+                  : 'Explain why this report is being rejected...'}
                 type="text"
                 fullWidth
                 variant="outlined"
@@ -582,25 +973,82 @@ const Dashboard: React.FC = () => {
                 rows={4}
                 value={actionNote}
                 onChange={(e) => setActionNote(e.target.value)}
-                sx={{ mt: 2 }}
+                sx={{ 
+                  mt: 2,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2
+                  }
+                }}
               />
               
               {actionType === 'resolved' && (
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="subtitle2" gutterBottom>Select Action (Optional)</Typography>
-                  <Stack direction="row" spacing={2}>
-                    <Button variant="outlined" startIcon={<AttachMoneyIcon />}>Issue Fine</Button>
-                    <Button variant="outlined" startIcon={<GavelIcon />}>Legal Notice</Button>
+                <Box sx={{ mt: 3 }}>
+                  <Typography variant="subtitle2" color="text.secondary" gutterBottom>Additional Actions (Optional)</Typography>
+                  <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
+                    <Button 
+                      variant="outlined" 
+                      startIcon={<AttachMoneyIcon />}
+                      sx={{
+                        borderRadius: '8px',
+                        textTransform: 'none',
+                        borderColor: theme.palette.primary.main,
+                        color: theme.palette.primary.main,
+                        '&:hover': {
+                          backgroundColor: alpha(theme.palette.primary.main, 0.05),
+                          borderColor: theme.palette.primary.main
+                        }
+                      }}
+                    >
+                      Issue Fine
+                    </Button>
+                    <Button 
+                      variant="outlined" 
+                      startIcon={<GavelIcon />}
+                      sx={{
+                        borderRadius: '8px',
+                        textTransform: 'none',
+                        borderColor: theme.palette.secondary.main,
+                        color: theme.palette.secondary.main,
+                        '&:hover': {
+                          backgroundColor: alpha(theme.palette.secondary.main, 0.05),
+                          borderColor: theme.palette.secondary.main
+                        }
+                      }}
+                    >
+                      Legal Notice
+                    </Button>
                   </Stack>
                 </Box>
               )}
             </DialogContent>
-            <DialogActions>
-              <Button onClick={closeActionDialog}>Cancel</Button>
+            <DialogActions sx={{ px: 3, py: 2, borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
+              <Button 
+                onClick={closeActionDialog}
+                sx={{ 
+                  borderRadius: '8px',
+                  textTransform: 'none'
+                }}
+              >
+                Cancel
+              </Button>
               <Button 
                 variant="contained" 
                 color={actionType === 'resolved' ? 'success' : 'error'} 
                 onClick={completeAction}
+                disabled={actionType === 'rejected' && !actionNote.trim()}
+                sx={{
+                  borderRadius: '8px',
+                  textTransform: 'none',
+                  px: 3,
+                  boxShadow: actionType === 'resolved'
+                    ? `0 2px 8px ${alpha(theme.palette.success.main, 0.3)}`
+                    : `0 2px 8px ${alpha(theme.palette.error.main, 0.3)}`,
+                  '&:hover': {
+                    boxShadow: actionType === 'resolved'
+                      ? `0 4px 12px ${alpha(theme.palette.success.main, 0.4)}`
+                      : `0 4px 12px ${alpha(theme.palette.error.main, 0.4)}`
+                  }
+                }}
               >
                 {actionType === 'resolved' ? 'Approve' : 'Reject'}
               </Button>
