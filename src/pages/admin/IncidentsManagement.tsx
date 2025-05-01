@@ -144,9 +144,26 @@ const IncidentsManagement: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axiosInstance.get('/incidents');
-      setIncidents(response.data);
-      setFilteredIncidents(response.data);
+      const response = await axiosInstance.get('/reports/admin/all');
+      
+      // Map the reports data to the incident structure
+      const mappedIncidents = response.data.map((report: any) => ({
+        id: report._id,
+        title: report.title,
+        description: report.description,
+        category: report.category,
+        severity: report.type || 'medium', // Use type or default to medium
+        status: report.status,
+        location: report.location,
+        reportedBy: typeof report.submittedBy === 'object' ? report.submittedBy.name : 'Unknown',
+        assignedTo: report.assignedTo || undefined,
+        dateReported: report.createdAt.split('T')[0],
+        dateResolved: report.resolvedAt ? report.resolvedAt.split('T')[0] : undefined,
+        evidence: report.evidence
+      }));
+      
+      setIncidents(mappedIncidents);
+      setFilteredIncidents(mappedIncidents);
     } catch (err: any) {
       console.error('Error fetching incidents:', err);
       setError(`Failed to load incidents: ${err.response?.data?.message || err.message || 'Please try again later.'}`);
@@ -219,10 +236,10 @@ const IncidentsManagement: React.FC = () => {
     if (!selectedIncident) return;
     
     try {
-      await axiosInstance.put(`/incidents/${selectedIncident.id}/status`, {
+      await axiosInstance.put(`/reports/admin/${selectedIncident.id}/status`, {
         status: statusUpdate,
         note: statusNote,
-        dateResolved: statusUpdate === 'resolved' ? new Date().toISOString().split('T')[0] : undefined
+        actionDate: new Date().toISOString()
       });
       
       // Update local state after successful API call
