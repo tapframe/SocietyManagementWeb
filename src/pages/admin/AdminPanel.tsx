@@ -57,6 +57,27 @@ const AdminPanel: React.FC = () => {
     }
   }, [isMobile]);
 
+  // Listen for tab navigation messages from the Dashboard component
+  useEffect(() => {
+    const handleTabNavigation = (event: MessageEvent) => {
+      // Check if the message is from our application and has the correct type
+      if (event.data && event.data.type === 'NAVIGATE_ADMIN_TAB') {
+        // Set the active page based on the tab parameter
+        if (event.data.tab) {
+          setActivePage(event.data.tab);
+        }
+      }
+    };
+
+    // Add event listener
+    window.addEventListener('message', handleTabNavigation);
+
+    // Cleanup on unmount
+    return () => {
+      window.removeEventListener('message', handleTabNavigation);
+    };
+  }, []);
+
   const toggleDrawer = () => {
     setOpen(!open);
   };

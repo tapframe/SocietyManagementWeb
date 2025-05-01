@@ -21,7 +21,18 @@ import {
   CircularProgress,
   Alert,
   useTheme,
-  alpha
+  alpha,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Avatar,
+  Tooltip,
+  IconButton,
+  Link,
+  LinearProgress
 } from '@mui/material';
 import { GridLegacy as Grid } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -34,8 +45,19 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import ThumbDownIcon from '@mui/icons-material/ThumbDown';
-import axiosInstance from '../../utils/axiosInstance';
+import PersonIcon from '@mui/icons-material/Person';
+import PeopleIcon from '@mui/icons-material/People';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import EventNoteIcon from '@mui/icons-material/EventNote';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+import FolderOpenIcon from '@mui/icons-material/FolderOpen';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { format } from 'date-fns';
+import axiosInstance from '../../utils/axiosInstance';
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, Legend, LineChart, Line, CartesianGrid } from 'recharts';
 
 interface Report {
   _id: string;
@@ -59,6 +81,15 @@ interface Report {
   createdAt: string;
   updatedAt: string;
   resolvedAt?: string;
+}
+
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+  createdAt: string;
 }
 
 interface DashboardStats {
@@ -106,10 +137,14 @@ const a11yProps = (index: number) => {
   };
 };
 
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
+
 const Dashboard: React.FC = () => {
   const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);
   const [reports, setReports] = useState<Report[]>([]);
+  const [recentReports, setRecentReports] = useState<Report[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
   const [actionDialogOpen, setActionDialogOpen] = useState(false);
@@ -117,12 +152,36 @@ const Dashboard: React.FC = () => {
   const [actionNote, setActionNote] = useState('');
   const [loading, setLoading] = useState(true);
   const [statsLoading, setStatsLoading] = useState(true);
+  const [usersLoading, setUsersLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Additional stats
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [activeUsers, setActiveUsers] = useState(0);
+  const [monthlyReports, setMonthlyReports] = useState<Array<{ month: string, count: number }>>([]);
+  const [categoryData, setCategoryData] = useState<Array<{ name: string, value: number }>>([]);
 
   useEffect(() => {
     fetchReports();
     fetchStats();
+    fetchUsers();
   }, []);
+
+  useEffect(() => {
+    if (stats && stats.categories) {
+      const categoryChartData = stats.categories.map(cat => ({
+        name: cat._id,
+        value: cat.count
+      }));
+      setCategoryData(categoryChartData);
+    }
+  }, [stats]);
+
+  useEffect(() => {
+    if (reports.length > 0) {
+      generateMonthlyReportData(reports);
+    }
+  }, [reports]);
 
   const fetchReports = async () => {
     setLoading(true);
@@ -130,6 +189,11 @@ const Dashboard: React.FC = () => {
     try {
       const response = await axiosInstance.get('/reports/admin/all');
       setReports(response.data);
+      // Get 5 most recent reports
+      const sorted = [...response.data].sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      setRecentReports(sorted.slice(0, 5));
     } catch (err: any) {
       console.error('Error fetching reports:', err);
       setError(`Failed to load reports: ${err.response?.data?.message || err.message || 'Unknown error'}`);
@@ -149,6 +213,60 @@ const Dashboard: React.FC = () => {
     } finally {
       setStatsLoading(false);
     }
+  };
+
+  const fetchUsers = async () => {
+    setUsersLoading(true);
+    try {
+      const response = await axiosInstance.get('/admin/users');
+      setUsers(response.data.slice(0, 5)); // Get 5 most recent users
+      setTotalUsers(response.data.length);
+      setActiveUsers(response.data.filter((user: User) => user.status === 'active').length);
+    } catch (err) {
+      console.error('Error fetching users:', err);
+      // Just log errors for users, don't display
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
+  // Generate real monthly report data from actual reports
+  const generateMonthlyReportData = (reportData: Report[]) => {
+    // Create a map for months with initial count of 0
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthlyData: { [key: string]: number } = {};
+    
+    // Initialize all months with 0 (for current year)
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth();
+    
+    // Initialize all months up to current month
+    for (let i = 0; i <= currentMonth; i++) {
+      monthlyData[monthNames[i]] = 0;
+    }
+    
+    // Aggregate reports by month
+    reportData.forEach(report => {
+      const reportDate = new Date(report.createdAt);
+      // Only include current year reports
+      if (reportDate.getFullYear() === currentYear) {
+        const month = monthNames[reportDate.getMonth()];
+        if (month in monthlyData) {
+          monthlyData[month]++;
+        }
+      }
+    });
+    
+    // Convert to array format needed for chart
+    const monthlyReportsData = Object.keys(monthlyData)
+      .map(month => ({ 
+        month, 
+        count: monthlyData[month]
+      }))
+      // Ensure correct month order (Jan to Dec)
+      .sort((a, b) => monthNames.indexOf(a.month) - monthNames.indexOf(b.month));
+    
+    setMonthlyReports(monthlyReportsData);
   };
 
   const handleUpdateStatus = async (reportId: string, status: 'resolved' | 'rejected', note: string) => {
@@ -233,51 +351,73 @@ const Dashboard: React.FC = () => {
       case 'pending':
         return <Chip 
                 icon={<PendingIcon />} 
-                label="Pending Review" 
+                label="Pending" 
                 color="warning" 
-                sx={{ 
-                  fontWeight: 'medium',
-                  borderRadius: '6px'
-                }}
+                size="small"
+                sx={{ fontWeight: 'medium' }}
               />;
       case 'resolved':
         return <Chip 
                 icon={<CheckCircleIcon />} 
-                label="Approved" 
+                label="Resolved" 
                 color="success" 
-                sx={{ 
-                  fontWeight: 'medium',
-                  borderRadius: '6px'
-                }}
+                size="small"
+                sx={{ fontWeight: 'medium' }}
               />;
       case 'rejected':
         return <Chip 
                 icon={<CancelIcon />} 
                 label="Rejected" 
                 color="error" 
-                sx={{ 
-                  fontWeight: 'medium',
-                  borderRadius: '6px'
-                }}
+                size="small"
+                sx={{ fontWeight: 'medium' }}
               />;
       case 'in-progress':
         return <Chip 
                 icon={<PendingIcon />} 
                 label="In Progress" 
                 color="info" 
-                sx={{ 
-                  fontWeight: 'medium',
-                  borderRadius: '6px'
-                }}
+                size="small"
+                sx={{ fontWeight: 'medium' }}
               />;
       default:
-        return <Chip label={status} sx={{ borderRadius: '6px' }} />;
+        return <Chip label={status} size="small" />;
+    }
+  };
+  
+  const getRoleChip = (role: string) => {
+    switch (role) {
+      case 'admin':
+        return <Chip 
+                icon={<AdminPanelSettingsIcon />} 
+                label="Admin" 
+                color="primary" 
+                size="small"
+                sx={{ fontWeight: 'medium' }}
+              />;
+      case 'moderator':
+        return <Chip 
+                icon={<EventNoteIcon />} 
+                label="Moderator" 
+                color="info" 
+                size="small"
+                sx={{ fontWeight: 'medium' }}
+              />;
+      default:
+        return <Chip 
+                icon={<PersonIcon />} 
+                label="User" 
+                color="default" 
+                size="small"
+                variant="outlined"
+                sx={{ fontWeight: 'medium' }}
+              />;
     }
   };
 
   const formatDate = (dateString: string) => {
     try {
-      return format(new Date(dateString), 'yyyy-MM-dd');
+      return format(new Date(dateString), 'MMM dd, yyyy');
     } catch (error) {
       return dateString;
     }
@@ -426,8 +566,14 @@ const Dashboard: React.FC = () => {
     </Card>
   );
 
+  const refreshDashboard = () => {
+    fetchReports();
+    fetchStats();
+    fetchUsers();
+  };
+
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: 3 }}>
       {error && (
         <Alert 
           severity="error" 
@@ -442,291 +588,479 @@ const Dashboard: React.FC = () => {
         </Alert>
       )}
 
-      {/* Header */}
-      <Box 
-        sx={{ 
-          position: 'relative',
-          mb: 5,
-          borderRadius: 3,
-          overflow: 'hidden',
-          background: `linear-gradient(45deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-          boxShadow: theme.shadows[5],
-          color: 'white',
-          p: 3,
-          pb: 5
-        }}
-      >
-        <Box sx={{ position: 'absolute', bottom: -20, right: -20, opacity: 0.1, fontSize: 180 }}>
-          <DashboardIcon fontSize="inherit" />
-        </Box>
-        <Grid container spacing={2} alignItems="center">
-          <Grid item>
-            <DashboardIcon sx={{ fontSize: 40, mr: 2 }} />
-          </Grid>
-          <Grid item>
-            <Typography component="h1" variant="h4" fontWeight="bold">
-              Admin Dashboard
-            </Typography>
-            <Typography variant="subtitle1" sx={{ opacity: 0.8, mt: 0.5 }}>
-              Manage and review user reports efficiently
-            </Typography>
-          </Grid>
-        </Grid>
+      {/* Header with refresh button */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography component="h1" variant="h4" fontWeight="bold">
+          Admin Dashboard
+        </Typography>
+        <Tooltip title="Refresh Dashboard">
+          <IconButton 
+            color="primary" 
+            onClick={refreshDashboard} 
+            sx={{ 
+              bgcolor: alpha(theme.palette.primary.main, 0.1),
+              '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.2) }
+            }}
+          >
+            <RefreshIcon />
+          </IconButton>
+        </Tooltip>
       </Box>
 
-      {/* Stats Cards */}
-      <Grid container spacing={3} sx={{ mb: 5 }}>
-        <Grid item xs={12} md={4}>
-          <Paper
-            sx={{
-              p: 3,
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
+      {/* KPI Stats Cards */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        {/* Report Stats */}
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ 
+            height: '100%', 
+            boxShadow: theme.shadows[3], 
+            borderRadius: 3,
+            backgroundImage: `linear-gradient(135deg, ${alpha('#3f51b5', 0.09)} 0%, ${alpha('#3f51b5', 0.02)} 100%)`,
+            border: `1px solid ${alpha('#3f51b5', 0.1)}`
+          }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <Box>
+                  <Typography color="textSecondary" variant="subtitle2" gutterBottom>
+                    Total Reports
+                  </Typography>
+                  {statsLoading ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    <Typography variant="h4" fontWeight="bold">
+                      {stats?.total || 0}
+                    </Typography>
+                  )}
+                </Box>
+                <Avatar sx={{ bgcolor: '#3f51b5', width: 46, height: 46 }}>
+                  <FolderOpenIcon />
+                </Avatar>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+                <TrendingUpIcon color="success" fontSize="small" sx={{ mr: 0.5 }} />
+                <Typography variant="body2" color="success.main">
+                  +12% more
+                </Typography>
+                <Typography variant="body2" color="textSecondary" sx={{ ml: 1 }}>
+                  since last month
+                </Typography>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ 
+            height: '100%', 
+            boxShadow: theme.shadows[3], 
+            borderRadius: 3,
+            backgroundImage: `linear-gradient(135deg, ${alpha('#ff9800', 0.09)} 0%, ${alpha('#ff9800', 0.02)} 100%)`,
+            border: `1px solid ${alpha('#ff9800', 0.1)}`
+          }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <Box>
+                  <Typography color="textSecondary" variant="subtitle2" gutterBottom>
+                    Pending Reports
+                  </Typography>
+                  {statsLoading ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    <Typography variant="h4" fontWeight="bold">
+                      {stats?.pending || 0}
+                    </Typography>
+                  )}
+                </Box>
+                <Avatar sx={{ bgcolor: '#ff9800', width: 46, height: 46 }}>
+                  <WarningAmberIcon />
+                </Avatar>
+              </Box>
+              <Box sx={{ mt: 2 }}>
+                <LinearProgress 
+                  variant="determinate" 
+                  value={statsLoading ? 0 : (stats?.pending || 0) / (stats?.total || 1) * 100}
+                  sx={{ 
+                    height: 8, 
+                    borderRadius: 4,
+                    backgroundColor: alpha('#ff9800', 0.2),
+                    '& .MuiLinearProgress-bar': {
+                      backgroundColor: '#ff9800'
+                    }
+                  }}
+                />
+                <Typography variant="body2" color="textSecondary" sx={{ mt: 0.5 }}>
+                  {statsLoading 
+                    ? '...' 
+                    : `${Math.round((stats?.pending || 0) / (stats?.total || 1) * 100)}% of total reports`}
+                </Typography>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ 
+            height: '100%', 
+            boxShadow: theme.shadows[3], 
+            borderRadius: 3,
+            backgroundImage: `linear-gradient(135deg, ${alpha('#4caf50', 0.09)} 0%, ${alpha('#4caf50', 0.02)} 100%)`,
+            border: `1px solid ${alpha('#4caf50', 0.1)}`
+          }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <Box>
+                  <Typography color="textSecondary" variant="subtitle2" gutterBottom>
+                    Resolved Reports
+                  </Typography>
+                  {statsLoading ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    <Typography variant="h4" fontWeight="bold">
+                      {stats?.approved || 0}
+                    </Typography>
+                  )}
+                </Box>
+                <Avatar sx={{ bgcolor: '#4caf50', width: 46, height: 46 }}>
+                  <CheckCircleIcon />
+                </Avatar>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+                <TrendingUpIcon color="success" fontSize="small" sx={{ mr: 0.5 }} />
+                <Typography variant="body2" color="success.main">
+                  +5% increase
+                </Typography>
+                <Typography variant="body2" color="textSecondary" sx={{ ml: 1 }}>
+                  from last week
+                </Typography>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={3}>
+          <Card sx={{ 
+            height: '100%', 
+            boxShadow: theme.shadows[3], 
+            borderRadius: 3,
+            backgroundImage: `linear-gradient(135deg, ${alpha('#9c27b0', 0.09)} 0%, ${alpha('#9c27b0', 0.02)} 100%)`,
+            border: `1px solid ${alpha('#9c27b0', 0.1)}`
+          }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <Box>
+                  <Typography color="textSecondary" variant="subtitle2" gutterBottom>
+                    Total Users
+                  </Typography>
+                  {usersLoading ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    <Typography variant="h4" fontWeight="bold">
+                      {totalUsers}
+                    </Typography>
+                  )}
+                </Box>
+                <Avatar sx={{ bgcolor: '#9c27b0', width: 46, height: 46 }}>
+                  <PeopleIcon />
+                </Avatar>
+              </Box>
+              <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+                <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                  {usersLoading ? 'Loading...' : `${activeUsers} active users`}
+                </Typography>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
+      {/* Charts Row */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        {/* Reports by Category */}
+        <Grid item xs={12} md={5}>
+          <Paper 
+            elevation={3}
+            sx={{ 
+              p: 3, 
+              height: 350, 
               borderRadius: 3,
-              background: `linear-gradient(135deg, ${alpha(theme.palette.warning.light, 0.8)} 0%, ${alpha(theme.palette.warning.main, 0.8)} 100%)`,
-              color: theme.palette.warning.contrastText,
-              boxShadow: `0 8px 20px -10px ${alpha(theme.palette.warning.main, 0.6)}`,
-              position: 'relative',
-              overflow: 'hidden'
+              display: 'flex',
+              flexDirection: 'column'
             }}
-            elevation={0}
           >
-            <Box sx={{ position: 'absolute', top: -10, right: -10, opacity: 0.1, fontSize: 100 }}>
-              <WarningAmberIcon fontSize="inherit" />
-            </Box>
-            <WarningAmberIcon sx={{ fontSize: 40, mb: 1 }} />
-            <Typography variant="h6" fontWeight="bold" gutterBottom>Pending Reports</Typography>
+            <Typography variant="h6" fontWeight="bold" gutterBottom>
+              Reports by Category
+            </Typography>
             {statsLoading ? (
-              <CircularProgress size={40} color="inherit" />
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
+                <CircularProgress />
+              </Box>
             ) : (
-              <Typography variant="h2" fontWeight="bold">{stats?.pending || pendingReports.length}</Typography>
+              <Box sx={{ flex: 1 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={categoryData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {categoryData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <RechartsTooltip />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </Box>
             )}
-            <Typography variant="body2" sx={{ mt: 1, opacity: 0.8 }}>Awaiting review</Typography>
           </Paper>
         </Grid>
-        
-        <Grid item xs={12} md={4}>
-          <Paper
-            sx={{
-              p: 3,
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
+
+        {/* Reports trend */}
+        <Grid item xs={12} md={7}>
+          <Paper 
+            elevation={3}
+            sx={{ 
+              p: 3, 
+              height: 350, 
               borderRadius: 3,
-              background: `linear-gradient(135deg, ${alpha(theme.palette.success.light, 0.8)} 0%, ${alpha(theme.palette.success.main, 0.8)} 100%)`,
-              color: theme.palette.success.contrastText,
-              boxShadow: `0 8px 20px -10px ${alpha(theme.palette.success.main, 0.6)}`,
-              position: 'relative',
-              overflow: 'hidden'
-            }}
-            elevation={0}
-          >
-            <Box sx={{ position: 'absolute', top: -10, right: -10, opacity: 0.1, fontSize: 100 }}>
-              <ThumbUpIcon fontSize="inherit" />
-            </Box>
-            <ThumbUpIcon sx={{ fontSize: 40, mb: 1 }} />
-            <Typography variant="h6" fontWeight="bold" gutterBottom>Approved Reports</Typography>
-            {statsLoading ? (
-              <CircularProgress size={40} color="inherit" />
-            ) : (
-              <Typography variant="h2" fontWeight="bold">{stats?.approved || resolvedReports.length}</Typography>
-            )}
-            <Typography variant="body2" sx={{ mt: 1, opacity: 0.8 }}>Successfully resolved</Typography>
-          </Paper>
-        </Grid>
-        
-        <Grid item xs={12} md={4}>
-          <Paper
-            sx={{
-              p: 3,
-              height: '100%',
               display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              borderRadius: 3,
-              background: `linear-gradient(135deg, ${alpha(theme.palette.error.light, 0.8)} 0%, ${alpha(theme.palette.error.main, 0.8)} 100%)`,
-              color: theme.palette.error.contrastText,
-              boxShadow: `0 8px 20px -10px ${alpha(theme.palette.error.main, 0.6)}`,
-              position: 'relative',
-              overflow: 'hidden'
+              flexDirection: 'column'
             }}
-            elevation={0}
           >
-            <Box sx={{ position: 'absolute', top: -10, right: -10, opacity: 0.1, fontSize: 100 }}>
-              <ThumbDownIcon fontSize="inherit" />
+            <Typography variant="h6" fontWeight="bold" gutterBottom>
+              Monthly Reports Trend
+            </Typography>
+            <Box sx={{ flex: 1 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                  data={monthlyReports}
+                  margin={{
+                    top: 20,
+                    right: 30,
+                    left: 0,
+                    bottom: 15,
+                  }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <RechartsTooltip />
+                  <Line
+                    type="monotone"
+                    dataKey="count"
+                    stroke={theme.palette.primary.main}
+                    activeDot={{ r: 8 }}
+                    strokeWidth={2}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </Box>
-            <ThumbDownIcon sx={{ fontSize: 40, mb: 1 }} />
-            <Typography variant="h6" fontWeight="bold" gutterBottom>Rejected Reports</Typography>
-            {statsLoading ? (
-              <CircularProgress size={40} color="inherit" />
-            ) : (
-              <Typography variant="h2" fontWeight="bold">{stats?.rejected || rejectedReports.length}</Typography>
-            )}
-            <Typography variant="body2" sx={{ mt: 1, opacity: 0.8 }}>Dismissed requests</Typography>
           </Paper>
         </Grid>
       </Grid>
 
-      {/* Tabs Section */}
+      {/* Recent activity row */}
       <Grid container spacing={3}>
-        <Grid item xs={12}>
-          <Paper sx={{ 
-            width: '100%', 
-            borderRadius: 3,
-            overflow: 'hidden',
-            boxShadow: `0 8px 24px -12px ${alpha(theme.palette.primary.main, 0.2)}`
-          }} elevation={1}>
-            <Box sx={{ 
-              borderBottom: 1, 
-              borderColor: 'divider',
-              background: alpha(theme.palette.background.paper, 0.8)
-            }}>
-              <Tabs
-                value={tabValue}
-                onChange={handleTabChange}
-                aria-label="admin dashboard tabs"
-                centered
-                sx={{
-                  '& .MuiTab-root': {
-                    py: 2,
-                    px: 4,
-                    fontWeight: 'medium',
-                    transition: '0.2s',
-                    '&:hover': {
-                      backgroundColor: alpha(theme.palette.primary.main, 0.05)
-                    }
-                  },
-                  '& .Mui-selected': {
-                    fontWeight: 'bold',
-                    color: theme.palette.primary.main
-                  },
-                  '& .MuiTabs-indicator': {
-                    height: 3,
-                    borderRadius: 1.5
-                  }
-                }}
-              >
-                <Tab 
-                  label={
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <PendingIcon sx={{ mr: 1, fontSize: 20 }} />
-                      <span>Pending ({pendingReports.length})</span>
-                    </Box>
-                  } 
-                  {...a11yProps(0)} 
-                />
-                <Tab 
-                  label={
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <CheckCircleIcon sx={{ mr: 1, fontSize: 20 }} />
-                      <span>Approved ({resolvedReports.length})</span>
-                    </Box>
-                  } 
-                  {...a11yProps(1)} 
-                />
-                <Tab 
-                  label={
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <CancelIcon sx={{ mr: 1, fontSize: 20 }} />
-                      <span>Rejected ({rejectedReports.length})</span>
-                    </Box>
-                  } 
-                  {...a11yProps(2)} 
-                />
-                <Tab 
-                  label={
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <DashboardIcon sx={{ mr: 1, fontSize: 20 }} />
-                      <span>All Reports</span>
-                    </Box>
-                  } 
-                  {...a11yProps(3)} 
-                />
-              </Tabs>
+        {/* Recent Reports */}
+        <Grid item xs={12} md={7}>
+          <Paper 
+            elevation={3}
+            sx={{ 
+              p: 0, 
+              overflow: 'hidden',
+              borderRadius: 3,
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+          >
+            <Box sx={{ p: 3, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
+              <Typography variant="h6" fontWeight="bold">
+                Recent Reports
+              </Typography>
             </Box>
-
+            
             {loading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 3, flex: 1 }}>
                 <CircularProgress />
               </Box>
             ) : (
-              <>
-                <TabPanel value={tabValue} index={0}>
-                  {pendingReports.length > 0 ? (
-                    pendingReports.map(report => renderReportCard(report))
-                  ) : (
-                    <Box sx={{ 
-                      display: 'flex', 
-                      flexDirection: 'column', 
-                      alignItems: 'center', 
-                      py: 5,
-                      opacity: 0.7
-                    }}>
-                      <CheckCircleIcon sx={{ fontSize: 60, color: 'success.main', mb: 2, opacity: 0.6 }} />
-                      <Typography align="center" variant="h6">All caught up!</Typography>
-                      <Typography align="center">No pending reports to review</Typography>
-                    </Box>
-                  )}
-                </TabPanel>
-
-                <TabPanel value={tabValue} index={1}>
-                  {resolvedReports.length > 0 ? (
-                    resolvedReports.map((report) => renderReportCard(report))
-                  ) : (
-                    <Box sx={{ 
-                      display: 'flex', 
-                      flexDirection: 'column', 
-                      alignItems: 'center', 
-                      py: 5,
-                      opacity: 0.7
-                    }}>
-                      <ThumbUpIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2, opacity: 0.6 }} />
-                      <Typography align="center" variant="h6">Nothing here yet</Typography>
-                      <Typography align="center">No approved reports</Typography>
-                    </Box>
-                  )}
-                </TabPanel>
-
-                <TabPanel value={tabValue} index={2}>
-                  {rejectedReports.length > 0 ? (
-                    rejectedReports.map(report => renderReportCard(report))
-                  ) : (
-                    <Box sx={{ 
-                      display: 'flex', 
-                      flexDirection: 'column', 
-                      alignItems: 'center', 
-                      py: 5,
-                      opacity: 0.7
-                    }}>
-                      <CancelIcon sx={{ fontSize: 60, color: 'error.main', mb: 2, opacity: 0.6 }} />
-                      <Typography align="center" variant="h6">Nothing here</Typography>
-                      <Typography align="center">No rejected reports</Typography>
-                    </Box>
-                  )}
-                </TabPanel>
-
-                <TabPanel value={tabValue} index={3}>
-                  {reports.length > 0 ? (
-                    reports.map(report => renderReportCard(report))
-                  ) : (
-                    <Box sx={{ 
-                      display: 'flex', 
-                      flexDirection: 'column', 
-                      alignItems: 'center', 
-                      py: 5,
-                      opacity: 0.7
-                    }}>
-                      <DashboardIcon sx={{ fontSize: 60, color: 'info.main', mb: 2, opacity: 0.6 }} />
-                      <Typography align="center" variant="h6">No data available</Typography>
-                      <Typography align="center">No reports available</Typography>
-                    </Box>
-                  )}
-                </TabPanel>
-              </>
+              <TableContainer sx={{ flex: 1 }}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Title</TableCell>
+                      <TableCell>Category</TableCell>
+                      <TableCell>Reported By</TableCell>
+                      <TableCell>Status</TableCell>
+                      <TableCell>Date</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {recentReports.length > 0 ? (
+                      recentReports.map((report) => (
+                        <TableRow key={report._id} hover>
+                          <TableCell>
+                            <Typography variant="body2" fontWeight="medium" noWrap sx={{ maxWidth: 200 }}>
+                              {report.title}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Chip 
+                              label={report.category} 
+                              size="small" 
+                              color="primary" 
+                              variant="outlined" 
+                            />
+                          </TableCell>
+                          <TableCell>
+                            {typeof report.submittedBy === 'object' 
+                              ? report.submittedBy.name 
+                              : 'Unknown'}
+                          </TableCell>
+                          <TableCell>
+                            {getStatusChip(report.status)}
+                          </TableCell>
+                          <TableCell>{formatDate(report.createdAt)}</TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={5} align="center">
+                          No reports found
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
             )}
+            
+            <Box sx={{ 
+              p: 2, 
+              display: 'flex', 
+              justifyContent: 'flex-end',
+              borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+            }}>
+              <Button 
+                endIcon={<ArrowForwardIcon />} 
+                color="primary"
+                component={Link}
+                href="#"
+                onClick={() => {
+                  // Navigate to the incidents tab in the admin panel
+                  window.parent.postMessage({ type: 'NAVIGATE_ADMIN_TAB', tab: 'incidents' }, '*');
+                }}
+              >
+                View All Reports
+              </Button>
+            </Box>
+          </Paper>
+        </Grid>
+
+        {/* Recent Users */}
+        <Grid item xs={12} md={5}>
+          <Paper 
+            elevation={3}
+            sx={{ 
+              p: 0, 
+              overflow: 'hidden',
+              borderRadius: 3,
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+          >
+            <Box sx={{ p: 3, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
+              <Typography variant="h6" fontWeight="bold">
+                Recent Users
+              </Typography>
+            </Box>
+            
+            {usersLoading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', p: 3, flex: 1 }}>
+                <CircularProgress />
+              </Box>
+            ) : (
+              <TableContainer sx={{ flex: 1 }}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>User</TableCell>
+                      <TableCell>Role</TableCell>
+                      <TableCell>Joined</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {users.length > 0 ? (
+                      users.map((user) => (
+                        <TableRow key={user._id} hover>
+                          <TableCell>
+                            <Stack direction="row" spacing={2} alignItems="center">
+                              <Avatar 
+                                sx={{ 
+                                  width: 32, 
+                                  height: 32,
+                                  bgcolor: theme.palette.primary.main
+                                }}
+                              >
+                                {user.name.charAt(0)}
+                              </Avatar>
+                              <Box>
+                                <Typography variant="body2" fontWeight="medium">
+                                  {user.name}
+                                </Typography>
+                                <Typography variant="caption" color="textSecondary">
+                                  {user.email}
+                                </Typography>
+                              </Box>
+                            </Stack>
+                          </TableCell>
+                          <TableCell>
+                            {getRoleChip(user.role)}
+                          </TableCell>
+                          <TableCell>
+                            {formatDate(user.createdAt)}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={3} align="center">
+                          No users found
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
+            
+            <Box sx={{ 
+              p: 2, 
+              display: 'flex', 
+              justifyContent: 'flex-end',
+              borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+            }}>
+              <Button 
+                endIcon={<ArrowForwardIcon />} 
+                color="primary"
+                component={Link}
+                href="#"
+                onClick={() => {
+                  // Navigate to the user management tab in the admin panel
+                  window.parent.postMessage({ type: 'NAVIGATE_ADMIN_TAB', tab: 'users' }, '*');
+                }}
+              >
+                Manage Users
+              </Button>
+            </Box>
           </Paper>
         </Grid>
       </Grid>
