@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
-  Card,
-  CardContent,
   Container,
   Dialog,
   DialogActions,
@@ -21,19 +19,14 @@ import {
   Select,
   Stack,
   Divider,
-  IconButton,
   Tabs,
   Tab,
   useTheme,
   Badge,
-  Avatar,
-  Link,
-  Tooltip
 } from '@mui/material';
 import { GridLegacy as Grid } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ErrorIcon from '@mui/icons-material/ErrorOutline';
 import PendingIcon from '@mui/icons-material/HourglassEmpty';
 import CancelIcon from '@mui/icons-material/Cancel';
 import EventIcon from '@mui/icons-material/Event';
@@ -41,7 +34,6 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CategoryIcon from '@mui/icons-material/Category';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import CommentIcon from '@mui/icons-material/Comment';
-import HistoryIcon from '@mui/icons-material/History';
 import FeedbackIcon from '@mui/icons-material/Feedback';
 import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 import AttachmentIcon from '@mui/icons-material/Attachment';
@@ -52,7 +44,6 @@ import { alpha } from '@mui/material/styles';
 import { format } from 'date-fns';
 import { Link as RouterLink } from 'react-router-dom';
 import axiosInstance from '../utils/axiosInstance';
-import { useAuth } from '../context/AuthContext';
 
 interface Report {
   _id: string;
@@ -97,7 +88,6 @@ interface TabPanelProps {
 
 const TabPanel = (props: TabPanelProps) => {
   const { children, value, index, ...other } = props;
-  const theme = useTheme();
 
   return (
     <div
@@ -131,8 +121,6 @@ const a11yProps = (index: number) => {
 };
 
 const MyReports: React.FC = () => {
-  const theme = useTheme();
-  const { user } = useAuth();
   const [tabValue, setTabValue] = useState(0);
   const [reports, setReports] = useState<Report[]>([]);
   const [filteredReports, setFilteredReports] = useState<Report[]>([]);
@@ -147,6 +135,7 @@ const MyReports: React.FC = () => {
   });
 
   // Add beautiful background theme variables
+  const theme = useTheme();
   const bgGradient = `linear-gradient(135deg, ${alpha(theme.palette.primary.light, 0.2)}, ${alpha(theme.palette.background.default, 0.9)})`;
   const bgPattern = `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23${theme.palette.primary.main.replace('#', '')}' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E")`;
 
@@ -223,7 +212,7 @@ const MyReports: React.FC = () => {
     setSearchQuery(event.target.value);
   };
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 
