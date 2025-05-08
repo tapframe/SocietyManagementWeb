@@ -291,75 +291,229 @@ const MyReports: React.FC = () => {
   };
 
   const renderReportCard = (report: Report) => (
-    <Card 
+    <Box 
       key={report._id} 
       sx={{ 
-        mb: 2,
-        borderRadius: 2,
-        boxShadow: `0 3px 10px ${alpha(theme.palette.text.primary, 0.08)}`,
-        transition: 'transform 0.2s, box-shadow 0.2s',
+        mb: 4,
+        position: 'relative',
         overflow: 'visible',
+        display: 'flex',
+        flexDirection: { xs: 'column', md: 'row' },
+        borderRadius: '16px',
+        transition: 'all 0.3s ease',
         '&:hover': {
           transform: 'translateY(-4px)',
-          boxShadow: `0 10px 25px ${alpha(theme.palette.primary.main, 0.15)}`
         },
-        position: 'relative',
-        backdropFilter: 'blur(4px)',
-        backgroundColor: alpha(theme.palette.background.paper, 0.7),
-        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-        borderLeft: report.status === 'pending' 
-          ? `4px solid ${theme.palette.warning.main}`
-          : report.status === 'in-progress'
-            ? `4px solid ${theme.palette.info.main}`
-            : report.status === 'resolved'
-              ? `4px solid ${theme.palette.success.main}`
-              : report.status === 'rejected'
-                ? `4px solid ${theme.palette.error.main}`
-                : 'none'
       }}
     >
-      <CardContent sx={{ p: 3 }}>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={8}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-              {getReportTypeIcon(report.type)}
-              <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
-                {report.title}
-              </Typography>
-            </Box>
-            
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 2 }}>
-              <Typography variant="body2" color="text.secondary" component="div" sx={{ display: 'flex', alignItems: 'center' }}>
-                <EventIcon fontSize="small" sx={{ mr: 0.5 }} />
-                {formatDate(report.createdAt)}
-              </Typography>
-              
-              <Typography variant="body2" color="text.secondary" component="div" sx={{ display: 'flex', alignItems: 'center' }}>
-                <CategoryIcon fontSize="small" sx={{ mr: 0.5 }} />
-                {report.category}
-              </Typography>
-              
-              <Typography variant="body2" color="text.secondary" component="div" sx={{ display: 'flex', alignItems: 'center' }}>
-                <LocationOnIcon fontSize="small" sx={{ mr: 0.5 }} />
-                {report.location}
-              </Typography>
-            </Box>
-            
-            <Typography 
-              variant="body2" 
-              color="text.secondary" 
-              sx={{ 
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                mb: 2
-              }}
-            >
-              {report.description}
+      {/* Status indicator */}
+      <Box sx={{ 
+        position: 'absolute',
+        left: { xs: '50%', md: '-8px' },
+        top: { xs: '-8px', md: '50%' },
+        transform: { xs: 'translateX(-50%)', md: 'translateY(-50%)' },
+        width: { xs: '70px', md: '24px' },
+        height: { xs: '24px', md: '70px' },
+        borderRadius: { xs: '12px', md: '12px' },
+        backgroundColor: 
+          report.status === 'pending' 
+            ? theme.palette.warning.main
+            : report.status === 'in-progress'
+              ? theme.palette.info.main
+              : report.status === 'resolved'
+                ? theme.palette.success.main
+                : theme.palette.error.main,
+        zIndex: 2,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: `0 4px 12px ${alpha(
+          report.status === 'pending' 
+            ? theme.palette.warning.main
+            : report.status === 'in-progress'
+              ? theme.palette.info.main
+              : report.status === 'resolved'
+                ? theme.palette.success.main
+                : theme.palette.error.main, 
+          0.3
+        )}`,
+      }}>
+        <Box sx={{ 
+          display: { xs: 'block', md: 'none' },
+          color: '#fff',
+          fontWeight: 'bold',
+          fontSize: '12px',
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px'
+        }}>
+          {report.status === 'in-progress' ? 'Active' : report.status}
+        </Box>
+        {report.status === 'pending' && <PendingIcon sx={{ 
+          color: '#fff', 
+          display: { xs: 'none', md: 'block' },
+          animation: 'spin 2s linear infinite',
+          '@keyframes spin': {
+            '0%': { transform: 'rotate(0deg)' },
+            '100%': { transform: 'rotate(360deg)' }
+          }
+        }} />}
+        {report.status === 'in-progress' && <AccessTimeIcon sx={{ 
+          color: '#fff', 
+          display: { xs: 'none', md: 'block' } 
+        }} />}
+        {report.status === 'resolved' && <CheckCircleIcon sx={{ 
+          color: '#fff', 
+          display: { xs: 'none', md: 'block' } 
+        }} />}
+        {report.status === 'rejected' && <CancelIcon sx={{ 
+          color: '#fff', 
+          display: { xs: 'none', md: 'block' } 
+        }} />}
+      </Box>
+
+      {/* Left section - type icon and meta info */}
+      <Box sx={{ 
+        width: { xs: '100%', md: '250px' },
+        minHeight: { xs: 'auto', md: '180px' },
+        backgroundColor: alpha(theme.palette.background.paper, 0.7),
+        backdropFilter: 'blur(8px)',
+        borderRadius: '16px',
+        p: 3,
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'relative',
+        zIndex: 1,
+        boxShadow: `0 8px 20px ${alpha(theme.palette.common.black, 0.08)}`,
+      }}>
+        <Box sx={{ 
+          mb: 2,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-start'
+        }}>
+          <Box sx={{ 
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center', 
+            backgroundColor: alpha(
+              report.type === 'violation' ? theme.palette.error.main : theme.palette.info.main, 
+              0.1
+            ),
+            color: report.type === 'violation' ? theme.palette.error.main : theme.palette.info.main,
+            borderRadius: '8px',
+            px: 1.5,
+            py: 0.5,
+            mb: 1
+          }}>
+            {getReportTypeIcon(report.type)}
+            <Typography variant="body2" component="span" sx={{ ml: 0.5, fontWeight: 600 }}>
+              {report.type === 'violation' ? 'Violation Report' : 'General Complaint'}
             </Typography>
-            
+          </Box>
+        </Box>
+
+        <Typography variant="body2" color="text.secondary" component="div" sx={{ 
+          display: 'flex', 
+          alignItems: 'center',
+          mb: 1.5
+        }}>
+          <EventIcon fontSize="small" sx={{ mr: 1 }} />
+          {formatDate(report.createdAt)}
+        </Typography>
+        
+        <Typography variant="body2" color="text.secondary" component="div" sx={{ 
+          display: 'flex', 
+          alignItems: 'flex-start',
+          mb: 1.5,
+          wordBreak: 'break-word'
+        }}>
+          <LocationOnIcon fontSize="small" sx={{ mr: 1, mt: 0.3, flexShrink: 0 }} />
+          <span>{report.location}</span>
+        </Typography>
+        
+        <Typography variant="body2" color="text.secondary" component="div" sx={{ 
+          display: 'flex', 
+          alignItems: 'center',
+          mb: 1.5
+        }}>
+          <CategoryIcon fontSize="small" sx={{ mr: 1 }} />
+          {report.category}
+        </Typography>
+        
+        {report.evidence && (
+          <Typography variant="body2" color="text.secondary" sx={{ 
+            display: 'flex', 
+            alignItems: 'center'
+          }}>
+            <AttachmentIcon fontSize="small" sx={{ mr: 1 }} />
+            Evidence attached
+          </Typography>
+        )}
+      </Box>
+      
+      {/* Right section - title, description, and action */}
+      <Box sx={{ 
+        flex: 1,
+        backgroundColor: alpha(theme.palette.background.paper, 0.5),
+        backdropFilter: 'blur(8px)',
+        borderRadius: '16px',
+        p: 3,
+        ml: { xs: 0, md: -2 },
+        mt: { xs: -2, md: 0 },
+        position: 'relative',
+        zIndex: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        boxShadow: `0 8px 20px ${alpha(theme.palette.common.black, 0.05)}`,
+        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+      }}>
+        <Typography variant="h6" component="div" sx={{ 
+          fontWeight: 700,
+          mb: 2,
+          position: 'relative',
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            bottom: -8,
+            left: 0,
+            width: '40px',
+            height: '3px',
+            borderRadius: '2px',
+            backgroundColor: report.status === 'pending' 
+              ? theme.palette.warning.main
+              : report.status === 'in-progress'
+                ? theme.palette.info.main
+                : report.status === 'resolved'
+                  ? theme.palette.success.main
+                  : theme.palette.error.main,
+          }
+        }}>
+          {report.title}
+        </Typography>
+        
+        <Typography 
+          variant="body2" 
+          color="text.secondary" 
+          sx={{ 
+            mb: 3,
+            flex: 1,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical',
+          }}
+        >
+          {report.description}
+        </Typography>
+        
+        <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mt: 'auto'
+        }}>
+          <Box>
             {report.comments && report.comments.length > 0 && (
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                 <CommentIcon fontSize="small" color="action" />
@@ -368,42 +522,32 @@ const MyReports: React.FC = () => {
                 </Typography>
               </Box>
             )}
-          </Grid>
+          </Box>
           
-          <Grid item xs={12} sm={4}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'flex-end' } }}>
-              <Box>
-                {getReportStatusChip(report.status)}
-                
-                {report.resolvedAt && (
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                    <HistoryIcon fontSize="small" sx={{ mr: 0.5 }} />
-                    {report.status === 'resolved' ? 'Resolved' : 'Responded'} on {formatDate(report.resolvedAt)}
-                  </Typography>
-                )}
-                
-                {report.evidence && (
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                    <AttachmentIcon fontSize="small" sx={{ mr: 0.5 }} />
-                    Evidence attached
-                  </Typography>
-                )}
-              </Box>
-              
-              <Button 
-                variant="outlined" 
-                size="small" 
-                startIcon={<VisibilityIcon />}
-                onClick={() => handleViewReport(report)}
-                sx={{ mt: 2 }}
-              >
-                View Details
-              </Button>
-            </Box>
-          </Grid>
-        </Grid>
-      </CardContent>
-    </Card>
+          <Button 
+            variant="text" 
+            endIcon={<VisibilityIcon />}
+            onClick={() => handleViewReport(report)}
+            sx={{ 
+              borderRadius: '30px',
+              px: 2,
+              py: 1,
+              textTransform: 'none',
+              fontWeight: 600,
+              transition: 'all 0.2s',
+              color: theme.palette.primary.main,
+              backgroundColor: alpha(theme.palette.primary.main, 0.05),
+              '&:hover': {
+                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                transform: 'translateX(4px)'
+              }
+            }}
+          >
+            View Details
+          </Button>
+        </Box>
+      </Box>
+    </Box>
   );
 
   // Count reports by status for the badge counters
@@ -462,19 +606,97 @@ const MyReports: React.FC = () => {
       />
       
       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-        <Paper elevation={3} sx={{ 
-          p: 3, 
-          borderRadius: 3,
-          backdropFilter: 'blur(10px)',
-          backgroundColor: alpha(theme.palette.background.paper, 0.75),
-          boxShadow: (theme) => 
-            `0 15px 50px ${alpha(theme.palette.primary.main, 0.15)}`,
-          border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
+        {/* Custom content container with unique styling */}
+        <Box sx={{ 
+          position: 'relative',
+          borderRadius: '24px',
+          overflow: 'visible',
+          backdropFilter: 'blur(12px)',
+          backgroundColor: alpha(theme.palette.background.paper, 0.7),
+          boxShadow: `0 20px 80px ${alpha(theme.palette.common.black, 0.12)}`,
+          p: { xs: 2.5, sm: 3.5 },
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            inset: 0,
+            borderRadius: '24px',
+            padding: '2px',
+            background: `linear-gradient(145deg, ${alpha(theme.palette.primary.main, 0.5)}, ${alpha(theme.palette.secondary.main, 0.5)}, ${alpha(theme.palette.primary.main, 0)})`,
+            WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+            WebkitMaskComposite: 'xor',
+            maskComposite: 'exclude',
+            pointerEvents: 'none',
+          },
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            top: -15,
+            right: -15,
+            width: '150px',
+            height: '150px',
+            background: `linear-gradient(140deg, ${alpha(theme.palette.primary.light, 0.2)}, ${alpha(theme.palette.secondary.light, 0.1)})`,
+            borderRadius: '30% 70% 70% 30% / 30% 30% 70% 70%',
+            zIndex: -1,
+            filter: 'blur(15px)',
+          }
         }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold' }}>
-              My Reports
-            </Typography>
+          {/* Decorative patterns */}
+          <Box sx={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            bottom: 0,
+            width: '50%',
+            opacity: 0.03,
+            pointerEvents: 'none',
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23${theme.palette.primary.main.replace('#', '')}' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+            backgroundAttachment: 'fixed',
+            zIndex: -1,
+            borderRadius: '0 24px 24px 0',
+          }}/>
+          
+          <Box sx={{
+            position: 'absolute',
+            top: '50%',
+            left: 0,
+            width: '30px',
+            height: '110px',
+            transform: 'translateY(-50%)',
+            background: `linear-gradient(to bottom, ${theme.palette.primary.main}, ${theme.palette.secondary.main}, ${theme.palette.success.main})`,
+            borderRadius: '0 8px 8px 0',
+            opacity: 0.1,
+            zIndex: -1,
+          }}/>
+
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+            <Box>
+              <Typography 
+                variant="overline" 
+                color="primary" 
+                sx={{ 
+                  fontSize: '0.75rem',
+                  letterSpacing: '1.5px',
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  display: 'block',
+                  mb: 0.5
+                }}
+              >
+                User Dashboard
+              </Typography>
+              <Typography 
+                variant="h4" 
+                component="h1" 
+                sx={{ 
+                  fontWeight: 800,
+                  background: `linear-gradient(135deg, ${theme.palette.text.primary} 30%, ${alpha(theme.palette.text.primary, 0.7)} 90%)`,
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                }}
+              >
+                My Reports
+              </Typography>
+            </Box>
             
             <Button 
               variant="contained" 
@@ -482,11 +704,17 @@ const MyReports: React.FC = () => {
               component={RouterLink}
               to="/report"
               sx={{ 
-                borderRadius: 8,
+                borderRadius: '28px',
                 px: 3,
-                py: 1,
+                py: 1.2,
                 fontWeight: 600,
-                boxShadow: `0 4px 14px ${alpha(theme.palette.primary.main, 0.25)}`
+                background: `linear-gradient(to right, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+                boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.3)}`,
+                transition: 'all 0.3s',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: `0 8px 25px ${alpha(theme.palette.primary.main, 0.4)}`,
+                }
               }}
             >
               Submit New Report
@@ -966,20 +1194,65 @@ const MyReports: React.FC = () => {
             ) : filteredReports.length > 0 ? (
               filteredReports.map(report => renderReportCard(report))
             ) : (
-              <Box sx={{ py: 4, textAlign: 'center' }}>
-                <InboxIcon 
-                  sx={{ 
-                    fontSize: 64, 
-                    color: alpha(theme.palette.text.secondary, 0.3),
-                    mb: 2
-                  }} 
-                />
-                <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
-                  No reports found matching your criteria
+              <Box sx={{ py: 6, textAlign: 'center' }}>
+                <Box sx={{
+                  position: 'relative',
+                  margin: '0 auto',
+                  width: '120px',
+                  height: '120px',
+                  mb: 4
+                }}>
+                  <Box sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    borderRadius: '60px',
+                    background: `radial-gradient(circle, ${alpha(theme.palette.text.secondary, 0.08)}, ${alpha(theme.palette.text.secondary, 0.03)})`,
+                    animation: 'pulse 2.5s infinite ease-in-out',
+                    '@keyframes pulse': {
+                      '0%': { transform: 'scale(0.95)' },
+                      '50%': { transform: 'scale(1.05)' },
+                      '100%': { transform: 'scale(0.95)' }
+                    }
+                  }} />
+                  <InboxIcon 
+                    sx={{ 
+                      fontSize: 70, 
+                      color: alpha(theme.palette.text.secondary, 0.3),
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)'
+                    }} 
+                  />
+                </Box>
+                <Typography variant="h5" color="text.secondary" sx={{ mb: 2, fontWeight: 'bold' }}>
+                  No reports found
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 500, mx: 'auto', mb: 3 }}>
+                <Typography variant="body1" color="text.secondary" sx={{ 
+                  maxWidth: 450, 
+                  mx: 'auto', 
+                  mb: 4,
+                  opacity: 0.8
+                }}>
                   Try adjusting your filters or search query to find what you're looking for
                 </Typography>
+                <Button 
+                  variant="outlined" 
+                  color="primary"
+                  startIcon={<FilterListIcon />}
+                  sx={{ 
+                    borderRadius: '30px',
+                    px: 3,
+                    py: 1.2,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                  }}
+                >
+                  Clear Filters
+                </Button>
               </Box>
             )}
           </TabPanel>
@@ -1008,20 +1281,72 @@ const MyReports: React.FC = () => {
             ) : filteredReports.length > 0 ? (
               filteredReports.map(report => renderReportCard(report))
             ) : (
-              <Box sx={{ py: 4, textAlign: 'center' }}>
-                <PendingIcon 
-                  sx={{ 
-                    fontSize: 64, 
-                    color: alpha(theme.palette.warning.main, 0.3),
-                    mb: 2
-                  }} 
-                />
-                <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
-                  No pending reports found
+              <Box sx={{ py: 6, textAlign: 'center' }}>
+                <Box sx={{
+                  position: 'relative',
+                  margin: '0 auto',
+                  width: '120px',
+                  height: '120px',
+                  mb: 4
+                }}>
+                  <Box sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    borderRadius: '60px',
+                    background: `radial-gradient(circle, ${alpha(theme.palette.warning.main, 0.08)}, ${alpha(theme.palette.warning.main, 0.03)})`,
+                    animation: 'pulse 2.5s infinite ease-in-out',
+                    '@keyframes pulse': {
+                      '0%': { transform: 'scale(0.95)' },
+                      '50%': { transform: 'scale(1.05)' },
+                      '100%': { transform: 'scale(0.95)' }
+                    }
+                  }} />
+                  <PendingIcon 
+                    sx={{ 
+                      fontSize: 70, 
+                      color: alpha(theme.palette.warning.main, 0.3),
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      animation: 'spin 10s linear infinite',
+                      '@keyframes spin': {
+                        '0%': { transform: 'translate(-50%, -50%) rotate(0deg)' },
+                        '100%': { transform: 'translate(-50%, -50%) rotate(360deg)' }
+                      }
+                    }} 
+                  />
+                </Box>
+                <Typography variant="h5" color="text.secondary" sx={{ mb: 2, fontWeight: 'bold' }}>
+                  No pending reports
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 500, mx: 'auto', mb: 3 }}>
+                <Typography variant="body1" color="text.secondary" sx={{ 
+                  maxWidth: 450, 
+                  mx: 'auto', 
+                  mb: 4,
+                  opacity: 0.8
+                }}>
                   All your reports have either been resolved or rejected
                 </Typography>
+                <Button 
+                  variant="outlined" 
+                  color="primary"
+                  startIcon={<FilterListIcon />}
+                  component={RouterLink}
+                  to="/report"
+                  sx={{ 
+                    borderRadius: '30px',
+                    px: 3,
+                    py: 1.2,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                  }}
+                >
+                  Submit New Report
+                </Button>
               </Box>
             )}
           </TabPanel>
@@ -1050,20 +1375,65 @@ const MyReports: React.FC = () => {
             ) : filteredReports.length > 0 ? (
               filteredReports.map(report => renderReportCard(report))
             ) : (
-              <Box sx={{ py: 4, textAlign: 'center' }}>
-                <CheckCircleIcon 
-                  sx={{ 
-                    fontSize: 64, 
-                    color: alpha(theme.palette.success.main, 0.3),
-                    mb: 2
-                  }} 
-                />
-                <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
-                  No resolved reports found
+              <Box sx={{ py: 6, textAlign: 'center' }}>
+                <Box sx={{
+                  position: 'relative',
+                  margin: '0 auto',
+                  width: '120px',
+                  height: '120px',
+                  mb: 4
+                }}>
+                  <Box sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    borderRadius: '60px',
+                    background: `radial-gradient(circle, ${alpha(theme.palette.success.main, 0.08)}, ${alpha(theme.palette.success.main, 0.03)})`,
+                    animation: 'pulse 2.5s infinite ease-in-out',
+                    '@keyframes pulse': {
+                      '0%': { transform: 'scale(0.95)' },
+                      '50%': { transform: 'scale(1.05)' },
+                      '100%': { transform: 'scale(0.95)' }
+                    }
+                  }} />
+                  <CheckCircleIcon 
+                    sx={{ 
+                      fontSize: 70, 
+                      color: alpha(theme.palette.success.main, 0.3),
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)'
+                    }} 
+                  />
+                </Box>
+                <Typography variant="h5" color="text.secondary" sx={{ mb: 2, fontWeight: 'bold' }}>
+                  No resolved reports
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 500, mx: 'auto', mb: 3 }}>
+                <Typography variant="body1" color="text.secondary" sx={{ 
+                  maxWidth: 450, 
+                  mx: 'auto', 
+                  mb: 4,
+                  opacity: 0.8
+                }}>
                   Your reports are still being processed
                 </Typography>
+                <Button 
+                  variant="outlined" 
+                  color="primary"
+                  startIcon={<AccessTimeIcon />}
+                  sx={{ 
+                    borderRadius: '30px',
+                    px: 3,
+                    py: 1.2,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                  }}
+                >
+                  Check Back Later
+                </Button>
               </Box>
             )}
           </TabPanel>
@@ -1092,24 +1462,69 @@ const MyReports: React.FC = () => {
             ) : filteredReports.length > 0 ? (
               filteredReports.map(report => renderReportCard(report))
             ) : (
-              <Box sx={{ py: 4, textAlign: 'center' }}>
-                <CancelIcon 
-                  sx={{ 
-                    fontSize: 64, 
-                    color: alpha(theme.palette.error.main, 0.3),
-                    mb: 2
-                  }} 
-                />
-                <Typography variant="h6" color="text.secondary" sx={{ mb: 1 }}>
-                  No rejected reports found
+              <Box sx={{ py: 6, textAlign: 'center' }}>
+                <Box sx={{
+                  position: 'relative',
+                  margin: '0 auto',
+                  width: '120px',
+                  height: '120px',
+                  mb: 4
+                }}>
+                  <Box sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    borderRadius: '60px',
+                    background: `radial-gradient(circle, ${alpha(theme.palette.error.main, 0.08)}, ${alpha(theme.palette.error.main, 0.03)})`,
+                    animation: 'pulse 2.5s infinite ease-in-out',
+                    '@keyframes pulse': {
+                      '0%': { transform: 'scale(0.95)' },
+                      '50%': { transform: 'scale(1.05)' },
+                      '100%': { transform: 'scale(0.95)' }
+                    }
+                  }} />
+                  <CancelIcon 
+                    sx={{ 
+                      fontSize: 70, 
+                      color: alpha(theme.palette.error.main, 0.3),
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)'
+                    }} 
+                  />
+                </Box>
+                <Typography variant="h5" color="text.secondary" sx={{ mb: 2, fontWeight: 'bold' }}>
+                  No rejected reports
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 500, mx: 'auto', mb: 3 }}>
+                <Typography variant="body1" color="text.secondary" sx={{ 
+                  maxWidth: 450, 
+                  mx: 'auto', 
+                  mb: 4,
+                  opacity: 0.8
+                }}>
                   Good news! None of your reports have been rejected
                 </Typography>
+                <Button 
+                  variant="outlined" 
+                  color="success"
+                  startIcon={<CheckCircleIcon />}
+                  sx={{ 
+                    borderRadius: '30px',
+                    px: 3,
+                    py: 1.2,
+                    textTransform: 'none',
+                    fontWeight: 600,
+                  }}
+                >
+                  View All Reports
+                </Button>
               </Box>
             )}
           </TabPanel>
-        </Paper>
+        </Box>
         
         {/* Report Details Dialog */}
         <Dialog
