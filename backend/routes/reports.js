@@ -107,7 +107,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
 // Create a new report
 router.post('/', authenticateToken, async (req, res) => {
   try {
-    const { title, description, type, category, location, date, time, evidence } = req.body;
+    const { title, description, type, category, location, date, time } = req.body;
     
     const newReport = new Report({
       title,
@@ -117,7 +117,6 @@ router.post('/', authenticateToken, async (req, res) => {
       location,
       date,
       time,
-      evidence,
       submittedBy: req.user.id
     });
     

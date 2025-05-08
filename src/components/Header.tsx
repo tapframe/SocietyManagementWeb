@@ -29,6 +29,7 @@ import LoginIcon from '@mui/icons-material/Login';
 import RuleIcon from '@mui/icons-material/Gavel';
 import ReportIcon from '@mui/icons-material/Report';
 import IdeaIcon from '@mui/icons-material/Lightbulb';
+import AssignmentIcon from '@mui/icons-material/Assignment';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import CloseIcon from '@mui/icons-material/Close';
 import ApartmentIcon from '@mui/icons-material/Apartment';
@@ -39,9 +40,10 @@ import { useAuth } from '../context/AuthContext';
 
 const menuItems = [
   { text: 'Home', icon: <HomeIcon />, path: '/' },
-  { text: 'Report Issues', icon: <ReportIcon />, path: '/report' },
+  { text: 'Report Issues', icon: <ReportIcon />, path: '/report', requireAuth: true },
+  { text: 'My Reports', icon: <AssignmentIcon />, path: '/my-reports', requireAuth: true },
   { text: 'Know Your Rules', icon: <RuleIcon />, path: '/rules' },
-  { text: 'Share Ideas', icon: <IdeaIcon />, path: '/ideas' },
+  { text: 'Share Ideas', icon: <IdeaIcon />, path: '/ideas', requireAuth: true },
 ];
 
 const authItems = [
@@ -113,8 +115,8 @@ const Header: React.FC = () => {
 
   // Modify menu items based on authentication status
   const visibleMenuItems = menuItems.filter(item => {
-    // Hide Report and Ideas pages if not authenticated
-    if ((item.path === '/report' || item.path === '/ideas') && !isAuthenticated) {
+    // Hide authenticated-only pages if not authenticated
+    if (item.requireAuth && !isAuthenticated) {
       return false;
     }
     return true;

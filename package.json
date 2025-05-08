@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "backend": "cd backend && npm run dev",
+    "start": "concurrently \"npm run dev\" \"npm run backend\""
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
@@ -17,6 +19,7 @@
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@vitejs/plugin-react": "^4.4.1",
+    "concurrently": "^9.1.2",
     "typescript": "~5.7.2",
     "vite": "^6.3.1"
   },

@@ -58,6 +58,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { format } from 'date-fns';
 import axiosInstance from '../../utils/axiosInstance';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, Legend, LineChart, Line, CartesianGrid } from 'recharts';
+import AttachmentIcon from '@mui/icons-material/Attachment';
 
 interface Report {
   _id: string;
@@ -313,6 +314,7 @@ const Dashboard: React.FC = () => {
   };
 
   const handleViewDetails = (report: Report) => {
+    console.log('[Dashboard Debug] handleViewDetails - report:', report);
     setSelectedReport(report);
   };
 
@@ -1098,6 +1100,10 @@ const Dashboard: React.FC = () => {
                 p: 3,
                 background: `linear-gradient(to bottom, ${alpha(theme.palette.background.default, 0.5)} 0%, rgba(255,255,255,0) 100%)` 
               }}>
+                {(() => { 
+                  console.log('[Dashboard Debug] DialogContent - selectedReport:', selectedReport); 
+                  return null; 
+                })()}
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={6}>
                     <Box sx={{ mb: 3 }}>
@@ -1145,18 +1151,58 @@ const Dashboard: React.FC = () => {
                           bgcolor: alpha(theme.palette.primary.light, 0.05),
                           border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
                         }}>
-                          <Typography variant="body2">{selectedReport.evidence}</Typography>
-                          {/* In a real app, we would display the actual evidence file/media */}
-                          <Button 
-                            size="small" 
-                            sx={{ 
-                              mt: 1, 
-                              borderRadius: '6px',
-                              textTransform: 'none'
-                            }}
-                          >
-                            View Evidence
-                          </Button>
+                          {(() => {
+                            if (!selectedReport || !selectedReport.evidence) {
+                              console.log('[Evidence Debug] selectedReport or selectedReport.evidence is missing or falsy.');
+                              return <Typography variant="body2" color="text.secondary">Evidence not available.</Typography>;
+                            }
+
+                            const fName = selectedReport.evidence.split('/').pop() || 'evidence_file';
+                            const evidenceUrl = `http://localhost:5000/api/reports/evidence/${encodeURIComponent(fName)}`;
+                            const fileExtension = fName.split('.').pop()?.toLowerCase();
+
+                            console.log('[Evidence Debug] selectedReport.evidence (valid):', selectedReport.evidence);
+                            console.log('[Evidence Debug] fName:', fName);
+                            console.log('[Evidence Debug] evidenceUrl:', evidenceUrl);
+                            console.log('[Evidence Debug] fileExtension:', fileExtension);
+
+                            if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension || '')) {
+                              return (
+                                <img 
+                                  src={evidenceUrl} 
+                                  alt="Evidence" 
+                                  style={{ maxWidth: '100%', maxHeight: '300px', borderRadius: '4px' }} 
+                                />
+                              );
+                            } else if (['mp4', 'webm', 'ogg', 'mov'].includes(fileExtension || '')) {
+                              return (
+                                <video 
+                                  src={evidenceUrl} 
+                                  controls 
+                                  style={{ maxWidth: '100%', maxHeight: '300px', borderRadius: '4px' }} 
+                                >
+                                  Your browser does not support the video tag.
+                                </video>
+                              );
+                            } else {
+                              return (
+                                <Button 
+                                  variant="outlined"
+                                  href={evidenceUrl} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  startIcon={<AttachmentIcon />}
+                                  sx={{ 
+                                    mt: 1, 
+                                    borderRadius: '6px',
+                                    textTransform: 'none'
+                                  }}
+                                >
+                                  View/Download: {fName}
+                                </Button>
+                              );
+                            }
+                          })()}
                         </Paper>
                       </Box>
                     )}

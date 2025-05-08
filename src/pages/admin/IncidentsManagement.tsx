@@ -31,6 +31,8 @@ import PendingIcon from '@mui/icons-material/Pending';
 import EventIcon from '@mui/icons-material/Event';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import PersonIcon from '@mui/icons-material/Person';
+import AttachmentIcon from '@mui/icons-material/Attachment';
+import { alpha } from '@mui/material/styles';
 import axiosInstance from '../../utils/axiosInstance';
 
 interface Incident {
@@ -295,72 +297,63 @@ const IncidentsManagement: React.FC = () => {
   };
 
   const renderIncidentCard = (incident: Incident) => (
-    <Card key={incident.id} sx={{ mb: 2 }}>
+    <Card sx={{ mb: 2 }}>
       <CardContent>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={8}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-              <Typography variant="h6">{incident.title}</Typography>
-              {getSeverityChip(incident.severity)}
-            </Box>
+        <Grid container spacing={2} alignItems="flex-start">
+          <Grid item xs={12} md={8}>
+            <Typography variant="h6" gutterBottom>{incident.title}</Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }} component="div">
+              <Grid container spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
+                <Grid item>
+                  <EventIcon fontSize="inherit" sx={{ verticalAlign: 'middle', mr: 0.5 }} />
+                </Grid>
+                <Grid item>
+                  Reported on {incident.dateReported}
+                </Grid>
+              </Grid>
+              <Grid container spacing={1} alignItems="center">
+                <Grid item>
+                  <PersonIcon fontSize="inherit" sx={{ verticalAlign: 'middle', mr: 0.5 }} />
+                </Grid>
+                <Grid item>
+                  by {incident.reportedBy}
+                </Grid>
+              </Grid>
+            </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <EventIcon fontSize="small" />
-                <span>Reported on {incident.dateReported}</span>
-                <PersonIcon fontSize="small" sx={{ ml: 1 }} />
-                <span>by {incident.reportedBy}</span>
-              </Stack>
+              <LocationOnIcon fontSize="inherit" sx={{ verticalAlign: 'middle', mr: 0.5 }} /> 
+              {incident.location}
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <LocationOnIcon fontSize="small" />
-                <span>{incident.location}</span>
-              </Stack>
-            </Typography>
-            <Typography variant="body1" sx={{ mb: 2 }}>
+            <Typography variant="body2" paragraph sx={{ maxHeight: '60px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {incident.description}
             </Typography>
-            <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
-              <Chip label={incident.category} color="primary" size="small" />
-              {getStatusChip(incident.status)}
-              {incident.assignedTo && <Chip label={`Assigned: ${incident.assignedTo}`} size="small" variant="outlined" />}
-            </Stack>
           </Grid>
-          <Grid item xs={12} sm={4}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
-              <Box>
-                {incident.evidence && (
-                  <Typography variant="body2" color="text.secondary">
-                    Evidence: {incident.evidence}
-                  </Typography>
-                )}
-                {incident.dateResolved && (
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                    Resolved on: {incident.dateResolved}
-                  </Typography>
-                )}
-              </Box>
-              <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
-                <Button 
-                  variant="outlined" 
-                  size="small" 
-                  startIcon={<VisibilityIcon />}
-                  onClick={() => handleViewIncident(incident)}
-                >
-                  Details
-                </Button>
-                {incident.status !== 'resolved' && incident.status !== 'dismissed' && (
-                  <Button 
-                    variant="contained" 
-                    color="primary" 
-                    size="small"
-                    onClick={() => openUpdateDialog(incident)}
-                  >
-                    Update Status
-                  </Button>
-                )}
-              </Stack>
+          <Grid item xs={12} md={4} container direction="column" justifyContent="space-between" alignItems={{ xs: 'flex-start', md: 'flex-end' }}>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'row', md: 'column' }, gap: 1, alignItems: { xs: 'center', md: 'flex-end' }, flexWrap: 'wrap' }}>
+              {getStatusChip(incident.status)}
+              {getSeverityChip(incident.severity)}
+              <Chip label={incident.category} size="small" />
             </Box>
+            <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
+              <Button 
+                variant="outlined" 
+                size="small" 
+                startIcon={<VisibilityIcon />}
+                onClick={() => handleViewIncident(incident)}
+              >
+                Details
+              </Button>
+              {incident.status !== 'resolved' && incident.status !== 'dismissed' && (
+                <Button 
+                  variant="contained" 
+                  color="primary" 
+                  size="small"
+                  onClick={() => openUpdateDialog(incident)}
+                >
+                  Update Status
+                </Button>
+              )}
+            </Stack>
           </Grid>
         </Grid>
       </CardContent>
@@ -526,20 +519,53 @@ const IncidentsManagement: React.FC = () => {
                 </Grid>
                 
                 <Grid item xs={12} md={6}>
-                  <Typography variant="subtitle2">Description</Typography>
-                  <Typography variant="body1" paragraph>{selectedIncident.description}</Typography>
-                  
-                  {selectedIncident.evidence && (
-                    <>
-                      <Typography variant="subtitle2">Evidence</Typography>
-                      <Box sx={{ mt: 1, p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
-                        <Typography variant="body2">{selectedIncident.evidence}</Typography>
-                        {/* In a real app, we would display the actual evidence file/media */}
-                        <Button size="small" sx={{ mt: 1 }}>View Evidence</Button>
-                      </Box>
-                    </>
-                  )}
+                  <Typography variant="subtitle1" gutterBottom>Description</Typography>
+                  <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{selectedIncident.description}</Typography>
                 </Grid>
+                {selectedIncident.evidence && (
+                  <Grid item xs={12}>
+                    <Typography variant="subtitle1" gutterBottom>Evidence</Typography>
+                    {(() => {
+                      const evidencePath = selectedIncident.evidence || '';
+                      const fName = evidencePath.split('/').pop() || 'evidence_file';
+                      const evidenceUrl = `http://localhost:5000/api/reports/evidence/${encodeURIComponent(fName)}`;
+                      const fileExtension = fName.split('.').pop()?.toLowerCase();
+
+                      if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension || '')) {
+                        return (
+                          <img 
+                            src={evidenceUrl} 
+                            alt="Evidence" 
+                            style={{ maxWidth: '100%', maxHeight: '300px', borderRadius: '4px', border: '1px solid #ddd' }} 
+                          />
+                        );
+                      } else if (['mp4', 'webm', 'ogg', 'mov'].includes(fileExtension || '')) {
+                        return (
+                          <video 
+                            src={evidenceUrl} 
+                            controls 
+                            style={{ maxWidth: '100%', maxHeight: '300px', borderRadius: '4px', border: '1px solid #ddd' }} 
+                          >
+                            Your browser does not support the video tag.
+                          </video>
+                        );
+                      } else {
+                        return (
+                          <Button 
+                            variant="outlined"
+                            href={evidenceUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            startIcon={<AttachmentIcon />}
+                            sx={{ textTransform: 'none' }}
+                          >
+                            View/Download: {fName}
+                          </Button>
+                        );
+                      }
+                    })()}
+                  </Grid>
+                )}
               </Grid>
             </DialogContent>
             <DialogActions>
