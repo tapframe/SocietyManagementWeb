@@ -34,6 +34,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import AttachmentIcon from '@mui/icons-material/Attachment';
 import { alpha } from '@mui/material/styles';
 import axiosInstance from '../../utils/axiosInstance';
+import CancelIcon from '@mui/icons-material/Cancel';
 
 interface Incident {
   id: number;
@@ -41,7 +42,7 @@ interface Incident {
   description: string;
   category: string;
   severity: 'low' | 'medium' | 'high' | 'critical';
-  status: 'reported' | 'in-progress' | 'resolved' | 'dismissed';
+  status: 'pending' | 'in-progress' | 'resolved' | 'rejected';
   location: string;
   reportedBy: string;
   assignedTo?: string;
@@ -71,7 +72,7 @@ const sampleIncidents: Incident[] = [
     description: 'Street light near the park entrance is not working, area is dark at night.',
     category: 'Infrastructure',
     severity: 'medium',
-    status: 'reported',
+    status: 'pending',
     location: 'Main Street Park Entrance',
     reportedBy: 'Jane Smith',
     dateReported: '2023-10-18'
@@ -96,7 +97,7 @@ const sampleIncidents: Incident[] = [
     description: 'Loud music playing after hours in apartment D-205.',
     category: 'Disturbance',
     severity: 'low',
-    status: 'dismissed',
+    status: 'rejected',
     location: 'Building D, Apartment 205',
     reportedBy: 'Anonymous Resident',
     assignedTo: 'Community Manager',
@@ -133,6 +134,7 @@ const IncidentsManagement: React.FC = () => {
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [statusUpdate, setStatusUpdate] = useState('');
   const [statusNote, setStatusNote] = useState('');
+  const [assignTo, setAssignTo] = useState('');
 
   useEffect(() => {
     fetchIncidents();
@@ -149,20 +151,29 @@ const IncidentsManagement: React.FC = () => {
       const response = await axiosInstance.get('/reports/admin/all');
       
       // Map the reports data to the incident structure
-      const mappedIncidents = response.data.map((report: any) => ({
-        id: report._id,
-        title: report.title,
-        description: report.description,
-        category: report.category,
-        severity: report.type || 'medium', // Use type or default to medium
-        status: report.status,
-        location: report.location,
-        reportedBy: typeof report.submittedBy === 'object' ? report.submittedBy.name : 'Unknown',
-        assignedTo: report.assignedTo || undefined,
-        dateReported: report.createdAt.split('T')[0],
-        dateResolved: report.resolvedAt ? report.resolvedAt.split('T')[0] : undefined,
-        evidence: report.evidence
-      }));
+      const mappedIncidents = response.data.map((report: any) => {
+        // Determine the appropriate status - if the status is 'pending' but has
+        // an assignee, we'll show it as 'in-progress' in the UI
+        let displayStatus = report.status;
+        if (report.status === 'pending' && report.assignedTo) {
+          displayStatus = 'in-progress';
+        }
+        
+        return {
+          id: report._id,
+          title: report.title,
+          description: report.description,
+          category: report.category,
+          severity: report.type || 'medium', // Use type or default to medium
+          status: displayStatus,
+          location: report.location,
+          reportedBy: typeof report.submittedBy === 'object' ? report.submittedBy.name : 'Unknown',
+          assignedTo: report.assignedTo || undefined,
+          dateReported: report.createdAt.split('T')[0],
+          dateResolved: report.resolvedAt ? report.resolvedAt.split('T')[0] : undefined,
+          evidence: report.evidence
+        };
+      });
       
       setIncidents(mappedIncidents);
       setFilteredIncidents(mappedIncidents);
@@ -231,6 +242,7 @@ const IncidentsManagement: React.FC = () => {
   const openUpdateDialog = (incident: Incident) => {
     setSelectedIncident(incident);
     setStatusUpdate(incident.status);
+    setAssignTo(incident.assignedTo || '');
     setUpdateDialogOpen(true);
   };
 
@@ -238,11 +250,28 @@ const IncidentsManagement: React.FC = () => {
     if (!selectedIncident) return;
     
     try {
-      await axiosInstance.put(`/reports/admin/${selectedIncident.id}/status`, {
+      // Create a proper payload that matches what the backend expects
+      const payload = {
         status: statusUpdate,
-        note: statusNote,
+        note: statusUpdate === 'in-progress' && assignTo 
+          ? `${statusNote}\nAssigned to: ${assignTo}` 
+          : statusNote,
         actionDate: new Date().toISOString()
-      });
+      };
+
+      // Make sure to include the correct token in headers via axiosInstance
+      const response = await axiosInstance.put(`/reports/admin/${selectedIncident.id}/status`, payload);
+      
+      // If we're setting it to in-progress and have an assignee, update the assignment
+      if (statusUpdate === 'in-progress' && assignTo && assignTo !== selectedIncident.assignedTo) {
+        try {
+          await axiosInstance.patch(`/reports/${selectedIncident.id}/assign`, {
+            adminId: assignTo
+          });
+        } catch (assignErr) {
+          console.warn('Could not update assignment via API, using note only', assignErr);
+        }
+      }
       
       // Update local state after successful API call
       setIncidents(prevIncidents => 
@@ -250,8 +279,11 @@ const IncidentsManagement: React.FC = () => {
           incident.id === selectedIncident.id 
             ? { 
                 ...incident, 
-                status: statusUpdate as any, 
-                dateResolved: statusUpdate === 'resolved' ? new Date().toISOString().split('T')[0] : incident.dateResolved 
+                status: statusUpdate as any,
+                assignedTo: statusUpdate === 'in-progress' ? assignTo : incident.assignedTo,
+                dateResolved: ['resolved', 'rejected'].includes(statusUpdate) 
+                  ? new Date().toISOString().split('T')[0] 
+                  : incident.dateResolved 
               }
             : incident
         )
@@ -259,9 +291,17 @@ const IncidentsManagement: React.FC = () => {
       
       setUpdateDialogOpen(false);
       setStatusNote('');
+      setAssignTo('');
+      
+      // Show success message
+      setError(null);
+      
+      // Refresh data to ensure we have the latest from the server
+      fetchIncidents();
     } catch (err: any) {
       console.error('Error updating incident status:', err);
-      setError(`Failed to update incident status: ${err.response?.data?.message || err.message || 'Please try again.'}`);
+      const errorMsg = err.response?.data?.message || err.message || 'Please try again.';
+      setError(`Failed to update incident status: ${errorMsg}`);
     }
   };
 
@@ -280,14 +320,16 @@ const IncidentsManagement: React.FC = () => {
 
   const getStatusChip = (status: string) => {
     switch (status) {
-      case 'reported':
-        return <Chip icon={<ErrorIcon />} label="Reported" color="error" size="small" />;
+      case 'pending':
+        return <Chip icon={<PendingIcon />} label="Pending" color="warning" size="small" />;
       case 'in-progress':
-        return <Chip icon={<PendingIcon />} label="In Progress" color="warning" size="small" />;
+        return <Chip icon={<PendingIcon />} label="In Progress" color="info" size="small" />;
       case 'resolved':
         return <Chip icon={<CheckCircleIcon />} label="Resolved" color="success" size="small" />;
+      case 'rejected':
+        return <Chip icon={<CancelIcon />} label="Rejected" color="error" size="small" />;
       default:
-        return <Chip label="Dismissed" color="default" size="small" />;
+        return <Chip label={status} color="default" size="small" />;
     }
   };
 
@@ -343,7 +385,7 @@ const IncidentsManagement: React.FC = () => {
               >
                 Details
               </Button>
-              {incident.status !== 'resolved' && incident.status !== 'dismissed' && (
+              {incident.status !== 'resolved' && incident.status !== 'rejected' && (
                 <Button 
                   variant="contained" 
                   color="primary" 
@@ -404,10 +446,10 @@ const IncidentsManagement: React.FC = () => {
                       label="Status"
                     >
                       <MenuItem value="all">All Statuses</MenuItem>
-                      <MenuItem value="reported">Reported</MenuItem>
+                      <MenuItem value="pending">Pending</MenuItem>
                       <MenuItem value="in-progress">In Progress</MenuItem>
                       <MenuItem value="resolved">Resolved</MenuItem>
-                      <MenuItem value="dismissed">Dismissed</MenuItem>
+                      <MenuItem value="rejected">Rejected</MenuItem>
                     </Select>
                   </FormControl>
                   <FormControl size="small" sx={{ minWidth: 120 }}>
@@ -570,7 +612,7 @@ const IncidentsManagement: React.FC = () => {
             </DialogContent>
             <DialogActions>
               <Button onClick={() => setDialogOpen(false)}>Close</Button>
-              {selectedIncident.status !== 'resolved' && selectedIncident.status !== 'dismissed' && (
+              {selectedIncident.status !== 'resolved' && selectedIncident.status !== 'rejected' && (
                 <Button 
                   variant="contained" 
                   color="primary"
@@ -613,10 +655,10 @@ const IncidentsManagement: React.FC = () => {
                   onChange={(e) => setStatusUpdate(e.target.value)}
                   label="New Status"
                 >
-                  <MenuItem value="reported">Reported</MenuItem>
+                  <MenuItem value="pending">Pending</MenuItem>
                   <MenuItem value="in-progress">In Progress</MenuItem>
                   <MenuItem value="resolved">Resolved</MenuItem>
-                  <MenuItem value="dismissed">Dismissed</MenuItem>
+                  <MenuItem value="rejected">Rejected</MenuItem>
                 </Select>
               </FormControl>
               
@@ -636,7 +678,8 @@ const IncidentsManagement: React.FC = () => {
                   <Select
                     labelId="assign-to-label"
                     label="Assign To"
-                    defaultValue=""
+                    value={assignTo}
+                    onChange={(e) => setAssignTo(e.target.value)}
                   >
                     <MenuItem value="Maintenance Team">Maintenance Team</MenuItem>
                     <MenuItem value="Security Team">Security Team</MenuItem>

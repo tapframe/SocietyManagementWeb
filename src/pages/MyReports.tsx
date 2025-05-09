@@ -286,256 +286,220 @@ const MyReports: React.FC = () => {
         mb: 4,
         position: 'relative',
         overflow: 'visible',
-        display: 'flex',
-        flexDirection: { xs: 'column', md: 'row' },
-        borderRadius: '16px',
+        borderRadius: '12px',
+        backgroundColor: '#FFFFFF',
+        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
         transition: 'all 0.3s ease',
         '&:hover': {
           transform: 'translateY(-4px)',
+          boxShadow: '0 10px 25px rgba(0, 0, 0, 0.12)',
         },
       }}
     >
-      {/* Status indicator */}
-      <Box sx={{ 
-        position: 'absolute',
-        left: { xs: '50%', md: '-8px' },
-        top: { xs: '-8px', md: '50%' },
-        transform: { xs: 'translateX(-50%)', md: 'translateY(-50%)' },
-        width: { xs: '70px', md: '24px' },
-        height: { xs: '24px', md: '70px' },
-        borderRadius: { xs: '12px', md: '12px' },
-        backgroundColor: 
-          report.status === 'pending' 
-            ? theme.palette.warning.main
-            : report.status === 'in-progress'
-              ? theme.palette.info.main
-              : report.status === 'resolved'
-                ? theme.palette.success.main
-                : theme.palette.error.main,
-        zIndex: 2,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        boxShadow: `0 4px 12px ${alpha(
-          report.status === 'pending' 
-            ? theme.palette.warning.main
-            : report.status === 'in-progress'
-              ? theme.palette.info.main
-              : report.status === 'resolved'
-                ? theme.palette.success.main
-                : theme.palette.error.main, 
-          0.3
-        )}`,
-      }}>
-        <Box sx={{ 
-          display: { xs: 'block', md: 'none' },
-          color: '#fff',
-          fontWeight: 'bold',
-          fontSize: '12px',
-          textTransform: 'uppercase',
-          letterSpacing: '0.5px'
-        }}>
-          {report.status === 'in-progress' ? 'Active' : report.status}
-        </Box>
-        {report.status === 'pending' && <PendingIcon sx={{ 
-          color: '#fff', 
-          display: { xs: 'none', md: 'block' },
-          animation: 'spin 2s linear infinite',
-          '@keyframes spin': {
-            '0%': { transform: 'rotate(0deg)' },
-            '100%': { transform: 'rotate(360deg)' }
-          }
-        }} />}
-        {report.status === 'in-progress' && <AccessTimeIcon sx={{ 
-          color: '#fff', 
-          display: { xs: 'none', md: 'block' } 
-        }} />}
-        {report.status === 'resolved' && <CheckCircleIcon sx={{ 
-          color: '#fff', 
-          display: { xs: 'none', md: 'block' } 
-        }} />}
-        {report.status === 'rejected' && <CancelIcon sx={{ 
-          color: '#fff', 
-          display: { xs: 'none', md: 'block' } 
-        }} />}
-      </Box>
-
-      {/* Left section - type icon and meta info */}
-      <Box sx={{ 
-        width: { xs: '100%', md: '250px' },
-        minHeight: { xs: 'auto', md: '180px' },
-        backgroundColor: alpha(theme.palette.background.paper, 0.7),
-        backdropFilter: 'blur(8px)',
-        borderRadius: '16px',
-        p: 3,
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'relative',
-        zIndex: 1,
-        boxShadow: `0 8px 20px ${alpha(theme.palette.common.black, 0.08)}`,
-      }}>
-        <Box sx={{ 
-          mb: 2,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'flex-start'
-        }}>
-          <Box sx={{ 
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center', 
-            backgroundColor: alpha(
-              report.type === 'violation' ? theme.palette.error.main : theme.palette.info.main, 
-              0.1
-            ),
-            color: report.type === 'violation' ? theme.palette.error.main : theme.palette.info.main,
-            borderRadius: '8px',
-            px: 1.5,
-            py: 0.5,
-            mb: 1
-          }}>
-            {getReportTypeIcon(report.type)}
-            <Typography variant="body2" component="span" sx={{ ml: 0.5, fontWeight: 600 }}>
-              {report.type === 'violation' ? 'Violation Report' : 'General Complaint'}
-            </Typography>
-          </Box>
-        </Box>
-
-        <Typography variant="body2" color="text.secondary" component="div" sx={{ 
-          display: 'flex', 
-          alignItems: 'center',
-          mb: 1.5
-        }}>
-          <EventIcon fontSize="small" sx={{ mr: 1 }} />
-          {formatDate(report.createdAt)}
-        </Typography>
-        
-        <Typography variant="body2" color="text.secondary" component="div" sx={{ 
-          display: 'flex', 
-          alignItems: 'flex-start',
-          mb: 1.5,
-          wordBreak: 'break-word'
-        }}>
-          <LocationOnIcon fontSize="small" sx={{ mr: 1, mt: 0.3, flexShrink: 0 }} />
-          <span>{report.location}</span>
-        </Typography>
-        
-        <Typography variant="body2" color="text.secondary" component="div" sx={{ 
-          display: 'flex', 
-          alignItems: 'center',
-          mb: 1.5
-        }}>
-          <CategoryIcon fontSize="small" sx={{ mr: 1 }} />
-          {report.category}
-        </Typography>
-        
-        {report.evidence && (
-          <Typography variant="body2" color="text.secondary" sx={{ 
-            display: 'flex', 
-            alignItems: 'center'
-          }}>
-            <AttachmentIcon fontSize="small" sx={{ mr: 1 }} />
-            Evidence attached
-          </Typography>
-        )}
-      </Box>
-      
-      {/* Right section - title, description, and action */}
-      <Box sx={{ 
-        flex: 1,
-        backgroundColor: alpha(theme.palette.background.paper, 0.5),
-        backdropFilter: 'blur(8px)',
-        borderRadius: '16px',
-        p: 3,
-        ml: { xs: 0, md: -2 },
-        mt: { xs: -2, md: 0 },
-        position: 'relative',
-        zIndex: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        boxShadow: `0 8px 20px ${alpha(theme.palette.common.black, 0.05)}`,
-        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-      }}>
-        <Typography variant="h6" component="div" sx={{ 
-          fontWeight: 700,
-          mb: 2,
-          position: 'relative',
-          '&::after': {
-            content: '""',
-            position: 'absolute',
-            bottom: -8,
-            left: 0,
-            width: '40px',
-            height: '3px',
-            borderRadius: '2px',
-            backgroundColor: report.status === 'pending' 
-              ? theme.palette.warning.main
-              : report.status === 'in-progress'
-                ? theme.palette.info.main
-                : report.status === 'resolved'
-                  ? theme.palette.success.main
-                  : theme.palette.error.main,
-          }
-        }}>
-          {report.title}
-        </Typography>
-        
-        <Typography 
-          variant="body2" 
-          color="text.secondary" 
+      <Grid container>
+        {/* Left colored section - report type */}
+        <Grid item xs={2} md={1} 
           sx={{ 
-            mb: 3,
-            flex: 1,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            display: '-webkit-box',
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: 'vertical',
+            backgroundColor: report.type === 'violation' ? '#3C3C43' : alpha(theme.palette.info.main, 0.9),
+            borderRadius: '12px 0 0 12px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            p: 2,
+            position: 'relative',
           }}
         >
-          {report.description}
-        </Typography>
+          <Typography 
+            variant="caption" 
+            sx={{ 
+              writingMode: 'vertical-rl',
+              transform: 'rotate(180deg)',
+              fontFamily: '"Source Code Pro", monospace',
+              fontWeight: 500,
+              letterSpacing: '0.04em',
+              color: '#FFFFFF',
+              textTransform: 'uppercase',
+              mb: 1
+            }}
+          >
+            {report.type}
+          </Typography>
+          
+          <Typography 
+            variant="caption" 
+            sx={{ 
+              writingMode: 'vertical-rl',
+              transform: 'rotate(180deg)',
+              fontFamily: '"Source Code Pro", monospace',
+              color: alpha('#FFFFFF', 0.7),
+            }}
+          >
+            {report.status}
+          </Typography>
+        </Grid>
         
-        <Box sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          mt: 'auto'
-        }}>
-          <Box>
-            {report.comments && report.comments.length > 0 && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <CommentIcon fontSize="small" color="action" />
-                <Typography variant="body2" color="text.secondary">
-                  {report.comments.length} comment{report.comments.length !== 1 ? 's' : ''}
+        {/* Main content area */}
+        <Grid item xs={10} md={11}>
+          <Box sx={{ p: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+              <Box>
+                {/* Version/ID indicator */}
+                <Typography 
+                  variant="caption" 
+                  color="#666666" 
+                  sx={{ 
+                    display: 'block', 
+                    mb: 0.5,
+                    fontFamily: '"Source Code Pro", monospace',
+                  }}
+                >
+                  ID: {report._id.substring(0, 8)}
+                </Typography>
+                
+                {/* Report Title */}
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    fontWeight: 500,
+                    fontFamily: '"Source Code Pro", monospace',
+                    color: '#000000',
+                    letterSpacing: '0.02em',
+                  }}
+                >
+                  {report.title}
+                </Typography>
+              </Box>
+              
+              {/* Status Tag */}
+              <Box>
+                <Box 
+                  sx={{ 
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    borderRadius: '100px',
+                    border: '1px solid #3C3C43',
+                    px: 1.5,
+                    py: 0.5,
+                  }}
+                >
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      fontFamily: '"Source Code Pro", monospace',
+                      fontWeight: 400,
+                      color: '#3C3C43',
+                    }}
+                  >
+                    {report.status === 'in-progress' ? 'Active' : report.status}
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+            
+            {/* Progress Bar - only for in-progress reports */}
+            {report.status === 'in-progress' && (
+              <Box sx={{ mb: 2 }}>
+                <Box sx={{ position: 'relative', height: 4, backgroundColor: 'rgba(222, 222, 222, 0.8)', width: '100%', borderRadius: 2 }}>
+                  <Box 
+                    sx={{ 
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      height: '100%',
+                      width: '60%', // Example progress
+                      backgroundColor: '#3C3C43',
+                      borderRadius: 2
+                    }} 
+                  />
+                </Box>
+                <Typography 
+                  variant="caption" 
+                  sx={{ 
+                    display: 'block', 
+                    mt: 0.5, 
+                    textAlign: 'right',
+                    color: 'rgba(102, 102, 102, 0.8)',
+                    fontFamily: '"Source Code Pro", monospace',
+                  }}
+                >
+                  In Progress
                 </Typography>
               </Box>
             )}
+            
+            {/* Description */}
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                mb: 3,
+                color: '#666666',
+                fontFamily: '"Source Code Pro", monospace',
+                fontSize: '14px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+              }}
+            >
+              {report.description}
+            </Typography>
+            
+            {/* Bottom section with meta info and action */}
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+              {/* Meta info (location, date) */}
+              <Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                  <LocationOnIcon sx={{ fontSize: 16, color: '#666666', mr: 0.5 }} />
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      color: '#666666',
+                      fontFamily: '"Source Code Pro", monospace',
+                    }}
+                  >
+                    {report.location}
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <EventIcon sx={{ fontSize: 16, color: '#666666', mr: 0.5 }} />
+                  <Typography 
+                    variant="caption" 
+                    sx={{ 
+                      color: '#666666',
+                      fontFamily: '"Source Code Pro", monospace',
+                    }}
+                  >
+                    {formatDate(report.createdAt)}
+                  </Typography>
+                </Box>
+              </Box>
+              
+              {/* Action button */}
+              <Button 
+                onClick={() => handleViewReport(report)}
+                sx={{ 
+                  borderRadius: '100px',
+                  border: '1px solid #3C3C43',
+                  px: 1.5,
+                  py: 0.5,
+                  minWidth: 0,
+                  textTransform: 'none',
+                  fontFamily: '"Source Code Pro", monospace',
+                  fontSize: '12px',
+                  color: '#3C3C43',
+                  '&:hover': {
+                    backgroundColor: alpha('#3C3C43', 0.05),
+                  }
+                }}
+              >
+                View
+              </Button>
+            </Box>
           </Box>
-          
-          <Button 
-            variant="text" 
-            endIcon={<VisibilityIcon />}
-            onClick={() => handleViewReport(report)}
-            sx={{ 
-              borderRadius: '30px',
-              px: 2,
-              py: 1,
-              textTransform: 'none',
-              fontWeight: 600,
-              transition: 'all 0.2s',
-              color: theme.palette.primary.main,
-              backgroundColor: alpha(theme.palette.primary.main, 0.05),
-              '&:hover': {
-                backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                transform: 'translateX(4px)'
-              }
-            }}
-          >
-            View Details
-          </Button>
-        </Box>
-      </Box>
+        </Grid>
+      </Grid>
     </Box>
   );
 

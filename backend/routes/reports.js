@@ -263,7 +263,7 @@ router.put('/admin/:id/status', authenticateToken, isAdmin, async (req, res) => 
     const { status, note } = req.body;
     
     // Validate status
-    const validStatuses = ['pending', 'resolved', 'rejected'];
+    const validStatuses = ['pending', 'in-progress', 'resolved', 'rejected'];
     if (!validStatuses.includes(status)) {
       return res.status(400).json({ message: 'Invalid status value' });
     }
