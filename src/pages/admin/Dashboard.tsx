@@ -8,7 +8,6 @@ import {
   Container,
   Divider,
   Paper,
-  Tab,
   Tabs,
   Typography,
   Stack,
