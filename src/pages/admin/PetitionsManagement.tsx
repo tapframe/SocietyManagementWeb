@@ -484,24 +484,9 @@ const PetitionsManagement: React.FC = () => {
       sx={{
         width: '100%',
         minHeight: '100vh',
-        backgroundImage: `radial-gradient(circle at 30% 50%, ${alpha(theme.palette.primary.dark, 0.4)} 0%, ${alpha(theme.palette.background.default, 0.95)} 50%, ${alpha(theme.palette.primary.dark, 0.2)} 100%)`,
-        backgroundAttachment: 'fixed',
         position: 'relative',
         pb: 4,
         pt: 2,
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='72' viewBox='0 0 36 72'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23${theme.palette.primary.main.replace('#', '')}' fill-opacity='${theme.palette.mode === 'dark' ? '0.06' : '0.04'}'%3E%3Cpath d='M2 6h12L8 18 2 6zm18 36h12l-6 12-6-12z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          backgroundSize: '72px 144px',
-          opacity: theme.palette.mode === 'dark' ? 0.6 : 0.7,
-          zIndex: 0,
-          pointerEvents: 'none',
-        }
       }}
     >
       <Container maxWidth={false} sx={{ 

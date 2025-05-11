@@ -36,10 +36,12 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import ApartmentIcon from '@mui/icons-material/Apartment';
 import HomeIcon from '@mui/icons-material/Home';
 import PetitionIcon from '@mui/icons-material/Create';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import Dashboard from './Dashboard';
 import UserManagement from './UserManagement';
 import IncidentsManagement from './IncidentsManagement';
-import PetitionsManagement from './PetitionsManagement';
+import PetitionsManagement from '../../pages/admin/PetitionsManagement';
 
 const drawerWidth = 280;
 
@@ -49,6 +51,8 @@ const AdminPanel: React.FC = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
   // Close drawer by default on mobile
   useEffect(() => {
@@ -94,6 +98,12 @@ const AdminPanel: React.FC = () => {
 
   const menuId = 'primary-search-account-menu';
   const isMenuOpen = Boolean(anchorEl);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+    handleMenuClose();
+  };
 
   const renderMenu = (
     <Menu
@@ -151,7 +161,7 @@ const AdminPanel: React.FC = () => {
         <Typography variant="body2">Settings</Typography>
       </MenuItem>
       <Divider />
-      <MenuItem onClick={handleMenuClose} sx={{ py: 1.5 }}>
+      <MenuItem onClick={handleLogout} sx={{ py: 1.5 }}>
         <ListItemIcon>
           <LogoutIcon fontSize="small" color="error" />
         </ListItemIcon>
@@ -489,6 +499,7 @@ const AdminPanel: React.FC = () => {
           
           <ListItem disablePadding sx={{ mt: 0.5 }}>
             <ListItemButton
+              onClick={handleLogout}
               sx={{
                 borderRadius: 2,
                 color: theme.palette.error.main,
