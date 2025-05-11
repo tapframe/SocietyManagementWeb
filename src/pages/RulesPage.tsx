@@ -120,8 +120,12 @@ const RulesPage: React.FC = () => {
   }, [expandedId]);
 
   // Background theme variables (matching HomePage)
-  const bgGradient = `linear-gradient(to bottom right, ${alpha(theme.palette.background.paper, 0.9)}, ${alpha(theme.palette.background.default, 0.8)})`;
-  const bgPattern = `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23${theme.palette.primary.main.replace('#', '')}' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E")`;
+  const bgGradient = theme.palette.mode === 'dark' 
+    ? `radial-gradient(circle at 30% 50%, ${alpha(theme.palette.primary.dark, 0.4)} 0%, ${alpha(theme.palette.background.default, 0.95)} 50%, ${alpha(theme.palette.primary.dark, 0.2)} 100%)`
+    : `radial-gradient(circle at 30% 50%, ${alpha(theme.palette.primary.light, 0.2)} 0%, ${alpha(theme.palette.background.default, 0.9)} 50%, ${alpha(theme.palette.primary.main, 0.1)} 100%)`;
+    
+  // Different pattern - triangular grid
+  const bgPattern = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='72' viewBox='0 0 36 72'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23${theme.palette.primary.main.replace('#', '')}' fill-opacity='${theme.palette.mode === 'dark' ? '0.06' : '0.04'}'%3E%3Cpath d='M2 6h12L8 18 2 6zm18 36h12l-6 12-6-12z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`;
 
   const categories = [...new Set(rulesData.map(rule => rule.category))];
 
@@ -178,6 +182,12 @@ const RulesPage: React.FC = () => {
         backgroundImage: bgGradient,
         backgroundAttachment: 'fixed',
         pb: 8,
+        animation: 'gradientShift 30s ease infinite alternate',
+        '@keyframes gradientShift': {
+          '0%': { backgroundPosition: '0% 0%' },
+          '50%': { backgroundPosition: '100% 50%' },
+          '100%': { backgroundPosition: '0% 100%' }
+        },
         '&::before': {
           content: '""',
           position: 'absolute',
@@ -186,13 +196,87 @@ const RulesPage: React.FC = () => {
           right: 0,
           bottom: 0,
           backgroundImage: bgPattern,
-          opacity: 0.3,
+          backgroundSize: '72px 144px',
+          opacity: theme.palette.mode === 'dark' ? 0.6 : 0.7,
           zIndex: 0,
           pointerEvents: 'none',
-          willChange: 'opacity'
+          willChange: 'transform',
+          animation: 'patternMove 60s linear infinite',
+          '@keyframes patternMove': {
+            '0%': { transform: 'translateY(0) rotate(0deg)' },
+            '100%': { transform: 'translateY(20px) rotate(1deg)' }
+          }
+        },
+        '&::after': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: theme.palette.mode === 'dark' 
+            ? `radial-gradient(circle at right bottom, ${alpha(theme.palette.primary.main, 0.2)}, transparent 600px)`
+            : `radial-gradient(circle at right bottom, ${alpha(theme.palette.primary.light, 0.15)}, transparent 600px)`,
+          zIndex: 0,
+          animation: 'pulseGradient 15s ease-in-out infinite alternate',
+          '@keyframes pulseGradient': {
+            '0%': { opacity: 0.7 },
+            '50%': { opacity: 0.9 },
+            '100%': { opacity: 0.7 }
+          }
         }
       }}
     >
+      {/* Floating bubbles/orbs as decorative elements */}
+      <Box sx={{
+        position: 'absolute',
+        top: '15%',
+        left: '10%',
+        width: '250px',
+        height: '250px',
+        borderRadius: '50%',
+        background: `radial-gradient(circle at center, ${alpha(theme.palette.primary.light, 0.05)}, ${alpha(theme.palette.primary.main, 0.01)} 70%, transparent)`,
+        zIndex: 0,
+        animation: 'floatBubble1 25s ease-in-out infinite',
+        '@keyframes floatBubble1': {
+          '0%, 100%': { transform: 'translate(0, 0)' },
+          '50%': { transform: 'translate(40px, -30px)' }
+        }
+      }} />
+      
+      <Box sx={{
+        position: 'absolute',
+        bottom: '20%',
+        right: '10%',
+        width: '300px',
+        height: '300px',
+        borderRadius: '50%',
+        background: `radial-gradient(circle at center, ${alpha(theme.palette.secondary.light, 0.05)}, ${alpha(theme.palette.secondary.main, 0.02)} 70%, transparent)`,
+        zIndex: 0,
+        animation: 'floatBubble2 30s ease-in-out infinite',
+        '@keyframes floatBubble2': {
+          '0%, 100%': { transform: 'translate(0, 0) scale(1)' },
+          '33%': { transform: 'translate(-20px, 20px) scale(1.05)' },
+          '66%': { transform: 'translate(20px, -10px) scale(0.95)' }
+        }
+      }} />
+      
+      <Box sx={{
+        position: 'absolute',
+        top: '40%',
+        right: '15%',
+        width: '180px',
+        height: '180px',
+        borderRadius: '50%',
+        background: `radial-gradient(circle at center, ${alpha(theme.palette.primary.dark, 0.04)}, ${alpha(theme.palette.primary.main, 0.01)} 70%, transparent)`,
+        zIndex: 0,
+        animation: 'floatBubble3 20s ease-in-out infinite',
+        '@keyframes floatBubble3': {
+          '0%, 100%': { transform: 'translate(0, 0) scale(1)' },
+          '50%': { transform: 'translate(-30px, 30px) scale(1.1)' }
+        }
+      }} />
+
       {/* Header with gradient background */}
       <Box 
         sx={{ 
@@ -202,15 +286,25 @@ const RulesPage: React.FC = () => {
           pt: { xs: 6, md: 10 },
           pb: { xs: 8, md: 12 },
           textAlign: 'center',
-          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.85)} 0%, ${alpha(theme.palette.secondary.main, 0.75)} 100%)`,
+          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.9)} 0%, ${alpha(theme.palette.secondary.main, 0.8)} 100%)`,
           color: 'white',
-          boxShadow: '0 4px 30px rgba(0,0,0,0.2)',
+          boxShadow: '0 8px 40px rgba(0,0,0,0.2)',
           mb: 8,
           borderRadius: { xs: 0, md: '0 0 30px 30px' },
-          clipPath: { xs: 'none', md: 'inset(0 0 -10% 0)' } // Creates a slight overlap effect
+          clipPath: { xs: 'none', md: 'inset(0 0 -10% 0)' }, // Creates a slight overlap effect
+          backdropFilter: 'blur(10px)',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '1px',
+            background: `linear-gradient(90deg, ${alpha(theme.palette.common.white, 0)}, ${alpha(theme.palette.common.white, 0.3)}, ${alpha(theme.palette.common.white, 0)})`
+          }
         }}
       >
-        {/* Animated decorative elements */}
+        {/* Animated decorative elements with improved animations */}
         <Box sx={{ 
           position: 'absolute', 
           top: -100, 
@@ -220,10 +314,12 @@ const RulesPage: React.FC = () => {
           borderRadius: '50%', 
           bgcolor: 'white', 
           opacity: 0.05,
-          animation: 'float 15s ease-in-out infinite',
-          '@keyframes float': {
-            '0%, 100%': { transform: 'translateY(0) scale(1)' },
-            '50%': { transform: 'translateY(20px) scale(1.05)' }
+          animation: 'floatOrb1 25s ease-in-out infinite',
+          '@keyframes floatOrb1': {
+            '0%': { transform: 'translateY(0) scale(1) rotate(0deg)' },
+            '33%': { transform: 'translateY(15px) scale(1.03) rotate(3deg)' },
+            '66%': { transform: 'translateY(-10px) scale(0.97) rotate(-1deg)' },
+            '100%': { transform: 'translateY(0) scale(1) rotate(0deg)' }
           }
         }} />
         <Box sx={{ 
@@ -235,7 +331,12 @@ const RulesPage: React.FC = () => {
           borderRadius: '50%', 
           bgcolor: 'white', 
           opacity: 0.08,
-          animation: 'float 12s ease-in-out infinite reverse'
+          animation: 'floatOrb2 20s ease-in-out infinite',
+          '@keyframes floatOrb2': {
+            '0%': { transform: 'translateX(0) scale(1) rotate(0deg)' },
+            '50%': { transform: 'translateX(20px) scale(1.05) rotate(5deg)' },
+            '100%': { transform: 'translateX(0) scale(1) rotate(0deg)' }
+          }
         }} />
         
         <Fade in={fadeIn} timeout={1000}>
@@ -448,15 +549,24 @@ const RulesPage: React.FC = () => {
                           borderColor: selectedCategory === category 
                             ? 'primary.main' 
                             : alpha(theme.palette.text.primary, 0.08),
-                          transition: 'all 0.3s ease-in-out',
+                          transition: 'all 0.3s ease',
                           '&:hover': {
                             transform: 'translateY(-3px)',
                             boxShadow: 5,
+                            animation: 'none',
+                            ...(selectedCategory !== category ? {
+                              animation: 'shimmer 1.5s infinite'
+                            } : {}),
+                          },
+                          '@keyframes shimmer': {
+                            '0%': { boxShadow: `0 4px 10px ${alpha(getCategoryColor(category), 0.2)}` },
+                            '50%': { boxShadow: `0 4px 20px ${alpha(getCategoryColor(category), 0.4)}` },
+                            '100%': { boxShadow: `0 4px 10px ${alpha(getCategoryColor(category), 0.2)}` }
                           },
                           backdropFilter: 'blur(4px)',
                           backgroundColor: selectedCategory === category 
                             ? getCategoryColor(category)
-                            : alpha(theme.palette.background.paper, 0.8),
+                            : alpha(theme.palette.background.paper, 0.7),
                           color: selectedCategory === category ? 'white' : 'text.primary',
                           pl: 0.5
                         }}
@@ -499,7 +609,8 @@ const RulesPage: React.FC = () => {
                         mb: 4,
                         borderRadius: '20px', 
                         overflow: 'hidden',
-                        border: 'none',
+                        border: '1px solid',
+                        borderColor: alpha(theme.palette.background.paper, 0.2),
                         boxShadow: expandedId === rule.id 
                           ? '0 18px 40px rgba(0,0,0,0.15)' 
                           : '0 6px 18px rgba(0,0,0,0.08)',
@@ -511,8 +622,8 @@ const RulesPage: React.FC = () => {
                           boxShadow: '0 12px 30px rgba(0,0,0,0.12)',
                           transform: expandedId === rule.id ? 'none' : 'translateY(-5px)'
                         },
-                        backdropFilter: 'blur(10px)',
-                        backgroundColor: alpha(theme.palette.background.paper, 0.85),
+                        backdropFilter: 'blur(15px)',
+                        backgroundColor: alpha(theme.palette.background.paper, 0.65),
                         transform: expandedId === rule.id ? 'scale(1.02)' : 'none',
                         ml: { xs: 0, md: index % 2 === 0 ? '5%' : 0 },
                         mr: { xs: 0, md: index % 2 === 1 ? '5%' : 0 },
@@ -754,11 +865,21 @@ const RulesPage: React.FC = () => {
                     py: 10, 
                     px: 4,
                     borderRadius: 6,
-                    bgcolor: alpha(theme.palette.background.paper, 0.85),
-                    backdropFilter: 'blur(8px)',
-                    border: '1px dashed',
-                    borderColor: alpha(theme.palette.text.primary, 0.1),
-                    boxShadow: '0 4px 30px rgba(0,0,0,0.07)'
+                    backgroundColor: alpha(theme.palette.background.paper, 0.65),
+                    backdropFilter: 'blur(15px)',
+                    border: `1px solid ${alpha(theme.palette.background.paper, 0.2)}`,
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: '1px',
+                      background: `linear-gradient(90deg, ${alpha(theme.palette.common.white, 0)}, ${alpha(theme.palette.common.white, 0.2)}, ${alpha(theme.palette.common.white, 0)})`
+                    }
                   }}>
                     <Box 
                       sx={{ 
@@ -825,13 +946,23 @@ const RulesPage: React.FC = () => {
                 textAlign: 'center', 
                 maxWidth: '800px', 
                 mx: 'auto',
-                bgcolor: alpha(theme.palette.background.paper, 0.5),
-                backdropFilter: 'blur(6px)',
+                backgroundColor: alpha(theme.palette.background.paper, 0.5),
+                backdropFilter: 'blur(15px)',
                 p: 4,
                 borderRadius: 4,
-                border: '1px solid',
-                borderColor: alpha(theme.palette.divider, 0.08),
-                boxShadow: `0 10px 30px ${alpha(theme.palette.common.black, 0.05)}`
+                border: `1px solid ${alpha(theme.palette.background.paper, 0.2)}`,
+                boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+                position: 'relative',
+                overflow: 'hidden',
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '1px',
+                  background: `linear-gradient(90deg, ${alpha(theme.palette.common.white, 0)}, ${alpha(theme.palette.common.white, 0.2)}, ${alpha(theme.palette.common.white, 0)})`
+                }
               }}>
                 <Typography variant="h6" color="text.secondary" fontWeight={500} gutterBottom>
                   Legal Disclaimer
