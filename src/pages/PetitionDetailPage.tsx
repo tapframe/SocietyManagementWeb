@@ -375,7 +375,7 @@ const PetitionDetailPage: React.FC = () => {
             alignItems: 'center', 
             flexDirection: 'column',
             minHeight: '50vh',
-            backgroundColor: alpha('#fff', 0.8),
+            backgroundColor: alpha(theme.palette.background.paper, 0.8),
             backdropFilter: 'blur(8px)',
             borderRadius: { xs: 2, sm: 3 },
             p: 4
@@ -399,7 +399,7 @@ const PetitionDetailPage: React.FC = () => {
           <Box sx={{ 
             textAlign: 'center', 
             mt: 5,
-            backgroundColor: alpha('#fff', 0.8),
+            backgroundColor: alpha(theme.palette.background.paper, 0.8),
             backdropFilter: 'blur(8px)',
             borderRadius: { xs: 2, sm: 3 },
             p: 4
@@ -435,7 +435,7 @@ const PetitionDetailPage: React.FC = () => {
           <Box sx={{ 
             textAlign: 'center', 
             mt: 5,
-            backgroundColor: alpha('#fff', 0.8),
+            backgroundColor: alpha(theme.palette.background.paper, 0.8),
             backdropFilter: 'blur(8px)',
             borderRadius: { xs: 2, sm: 3 },
             p: 4
@@ -471,7 +471,7 @@ const PetitionDetailPage: React.FC = () => {
           <Box sx={{ 
             textAlign: 'center', 
             mt: 5,
-            backgroundColor: alpha('#fff', 0.8),
+            backgroundColor: alpha(theme.palette.background.paper, 0.8),
             backdropFilter: 'blur(8px)',
             borderRadius: { xs: 2, sm: 3 },
             p: 4
@@ -567,7 +567,7 @@ const PetitionDetailPage: React.FC = () => {
                     borderColor: 'divider',
                     boxShadow: '0 2px 12px rgba(0,0,0,0.03)',
                     overflow: 'hidden',
-                    backgroundColor: alpha('#fff', 0.9),
+                    backgroundColor: alpha(theme.palette.background.paper, 0.9),
                     backdropFilter: 'blur(8px)'
                   }}
                 >
@@ -778,7 +778,7 @@ const PetitionDetailPage: React.FC = () => {
                                           fontStyle: 'italic',
                                           padding: 1.5,
                                           borderRadius: '8px',
-                                          bgcolor: alpha('#f5f5f5', 0.6),
+                                          bgcolor: alpha(theme.palette.background.default, 0.6),
                                           lineHeight: 1.5
                                         }}
                                       >
@@ -814,7 +814,7 @@ const PetitionDetailPage: React.FC = () => {
                           py: 4, 
                           px: 3, 
                           textAlign: 'center',
-                          bgcolor: alpha('#f5f5f5', 0.4),
+                          bgcolor: alpha(theme.palette.background.default, 0.4),
                           borderRadius: '12px'
                         }}
                       >
@@ -838,7 +838,7 @@ const PetitionDetailPage: React.FC = () => {
                       border: '1px solid',
                       borderColor: 'divider',
                       boxShadow: '0 2px 12px rgba(0,0,0,0.03)',
-                      backgroundColor: alpha('#fff', 0.9),
+                      backgroundColor: alpha(theme.palette.background.paper, 0.9),
                       backdropFilter: 'blur(8px)'
                     }}
                   >
@@ -1003,7 +1003,7 @@ const PetitionDetailPage: React.FC = () => {
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
-                      backgroundColor: alpha('#fff', 0.9),
+                      backgroundColor: alpha(theme.palette.background.paper, 0.9),
                       backdropFilter: 'blur(8px)'
                     }}
                   >
@@ -1043,7 +1043,7 @@ const PetitionDetailPage: React.FC = () => {
               overflow: 'hidden',
               boxShadow: '0 10px 40px rgba(0,0,0,0.1)',
               backdropFilter: 'blur(8px)',
-              backgroundColor: alpha('#fff', 0.95)
+              backgroundColor: alpha(theme.palette.background.paper, 0.95)
             }
           }}
         >
@@ -1176,7 +1176,7 @@ const PetitionDetailPage: React.FC = () => {
               borderRadius: '16px',
               overflow: 'hidden',
               backdropFilter: 'blur(8px)',
-              backgroundColor: alpha('#fff', 0.95)
+              backgroundColor: alpha(theme.palette.background.paper, 0.95)
             }
           }}
         >
@@ -1197,7 +1197,7 @@ const PetitionDetailPage: React.FC = () => {
               mb: 1,
               p: 1.5,
               borderRadius: '8px',
-              bgcolor: alpha('#f5f5f5', 0.6),
+              bgcolor: alpha(theme.palette.background.default, 0.6),
             }}>
               "{petition?.title || 'Untitled petition'}"
             </Typography>
