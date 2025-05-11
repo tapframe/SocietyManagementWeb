@@ -44,6 +44,7 @@ import AddIcon from '@mui/icons-material/Add';
 import WarningIcon from '@mui/icons-material/Warning';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import axiosInstance from '../../utils/axiosInstance';
+import { useTheme as useMuiTheme } from '@mui/material';
 
 interface User {
   id: number;
@@ -145,7 +146,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 }));
 
 const UserManagement: React.FC = () => {
-  const theme = useTheme();
+  const theme = useMuiTheme();
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -331,471 +332,554 @@ const UserManagement: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      {error && (
-        <Alert 
-          severity="error" 
-          sx={{ 
-            mb: 3, 
-            boxShadow: theme.shadows[2], 
-            borderRadius: 2 
-          }} 
-          onClose={() => setError(null)}
-        >
-          {error}
-        </Alert>
-      )}
-
-      <Box
-        sx={{
-          position: 'relative',
-          mb: 4,
-          borderRadius: 3,
-          overflow: 'hidden',
-          p: 3,
-          background: `linear-gradient(45deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-          boxShadow: theme.shadows[4],
-          color: 'white',
-        }}
-      >
-        <Box sx={{ position: 'absolute', bottom: -20, right: -20, opacity: 0.1, fontSize: 180 }}>
-          <PersonIcon fontSize="inherit" />
-        </Box>
-        <Typography component="h1" variant="h4" fontWeight="bold">
-          User Management
-        </Typography>
-        <Typography variant="subtitle1" sx={{ opacity: 0.8, mt: 0.5 }}>
-          Manage residents and administrators
-        </Typography>
-      </Box>
-
-      <Grid container spacing={3}>
-        <Grid item xs={12}>
-          <Paper 
+    <Box
+      sx={{
+        width: '100%',
+        minHeight: '100vh',
+        backgroundImage: `radial-gradient(circle at 30% 50%, ${alpha(theme.palette.primary.dark, 0.4)} 0%, ${alpha(theme.palette.background.default, 0.95)} 50%, ${alpha(theme.palette.primary.dark, 0.2)} 100%)`,
+        backgroundAttachment: 'fixed',
+        position: 'relative',
+        pb: 4,
+        pt: 2,
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='72' viewBox='0 0 36 72'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23${theme.palette.primary.main.replace('#', '')}' fill-opacity='${theme.palette.mode === 'dark' ? '0.06' : '0.04'}'%3E%3Cpath d='M2 6h12L8 18 2 6zm18 36h12l-6 12-6-12z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          backgroundSize: '72px 144px',
+          opacity: theme.palette.mode === 'dark' ? 0.6 : 0.7,
+          zIndex: 0,
+          pointerEvents: 'none',
+        }
+      }}
+    >
+      <Container maxWidth="lg" sx={{ 
+        py: 4,
+        position: 'relative',
+        zIndex: 1
+      }}>
+        {error && (
+          <Alert 
+            severity="error" 
             sx={{ 
-              p: 3, 
-              borderRadius: 3,
-              boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.1)}`
-            }} 
-            elevation={0}
-          >
-            <Box sx={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center', 
               mb: 3, 
-              flexWrap: { xs: 'wrap', md: 'nowrap' },
-              gap: 2
-            }}>
-              <TextField
-                placeholder="Search users..."
-                variant="outlined"
-                fullWidth
-                size="small"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                sx={{
-                  maxWidth: 400,
-                  flex: 1,
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 2,
-                    backgroundColor: alpha(theme.palette.common.white, 0.9),
-                  }
-                }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon color="action" />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              <Button 
-                variant="contained" 
-                color="primary"
-                startIcon={<PersonAddIcon />}
-                sx={{
-                  borderRadius: 2,
-                  px: 3,
-                  py: 1,
-                  boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
-                  '&:hover': {
-                    boxShadow: `0 6px 16px ${alpha(theme.palette.primary.main, 0.4)}`,
-                  },
-                  textTransform: 'none',
-                  fontWeight: 'bold'
-                }}
-              >
-                Add New User
-              </Button>
-            </Box>
+              boxShadow: theme.shadows[2], 
+              borderRadius: 2 
+            }} 
+            onClose={() => setError(null)}
+          >
+            {error}
+          </Alert>
+        )}
 
-            {loading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}>
-                <CircularProgress />
-              </Box>
-            ) : filteredUsers.length === 0 ? (
+        <Box
+          sx={{
+            position: 'relative',
+            mb: 4,
+            borderRadius: 3,
+            overflow: 'hidden',
+            p: 3,
+            background: `linear-gradient(45deg, ${alpha(theme.palette.primary.main, 0.9)} 0%, ${alpha(theme.palette.primary.dark, 0.8)} 100%)`,
+            boxShadow: theme.shadows[4],
+            color: 'white',
+            backdropFilter: 'blur(10px)',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '1px',
+              background: `linear-gradient(90deg, ${alpha(theme.palette.common.white, 0)}, ${alpha(theme.palette.common.white, 0.3)}, ${alpha(theme.palette.common.white, 0)})`
+            }
+          }}
+        >
+          <Box sx={{ position: 'absolute', bottom: -20, right: -20, opacity: 0.1, fontSize: 180 }}>
+            <PersonIcon fontSize="inherit" />
+          </Box>
+          <Typography component="h1" variant="h4" fontWeight="bold">
+            User Management
+          </Typography>
+          <Typography variant="subtitle1" sx={{ opacity: 0.8, mt: 0.5 }}>
+            Manage residents and administrators
+          </Typography>
+        </Box>
+
+        <Grid container spacing={3}>
+          <Grid item xs={12}>
+            <Paper 
+              sx={{ 
+                p: 3, 
+                borderRadius: 3,
+                boxShadow: `0 4px 20px ${alpha(theme.palette.primary.main, 0.1)}`,
+                backgroundColor: alpha(theme.palette.background.paper, 0.7),
+                backdropFilter: 'blur(10px)',
+                border: `1px solid ${alpha(theme.palette.background.paper, 0.2)}`,
+                position: 'relative',
+                overflow: 'hidden',
+                '&::before': {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '1px',
+                  background: `linear-gradient(90deg, ${alpha(theme.palette.common.white, 0)}, ${alpha(theme.palette.common.white, 0.2)}, ${alpha(theme.palette.common.white, 0)})`
+                }
+              }} 
+              elevation={0}
+            >
               <Box sx={{ 
                 display: 'flex', 
-                flexDirection: 'column', 
+                justifyContent: 'space-between', 
                 alignItems: 'center', 
-                py: 5,
-                opacity: 0.7
+                mb: 3, 
+                flexWrap: { xs: 'wrap', md: 'nowrap' },
+                gap: 2
               }}>
-                <SearchIcon sx={{ fontSize: 60, color: 'info.main', mb: 2, opacity: 0.6 }} />
-                <Typography align="center" variant="h6">No users found</Typography>
-                <Typography align="center">Try adjusting your search terms</Typography>
-              </Box>
-            ) : (
-              <>
-                <TableContainer 
-                  component={Paper} 
-                  elevation={0}
-                  sx={{ 
-                    boxShadow: 'none',
-                    borderRadius: 3,
-                    overflow: 'hidden',
-                    border: `1px solid ${alpha(theme.palette.divider, 0.3)}`
+                <TextField
+                  placeholder="Search users..."
+                  variant="outlined"
+                  fullWidth
+                  size="small"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  sx={{
+                    maxWidth: 400,
+                    flex: 1,
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                      backgroundColor: alpha(theme.palette.common.white, 0.9),
+                    }
+                  }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon color="action" />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+                <Button 
+                  variant="contained" 
+                  color="primary"
+                  startIcon={<PersonAddIcon />}
+                  sx={{
+                    borderRadius: 2,
+                    px: 3,
+                    py: 1,
+                    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
+                    '&:hover': {
+                      boxShadow: `0 6px 16px ${alpha(theme.palette.primary.main, 0.4)}`,
+                    },
+                    textTransform: 'none',
+                    fontWeight: 'bold'
                   }}
                 >
-                  <Table aria-label="users table" size="medium">
-                    <TableHead>
-                      <TableRow>
-                        <StyledTableCell>User</StyledTableCell>
-                        <StyledTableCell>Email</StyledTableCell>
-                        <StyledTableCell>Apartment</StyledTableCell>
-                        <StyledTableCell>Role</StyledTableCell>
-                        <StyledTableCell>Status</StyledTableCell>
-                        <StyledTableCell>Join Date</StyledTableCell>
-                        <StyledTableCell align="right">Actions</StyledTableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {filteredUsers
-                        .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                        .map((user) => (
-                          <StyledTableRow key={user.id}>
-                            <StyledTableCell component="th" scope="row">
-                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                <Avatar 
-                                  sx={{ 
-                                    width: 36, 
-                                    height: 36, 
-                                    bgcolor: theme.palette.primary.main,
-                                    color: 'white',
-                                    fontWeight: 'bold',
-                                    mr: 2,
-                                    fontSize: 14
-                                  }}
-                                >
-                                  {getNameInitials(user.name)}
-                                </Avatar>
-                                <Typography variant="body1" fontWeight="medium">{user.name}</Typography>
-                              </Box>
-                            </StyledTableCell>
-                            <StyledTableCell>{user.email}</StyledTableCell>
-                            <StyledTableCell>
-                              <Chip 
-                                label={user.apartment} 
-                                size="small" 
-                                variant="outlined"
-                                sx={{ 
-                                  borderRadius: '6px'
-                                }}
-                              />
-                            </StyledTableCell>
-                            <StyledTableCell>{getRoleChip(user.role)}</StyledTableCell>
-                            <StyledTableCell>{getStatusChip(user.status)}</StyledTableCell>
-                            <StyledTableCell>{user.joinDate}</StyledTableCell>
-                            <StyledTableCell align="right">
-                              <Stack direction="row" spacing={1} justifyContent="flex-end">
-                                <Tooltip title="View Details">
-                                  <IconButton 
-                                    size="small" 
-                                    onClick={() => handleViewUser(user)}
-                                    sx={{
-                                      color: theme.palette.info.main,
-                                      bgcolor: alpha(theme.palette.info.main, 0.1),
-                                      '&:hover': {
-                                        bgcolor: alpha(theme.palette.info.main, 0.2),
-                                      }
-                                    }}
-                                  >
-                                    <VisibilityIcon fontSize="small" />
-                                  </IconButton>
-                                </Tooltip>
-                                <Tooltip title="Edit User">
-                                  <IconButton 
-                                    size="small"
-                                    sx={{
-                                      color: theme.palette.primary.main,
-                                      bgcolor: alpha(theme.palette.primary.main, 0.1),
-                                      '&:hover': {
-                                        bgcolor: alpha(theme.palette.primary.main, 0.2),
-                                      }
-                                    }}
-                                  >
-                                    <EditIcon fontSize="small" />
-                                  </IconButton>
-                                </Tooltip>
-                                {user.status === 'active' ? (
-                                  <Tooltip title="Suspend User">
-                                    <IconButton 
-                                      size="small"
-                                      sx={{
-                                        color: theme.palette.warning.main,
-                                        bgcolor: alpha(theme.palette.warning.main, 0.1),
-                                        '&:hover': {
-                                          bgcolor: alpha(theme.palette.warning.main, 0.2),
-                                        }
-                                      }}
-                                    >
-                                      <BlockIcon fontSize="small" />
-                                    </IconButton>
-                                  </Tooltip>
-                                ) : (
-                                  <Tooltip title="Activate User">
-                                    <IconButton 
-                                      size="small"
-                                      sx={{
-                                        color: theme.palette.success.main,
-                                        bgcolor: alpha(theme.palette.success.main, 0.1),
-                                        '&:hover': {
-                                          bgcolor: alpha(theme.palette.success.main, 0.2),
-                                        }
-                                      }}
-                                    >
-                                      <PersonIcon fontSize="small" />
-                                    </IconButton>
-                                  </Tooltip>
-                                )}
-                                <Tooltip title="Delete User">
-                                  <IconButton 
-                                    size="small"
-                                    onClick={() => handleDeleteUser(user)}
-                                    sx={{
-                                      color: theme.palette.error.main,
-                                      bgcolor: alpha(theme.palette.error.main, 0.1),
-                                      '&:hover': {
-                                        bgcolor: alpha(theme.palette.error.main, 0.2),
-                                      }
-                                    }}
-                                  >
-                                    <DeleteIcon fontSize="small" />
-                                  </IconButton>
-                                </Tooltip>
-                              </Stack>
-                            </StyledTableCell>
-                          </StyledTableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
-                  <TablePagination
-                    rowsPerPageOptions={[5, 10, 25]}
-                    component="div"
-                    count={filteredUsers.length}
-                    rowsPerPage={rowsPerPage}
-                    page={page}
-                    onPageChange={handleChangePage}
-                    onRowsPerPageChange={handleChangeRowsPerPage}
-                    sx={{
-                      borderTop: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
-                      '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': {
-                        fontSize: '0.875rem',
-                      },
-                    }}
-                  />
-                </TableContainer>
-              </>
-            )}
-          </Paper>
-        </Grid>
-      </Grid>
-
-      {/* User Details Dialog */}
-      <Dialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: 3,
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)'
-          }
-        }}
-      >
-        {selectedUser && (
-          <>
-            <DialogTitle sx={{ 
-              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
-              p: 3,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 2
-            }}>
-              <Avatar 
-                sx={{ 
-                  width: 48, 
-                  height: 48, 
-                  bgcolor: theme.palette.primary.main,
-                  color: 'white',
-                  fontWeight: 'bold',
-                  fontSize: 18
-                }}
-              >
-                {getNameInitials(selectedUser.name)}
-              </Avatar>
-              <Box>
-                <Typography variant="h6" fontWeight="bold">{selectedUser.name}</Typography>
-                <Box sx={{ mt: 0.5 }}>
-                  {getRoleChip(selectedUser.role)} 
-                  <Box component="span" sx={{ mx: 1 }}>•</Box> 
-                  {getStatusChip(selectedUser.status)}
-                </Box>
+                  Add New User
+                </Button>
               </Box>
-            </DialogTitle>
-            <DialogContent sx={{ p: 3 }}>
-              <Grid container spacing={3}>
-                <Grid item xs={12} sm={6}>
-                  <Box sx={{ mb: 3 }}>
-                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>Email</Typography>
-                    <Typography variant="body1" fontWeight="medium">{selectedUser.email}</Typography>
-                  </Box>
-                  
-                  <Box sx={{ mb: 3 }}>
-                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>Phone</Typography>
-                    <Typography variant="body1">{selectedUser.phone}</Typography>
-                  </Box>
-                </Grid>
-                
-                <Grid item xs={12} sm={6}>
-                  <Box sx={{ mb: 3 }}>
-                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>Apartment</Typography>
-                    <Chip 
-                      label={selectedUser.apartment} 
-                      variant="outlined" 
-                      size="small"
-                      sx={{ borderRadius: '6px' }}
-                    />
-                  </Box>
-                  
-                  <Box sx={{ mb: 3 }}>
-                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>Joined On</Typography>
-                    <Typography variant="body1">{selectedUser.joinDate}</Typography>
-                  </Box>
-                </Grid>
 
-                <Grid item xs={12}>
-                  <Paper 
-                    variant="outlined" 
+              {loading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', p: 5 }}>
+                  <CircularProgress />
+                </Box>
+              ) : filteredUsers.length === 0 ? (
+                <Box sx={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  alignItems: 'center', 
+                  py: 5,
+                  opacity: 0.7
+                }}>
+                  <SearchIcon sx={{ fontSize: 60, color: 'info.main', mb: 2, opacity: 0.6 }} />
+                  <Typography align="center" variant="h6">No users found</Typography>
+                  <Typography align="center">Try adjusting your search terms</Typography>
+                </Box>
+              ) : (
+                <>
+                  <TableContainer 
+                    component={Paper} 
+                    elevation={0}
                     sx={{ 
-                      p: 2, 
-                      borderRadius: 2, 
-                      bgcolor: alpha(theme.palette.primary.light, 0.05),
-                      borderColor: alpha(theme.palette.primary.main, 0.1)
+                      boxShadow: 'none',
+                      borderRadius: 3,
+                      overflow: 'hidden',
+                      border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
+                      backgroundColor: alpha(theme.palette.background.paper, 0.7),
+                      backdropFilter: 'blur(8px)',
                     }}
                   >
-                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                      Activity Summary
-                    </Typography>
-                    <Typography variant="body2">
-                      This user has been active for {Math.floor(Math.random() * 24)} months and has submitted {Math.floor(Math.random() * 10)} reports. 
-                      Last login was on {new Date().toLocaleDateString()}.
-                    </Typography>
-                  </Paper>
-                </Grid>
-              </Grid>
-            </DialogContent>
-            <DialogActions sx={{ p: 2, px: 3 }}>
-              <Button 
-                onClick={() => setDialogOpen(false)}
-                sx={{ 
-                  borderRadius: '8px',
-                  textTransform: 'none'
-                }}
-              >
-                Close
-              </Button>
-              <Button 
-                variant="contained" 
-                color="primary"
-                startIcon={<EditIcon />}
-                sx={{
-                  borderRadius: '8px',
-                  textTransform: 'none',
-                  boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
-                  '&:hover': {
-                    boxShadow: `0 6px 16px ${alpha(theme.palette.primary.main, 0.4)}`,
-                  }
-                }}
-              >
-                Edit User
-              </Button>
-            </DialogActions>
-          </>
-        )}
-      </Dialog>
+                    <Table aria-label="users table" size="medium">
+                      <TableHead>
+                        <TableRow>
+                          <StyledTableCell>User</StyledTableCell>
+                          <StyledTableCell>Email</StyledTableCell>
+                          <StyledTableCell>Apartment</StyledTableCell>
+                          <StyledTableCell>Role</StyledTableCell>
+                          <StyledTableCell>Status</StyledTableCell>
+                          <StyledTableCell>Join Date</StyledTableCell>
+                          <StyledTableCell align="right">Actions</StyledTableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {filteredUsers
+                          .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                          .map((user) => (
+                            <StyledTableRow key={user.id}>
+                              <StyledTableCell component="th" scope="row">
+                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                  <Avatar 
+                                    sx={{ 
+                                      width: 36, 
+                                      height: 36, 
+                                      bgcolor: theme.palette.primary.main,
+                                      color: 'white',
+                                      fontWeight: 'bold',
+                                      mr: 2,
+                                      fontSize: 14
+                                    }}
+                                  >
+                                    {getNameInitials(user.name)}
+                                  </Avatar>
+                                  <Typography variant="body1" fontWeight="medium">{user.name}</Typography>
+                                </Box>
+                              </StyledTableCell>
+                              <StyledTableCell>{user.email}</StyledTableCell>
+                              <StyledTableCell>
+                                <Chip 
+                                  label={user.apartment} 
+                                  size="small" 
+                                  variant="outlined"
+                                  sx={{ 
+                                    borderRadius: '6px'
+                                  }}
+                                />
+                              </StyledTableCell>
+                              <StyledTableCell>{getRoleChip(user.role)}</StyledTableCell>
+                              <StyledTableCell>{getStatusChip(user.status)}</StyledTableCell>
+                              <StyledTableCell>{user.joinDate}</StyledTableCell>
+                              <StyledTableCell align="right">
+                                <Stack direction="row" spacing={1} justifyContent="flex-end">
+                                  <Tooltip title="View Details">
+                                    <IconButton 
+                                      size="small" 
+                                      onClick={() => handleViewUser(user)}
+                                      sx={{
+                                        color: theme.palette.info.main,
+                                        bgcolor: alpha(theme.palette.info.main, 0.1),
+                                        '&:hover': {
+                                          bgcolor: alpha(theme.palette.info.main, 0.2),
+                                        }
+                                      }}
+                                    >
+                                      <VisibilityIcon fontSize="small" />
+                                    </IconButton>
+                                  </Tooltip>
+                                  <Tooltip title="Edit User">
+                                    <IconButton 
+                                      size="small"
+                                      sx={{
+                                        color: theme.palette.primary.main,
+                                        bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                        '&:hover': {
+                                          bgcolor: alpha(theme.palette.primary.main, 0.2),
+                                        }
+                                      }}
+                                    >
+                                      <EditIcon fontSize="small" />
+                                    </IconButton>
+                                  </Tooltip>
+                                  {user.status === 'active' ? (
+                                    <Tooltip title="Suspend User">
+                                      <IconButton 
+                                        size="small"
+                                        sx={{
+                                          color: theme.palette.warning.main,
+                                          bgcolor: alpha(theme.palette.warning.main, 0.1),
+                                          '&:hover': {
+                                            bgcolor: alpha(theme.palette.warning.main, 0.2),
+                                          }
+                                        }}
+                                      >
+                                        <BlockIcon fontSize="small" />
+                                      </IconButton>
+                                    </Tooltip>
+                                  ) : (
+                                    <Tooltip title="Activate User">
+                                      <IconButton 
+                                        size="small"
+                                        sx={{
+                                          color: theme.palette.success.main,
+                                          bgcolor: alpha(theme.palette.success.main, 0.1),
+                                          '&:hover': {
+                                            bgcolor: alpha(theme.palette.success.main, 0.2),
+                                          }
+                                        }}
+                                      >
+                                        <PersonIcon fontSize="small" />
+                                      </IconButton>
+                                    </Tooltip>
+                                  )}
+                                  <Tooltip title="Delete User">
+                                    <IconButton 
+                                      size="small"
+                                      onClick={() => handleDeleteUser(user)}
+                                      sx={{
+                                        color: theme.palette.error.main,
+                                        bgcolor: alpha(theme.palette.error.main, 0.1),
+                                        '&:hover': {
+                                          bgcolor: alpha(theme.palette.error.main, 0.2),
+                                        }
+                                      }}
+                                    >
+                                      <DeleteIcon fontSize="small" />
+                                    </IconButton>
+                                  </Tooltip>
+                                </Stack>
+                              </StyledTableCell>
+                            </StyledTableRow>
+                          ))}
+                      </TableBody>
+                    </Table>
+                    <TablePagination
+                      rowsPerPageOptions={[5, 10, 25]}
+                      component="div"
+                      count={filteredUsers.length}
+                      rowsPerPage={rowsPerPage}
+                      page={page}
+                      onPageChange={handleChangePage}
+                      onRowsPerPageChange={handleChangeRowsPerPage}
+                      sx={{
+                        borderTop: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
+                        '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': {
+                          fontSize: '0.875rem',
+                        },
+                      }}
+                    />
+                  </TableContainer>
+                </>
+              )}
+            </Paper>
+          </Grid>
+        </Grid>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog
-        open={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
-        PaperProps={{
-          sx: {
-            borderRadius: 3,
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
-            maxWidth: 400
-          }
-        }}
-      >
-        <DialogTitle sx={{ 
-          p: 3, 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: 2,
-          bgcolor: alpha(theme.palette.error.light, 0.1),
-          color: theme.palette.error.dark
-        }}>
-          <WarningIcon color="error" />
-          <Typography variant="h6" fontWeight="bold">Confirm Delete</Typography>
-        </DialogTitle>
-        <DialogContent sx={{ p: 3, pt: 3 }}>
-          <Typography variant="body1" sx={{ mb: 2 }}>
-            Are you sure you want to delete user <Box component="span" fontWeight="bold">"{userToDelete?.name}"</Box>?
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            This action cannot be undone and all user data will be permanently removed.
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ p: 2, px: 3, borderTop: `1px solid ${alpha(theme.palette.divider, 0.2)}` }}>
-          <Button 
-            onClick={() => setDeleteDialogOpen(false)}
-            sx={{ 
-              borderRadius: '8px',
-              textTransform: 'none'
-            }}
-          >
-            Cancel
-          </Button>
-          <Button 
-            variant="contained" 
-            color="error" 
-            onClick={confirmDelete}
-            sx={{
-              borderRadius: '8px',
-              textTransform: 'none',
-              boxShadow: `0 4px 12px ${alpha(theme.palette.error.main, 0.3)}`,
-              '&:hover': {
-                boxShadow: `0 6px 16px ${alpha(theme.palette.error.main, 0.4)}`,
+        {/* User Details Dialog */}
+        <Dialog
+          open={dialogOpen}
+          onClose={() => setDialogOpen(false)}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: 3,
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+              backdropFilter: 'blur(10px)',
+              backgroundColor: alpha(theme.palette.background.paper, 0.85),
+              border: `1px solid ${alpha(theme.palette.background.paper, 0.2)}`,
+              position: 'relative',
+              overflow: 'hidden',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '1px',
+                background: `linear-gradient(90deg, ${alpha(theme.palette.common.white, 0)}, ${alpha(theme.palette.common.white, 0.2)}, ${alpha(theme.palette.common.white, 0)})`
               }
-            }}
-          >
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Container>
+            }
+          }}
+        >
+          {selectedUser && (
+            <>
+              <DialogTitle sx={{ 
+                borderBottom: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
+                p: 3,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2
+              }}>
+                <Avatar 
+                  sx={{ 
+                    width: 48, 
+                    height: 48, 
+                    bgcolor: theme.palette.primary.main,
+                    color: 'white',
+                    fontWeight: 'bold',
+                    fontSize: 18
+                  }}
+                >
+                  {getNameInitials(selectedUser.name)}
+                </Avatar>
+                <Box>
+                  <Typography variant="h6" fontWeight="bold">{selectedUser.name}</Typography>
+                  <Box sx={{ mt: 0.5 }}>
+                    {getRoleChip(selectedUser.role)} 
+                    <Box component="span" sx={{ mx: 1 }}>•</Box> 
+                    {getStatusChip(selectedUser.status)}
+                  </Box>
+                </Box>
+              </DialogTitle>
+              <DialogContent sx={{ p: 3 }}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} sm={6}>
+                    <Box sx={{ mb: 3 }}>
+                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>Email</Typography>
+                      <Typography variant="body1" fontWeight="medium">{selectedUser.email}</Typography>
+                    </Box>
+                    
+                    <Box sx={{ mb: 3 }}>
+                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>Phone</Typography>
+                      <Typography variant="body1">{selectedUser.phone}</Typography>
+                    </Box>
+                  </Grid>
+                  
+                  <Grid item xs={12} sm={6}>
+                    <Box sx={{ mb: 3 }}>
+                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>Apartment</Typography>
+                      <Chip 
+                        label={selectedUser.apartment} 
+                        variant="outlined" 
+                        size="small"
+                        sx={{ borderRadius: '6px' }}
+                      />
+                    </Box>
+                    
+                    <Box sx={{ mb: 3 }}>
+                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>Joined On</Typography>
+                      <Typography variant="body1">{selectedUser.joinDate}</Typography>
+                    </Box>
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <Paper 
+                      variant="outlined" 
+                      sx={{ 
+                        p: 2, 
+                        borderRadius: 2, 
+                        bgcolor: alpha(theme.palette.primary.light, 0.05),
+                        borderColor: alpha(theme.palette.primary.main, 0.1)
+                      }}
+                    >
+                      <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                        Activity Summary
+                      </Typography>
+                      <Typography variant="body2">
+                        This user has been active for {Math.floor(Math.random() * 24)} months and has submitted {Math.floor(Math.random() * 10)} reports. 
+                        Last login was on {new Date().toLocaleDateString()}.
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                </Grid>
+              </DialogContent>
+              <DialogActions sx={{ p: 2, px: 3 }}>
+                <Button 
+                  onClick={() => setDialogOpen(false)}
+                  sx={{ 
+                    borderRadius: '8px',
+                    textTransform: 'none'
+                  }}
+                >
+                  Close
+                </Button>
+                <Button 
+                  variant="contained" 
+                  color="primary"
+                  startIcon={<EditIcon />}
+                  sx={{
+                    borderRadius: '8px',
+                    textTransform: 'none',
+                    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
+                    '&:hover': {
+                      boxShadow: `0 6px 16px ${alpha(theme.palette.primary.main, 0.4)}`,
+                    }
+                  }}
+                >
+                  Edit User
+                </Button>
+              </DialogActions>
+            </>
+          )}
+        </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog
+          open={deleteDialogOpen}
+          onClose={() => setDeleteDialogOpen(false)}
+          PaperProps={{
+            sx: {
+              borderRadius: 3,
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+              backdropFilter: 'blur(10px)',
+              backgroundColor: alpha(theme.palette.background.paper, 0.85),
+              border: `1px solid ${alpha(theme.palette.background.paper, 0.2)}`,
+              maxWidth: 400,
+              position: 'relative',
+              overflow: 'hidden',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '1px',
+                background: `linear-gradient(90deg, ${alpha(theme.palette.common.white, 0)}, ${alpha(theme.palette.common.white, 0.2)}, ${alpha(theme.palette.common.white, 0)})`
+              }
+            }
+          }}
+        >
+          <DialogTitle sx={{ 
+            p: 3, 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 2,
+            bgcolor: alpha(theme.palette.error.light, 0.1),
+            color: theme.palette.error.dark
+          }}>
+            <WarningIcon color="error" />
+            <Typography variant="h6" fontWeight="bold">Confirm Delete</Typography>
+          </DialogTitle>
+          <DialogContent sx={{ p: 3, pt: 3 }}>
+            <Typography variant="body1" sx={{ mb: 2 }}>
+              Are you sure you want to delete user <Box component="span" fontWeight="bold">"{userToDelete?.name}"</Box>?
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              This action cannot be undone and all user data will be permanently removed.
+            </Typography>
+          </DialogContent>
+          <DialogActions sx={{ p: 2, px: 3, borderTop: `1px solid ${alpha(theme.palette.divider, 0.2)}` }}>
+            <Button 
+              onClick={() => setDeleteDialogOpen(false)}
+              sx={{ 
+                borderRadius: '8px',
+                textTransform: 'none'
+              }}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="contained" 
+              color="error" 
+              onClick={confirmDelete}
+              sx={{
+                borderRadius: '8px',
+                textTransform: 'none',
+                boxShadow: `0 4px 12px ${alpha(theme.palette.error.main, 0.3)}`,
+                '&:hover': {
+                  boxShadow: `0 6px 16px ${alpha(theme.palette.error.main, 0.4)}`,
+                }
+              }}
+            >
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Container>
+    </Box>
   );
 };
 
