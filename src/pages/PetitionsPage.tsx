@@ -234,21 +234,21 @@ const PetitionsPage: React.FC = () => {
     const isApproved = petition.adminReview.status === 'approved';
     const isActuallyActive = isApproved && petition.status === 'active';
     const isActuallyCompleted = isApproved && petition.status === 'completed';
-    // const isActuallyExpired = isApproved && petition.status === 'expired'; // For future use
-
+    
     return (
       <MuiGrid item xs={12} sm={6} md={4} key={petition._id}>
         <Card sx={{ 
           display: 'flex', 
           flexDirection: 'column',
           height: '100%',
-          transition: 'transform 0.2s, box-shadow 0.2s',
-          borderRadius: '12px',
+          transition: 'transform 0.3s, box-shadow 0.3s',
+          borderRadius: '16px',
           overflow: 'hidden',
           boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          backgroundColor: '#ffffff',
           '&:hover': {
-            transform: 'translateY(-4px)',
-            boxShadow: '0 12px 24px rgba(0,0,0,0.15)',
+            transform: 'translateY(-6px)',
+            boxShadow: '0 12px 30px rgba(0,0,0,0.15)',
           },
           ...(isPending && {
             border: '1px dashed',
@@ -262,50 +262,72 @@ const PetitionsPage: React.FC = () => {
             border: '1px solid',
             borderColor: 'primary.main',
           }),
-          // Optional: Add border for completed if desired
-          // ...(isActuallyCompleted && {
-          //   border: '1px solid',
-          //   borderColor: 'success.main',
-          // }),
         }}>
           {petition.image ? (
             <CardMedia
               component="img"
-              height="140"
+              height="160"
               image={`http://localhost:5000${petition.image}`}
               alt={petition.title}
-              sx={{ objectFit: 'cover' }}
+              sx={{ 
+                objectFit: 'cover',
+                borderBottom: '1px solid',
+                borderColor: alpha('#000', 0.05)
+              }}
             />
           ) : (
             <Box 
               sx={{ 
-                height: '140px', 
-                bgcolor: alpha('#3f51b5', 0.1),
+                height: '160px', 
+                bgcolor: alpha('#3f51b5', 0.05),
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                flexDirection: 'column',
+                borderBottom: '1px solid',
+                borderColor: alpha('#000', 0.05)
               }}
             >
               <Typography 
                 variant="overline" 
-                color="textSecondary"
+                color="primary"
                 sx={{ 
-                  fontSize: '1rem',
+                  fontSize: '0.85rem',
                   textTransform: 'uppercase',
                   letterSpacing: '1px',
+                  fontWeight: 600,
+                  opacity: 0.9,
+                  mb: 1
                 }}
               >
                 {petition.category}
               </Typography>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{
+                  fontStyle: 'italic',
+                  maxWidth: '80%',
+                  textAlign: 'center',
+                  opacity: 0.7
+                }}
+              >
+                Make a difference in our community
+              </Typography>
             </Box>
           )}
           
-          <CardContent sx={{ flexGrow: 1 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+          <CardContent sx={{ flexGrow: 1, py: 2.5, px: 2.5 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
               <Chip 
                 label={petition.category} 
                 size="small"
-                sx={{ borderRadius: '16px', bgcolor: alpha('#3f51b5', 0.1) }}
+                sx={{ 
+                  borderRadius: '16px', 
+                  bgcolor: alpha('#3f51b5', 0.1),
+                  fontWeight: 500,
+                  px: 1
+                }}
               />
               <Box> {/* Container for status chips */}
                 {isPending && (
@@ -313,7 +335,7 @@ const PetitionsPage: React.FC = () => {
                     label="Pending Review" 
                     size="small" 
                     color="warning"
-                    sx={{ borderRadius: '16px' }}
+                    sx={{ borderRadius: '16px', fontWeight: 500 }}
                   />
                 )}
                 {isRejected && !isPending && (
@@ -321,7 +343,7 @@ const PetitionsPage: React.FC = () => {
                     label="Rejected" 
                     size="small" 
                     color="error"
-                    sx={{ borderRadius: '16px' }}
+                    sx={{ borderRadius: '16px', fontWeight: 500 }}
                   />
                 )}
                 {isActuallyActive && !isPending && !isRejected && (
@@ -329,7 +351,7 @@ const PetitionsPage: React.FC = () => {
                     label="Active" 
                     size="small" 
                     color="primary"
-                    sx={{ borderRadius: '16px' }}
+                    sx={{ borderRadius: '16px', fontWeight: 500 }}
                   />
                 )}
                 {isActuallyCompleted && !isPending && !isRejected && !isActuallyActive && (
@@ -337,17 +359,9 @@ const PetitionsPage: React.FC = () => {
                     label="Completed" 
                     size="small" 
                     color="success"
-                    sx={{ borderRadius: '16px' }}
+                    sx={{ borderRadius: '16px', fontWeight: 500 }}
                   />
                 )}
-                {/* Placeholder for Expired chip if needed later
-                {isApproved && petition.status === 'expired' && !isPending && !isRejected && !isActuallyActive && !isActuallyCompleted && (
-                  <Chip 
-                    label="Expired" 
-                    size="small" 
-                    // sx={{ borderRadius: '16px', backgroundColor: grey[500], color: 'white' }} // Example
-                  />
-                )} */}
               </Box>
             </Box>
             
@@ -356,15 +370,15 @@ const PetitionsPage: React.FC = () => {
               variant="h6" 
               component="div" 
               sx={{ 
-                fontWeight: 'bold',
+                fontWeight: 700,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 display: '-webkit-box',
                 WebkitLineClamp: 2,
                 WebkitBoxOrient: 'vertical',
-                lineHeight: 1.2,
-                height: '2.4em',
-                mb: 1
+                lineHeight: 1.3,
+                height: '2.6em',
+                mb: 1.5
               }}
             >
               {petition.title}
@@ -374,24 +388,31 @@ const PetitionsPage: React.FC = () => {
               variant="body2" 
               color="text.secondary" 
               sx={{ 
-                mb: 2,
+                mb: 2.5,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 display: '-webkit-box',
                 WebkitLineClamp: 3,
                 WebkitBoxOrient: 'vertical',
-                height: '4.5em'
+                height: '4.5em',
+                lineHeight: 1.5
               }}
             >
               {truncateText(petition.description, 150)}
             </Typography>
             
-            <Box sx={{ mb: 2 }}>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                <Typography variant="body2" color="text.secondary">
+            <Box sx={{ mb: 2.5 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.75, alignItems: 'center' }}>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                   {petition.signatures.length} of {petition.goal} signatures
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    fontWeight: 600,
+                    color: progress === 100 ? 'success.main' : 'primary.main'
+                  }}
+                >
                   {progress}%
                 </Typography>
               </Box>
@@ -401,38 +422,48 @@ const PetitionsPage: React.FC = () => {
                 sx={{ 
                   height: 8, 
                   borderRadius: 4,
-                  backgroundColor: alpha('#000', 0.1),
+                  backgroundColor: alpha('#000', 0.05),
                   '& .MuiLinearProgress-bar': {
                     borderRadius: 4,
-                    backgroundColor: progress === 100 ? 'success.main' : 'primary.main',
+                    background: progress === 100 
+                      ? 'linear-gradient(90deg, #4caf50 0%, #8bc34a 100%)' 
+                      : 'linear-gradient(90deg, #3f51b5 0%, #2196f3 100%)',
                   }
                 }} 
               />
             </Box>
             
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 'auto' }}>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Avatar sx={{ width: 24, height: 24, mr: 1, bgcolor: 'primary.main' }}>
+                <Avatar 
+                  sx={{ 
+                    width: 28, 
+                    height: 28, 
+                    mr: 1, 
+                    bgcolor: 'primary.main',
+                    fontSize: '0.85rem'
+                  }}
+                >
                   <PersonIcon fontSize="small" />
                 </Avatar>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                   {creatorName}
                 </Typography>
               </Box>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <CalendarTodayIcon fontSize="small" sx={{ mr: 0.5, color: 'text.secondary' }} />
-                <Typography variant="body2" color="text.secondary">
+                <CalendarTodayIcon fontSize="small" sx={{ mr: 0.75, color: 'text.secondary', fontSize: '1rem' }} />
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                   {formatDate(petition.deadline)}
                 </Typography>
               </Box>
             </Box>
           </CardContent>
           
-          <CardActions sx={{ pt: 0, pb: 2, px: 2 }}>
+          <CardActions sx={{ pt: 0, pb: 2.5, px: 2.5 }}>
             <Button 
               component={Link} 
               to={`/petitions/${petition._id}`}
-              size="small" 
+              size="medium" 
               color="primary"
               variant="outlined"
               endIcon={<ArrowForwardIcon />}
@@ -440,7 +471,8 @@ const PetitionsPage: React.FC = () => {
                 borderRadius: '20px',
                 ml: 'auto',
                 textTransform: 'none',
-                fontWeight: 'medium'
+                fontWeight: 600,
+                px: 2
               }}
             >
               View Details
@@ -452,13 +484,43 @@ const PetitionsPage: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Box>
-          <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold' }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          flexDirection: { xs: 'column', md: 'row' }, 
+          justifyContent: 'space-between', 
+          alignItems: { xs: 'flex-start', md: 'center' }, 
+          mb: { xs: 4, md: 5 },
+          gap: 2
+        }}
+      >
+        <Box sx={{ maxWidth: { xs: '100%', md: '60%' } }}>
+          <Typography 
+            variant="h4" 
+            component="h1" 
+            gutterBottom 
+            sx={{ 
+              fontWeight: 800,
+              fontSize: { xs: '1.75rem', md: '2.25rem' },
+              lineHeight: 1.2,
+              background: 'linear-gradient(90deg, #3f51b5 0%, #2196f3 100%)',
+              backgroundClip: 'text',
+              color: 'transparent',
+              WebkitBackgroundClip: 'text'
+            }}
+          >
             Community Petitions
           </Typography>
-          <Typography variant="subtitle1" color="text.secondary">
+          <Typography 
+            variant="subtitle1" 
+            color="text.secondary"
+            sx={{ 
+              fontSize: { xs: '0.95rem', md: '1.05rem' },
+              maxWidth: '95%',
+              mb: { xs: 2, md: 0 }
+            }}
+          >
             Support initiatives that matter to our society and create positive change
           </Typography>
         </Box>
@@ -469,10 +531,17 @@ const PetitionsPage: React.FC = () => {
           onClick={handleCreateDialogOpen}
           sx={{ 
             borderRadius: '28px',
-            px: 3,
-            py: 1.2,
-            fontWeight: 'medium',
-            boxShadow: '0 4px 14px rgba(0, 0, 0, 0.15)',
+            px: { xs: 2.5, md: 3.5 },
+            py: 1.5,
+            fontWeight: 600,
+            fontSize: '0.95rem',
+            boxShadow: '0 8px 20px rgba(63, 81, 181, 0.2)',
+            background: 'linear-gradient(45deg, #3f51b5 10%, #2196f3 90%)',
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              boxShadow: '0 12px 28px rgba(33, 150, 243, 0.3)',
+              transform: 'translateY(-2px)'
+            }
           }}
         >
           Create Petition
@@ -480,17 +549,51 @@ const PetitionsPage: React.FC = () => {
       </Box>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+        <Alert 
+          severity="error" 
+          sx={{ 
+            mb: 3, 
+            borderRadius: '12px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+          }} 
+          onClose={() => setError(null)}
+        >
           {error}
         </Alert>
       )}
 
-      <Paper sx={{ mb: 4, borderRadius: '12px', overflow: 'hidden' }}>
+      <Paper 
+        sx={{ 
+          mb: 4, 
+          borderRadius: '16px', 
+          overflow: 'hidden',
+          boxShadow: '0 6px 16px rgba(0,0,0,0.05)',
+          border: '1px solid',
+          borderColor: 'divider'
+        }}
+      >
         <Tabs 
           value={tabValue} 
           onChange={handleTabChange}
           variant="fullWidth"
-          TabIndicatorProps={{ style: { backgroundColor: '#3f51b5' } }}
+          TabIndicatorProps={{ 
+            style: { 
+              height: '3px',
+              borderRadius: '3px'
+            } 
+          }}
+          sx={{
+            '& .MuiTab-root': {
+              textTransform: 'none',
+              fontSize: '0.95rem',
+              fontWeight: 600,
+              py: 2,
+              transition: 'all 0.2s',
+              '&:hover': {
+                opacity: 0.8
+              }
+            }
+          }}
         >
           <Tab label="All Petitions" />
           <Tab label="Active" />
@@ -501,8 +604,19 @@ const PetitionsPage: React.FC = () => {
       </Paper>
 
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-          <CircularProgress />
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            flexDirection: 'column',
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            py: 10 
+          }}
+        >
+          <CircularProgress size={48} sx={{ mb: 2 }} />
+          <Typography variant="body1" color="text.secondary">
+            Loading petitions...
+          </Typography>
         </Box>
       ) : (
         <>
@@ -511,30 +625,86 @@ const PetitionsPage: React.FC = () => {
               {getFilteredPetitions().map(petition => renderPetitionCard(petition))}
             </MuiGrid>
           ) : (
-            <Paper sx={{ p: 6, textAlign: 'center', borderRadius: '12px' }}>
-              <Typography variant="h6" gutterBottom>
-                No petitions found
-              </Typography>
-              <Typography variant="body1" color="text.secondary" paragraph>
-                {tabValue === 0 
-                  ? 'There are currently no petitions available.' 
-                  : tabValue === 1 
-                    ? 'There are no active petitions at the moment.' 
-                    : tabValue === 2 
-                      ? 'There are no completed petitions yet.'
-                      : tabValue === 3
-                        ? 'You have no petitions pending review.'
-                        : 'You have no rejected petitions.'}
-              </Typography>
-              <Button 
-                variant="outlined" 
-                color="primary"
-                startIcon={<AddIcon />}
-                onClick={handleCreateDialogOpen}
-                sx={{ mt: 2 }}
+            <Paper 
+              sx={{ 
+                p: { xs: 4, md: 6 }, 
+                textAlign: 'center', 
+                borderRadius: '16px',
+                boxShadow: '0 6px 20px rgba(0,0,0,0.03)',
+                border: '1px solid',
+                borderColor: 'divider',
+                background: alpha('#f5f5f5', 0.3)
+              }}
+            >
+              <Box 
+                sx={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  alignItems: 'center',
+                  maxWidth: '500px',
+                  mx: 'auto'
+                }}
               >
-                Create The First Petition
-              </Button>
+                <Box 
+                  sx={{ 
+                    width: 120, 
+                    height: 120, 
+                    mb: 3,
+                    opacity: 0.7,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: '50%',
+                    background: alpha('#e0e0e0', 0.3)
+                  }}
+                >
+                  {tabValue === 3 ? (
+                    <span style={{ fontSize: '3rem' }}>⌛</span>
+                  ) : tabValue === 4 ? (
+                    <span style={{ fontSize: '3rem' }}>❌</span>
+                  ) : (
+                    <span style={{ fontSize: '3rem' }}>📝</span>
+                  )}
+                </Box>
+
+                <Typography 
+                  variant="h6" 
+                  gutterBottom
+                  sx={{ fontWeight: 700, mb: 1.5 }}
+                >
+                  No petitions found
+                </Typography>
+                <Typography 
+                  variant="body1" 
+                  color="text.secondary" 
+                  paragraph
+                  sx={{ mb: 3, lineHeight: 1.6 }}
+                >
+                  {tabValue === 0 
+                    ? 'There are currently no petitions available.' 
+                    : tabValue === 1 
+                      ? 'There are no active petitions at the moment.' 
+                      : tabValue === 2 
+                        ? 'There are no completed petitions yet.'
+                        : tabValue === 3
+                          ? 'You have no petitions pending review.'
+                          : 'You have no rejected petitions.'}
+                </Typography>
+                <Button 
+                  variant="outlined" 
+                  color="primary"
+                  startIcon={<AddIcon />}
+                  onClick={handleCreateDialogOpen}
+                  sx={{ 
+                    borderRadius: '28px',
+                    px: 3,
+                    py: 1.25,
+                    fontWeight: 600
+                  }}
+                >
+                  Create The First Petition
+                </Button>
+              </Box>
             </Paper>
           )}
         </>
@@ -547,12 +717,26 @@ const PetitionsPage: React.FC = () => {
         maxWidth="md"
         fullWidth
         PaperProps={{
-          sx: { borderRadius: '12px' }
+          sx: { 
+            borderRadius: '16px',
+            overflow: 'hidden',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.12)'
+          }
         }}
       >
-        <DialogTitle sx={{ px: 3, pt: 3, pb: 0 }}>
+        <DialogTitle sx={{ px: { xs: 2, md: 3 }, pt: 3, pb: 0 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="h5" component="div" sx={{ fontWeight: 'bold' }}>
+            <Typography 
+              variant="h5" 
+              component="div" 
+              sx={{ 
+                fontWeight: 700,
+                background: 'linear-gradient(45deg, #3f51b5 30%, #2196f3 90%)',
+                backgroundClip: 'text',
+                color: 'transparent',
+                WebkitBackgroundClip: 'text'
+              }}
+            >
               Create a New Petition
             </Typography>
             <IconButton
@@ -570,7 +754,7 @@ const PetitionsPage: React.FC = () => {
             </IconButton>
           </Box>
         </DialogTitle>
-        <DialogContent sx={{ px: 3, py: 3 }}>
+        <DialogContent sx={{ px: { xs: 2, md: 3 }, pt: 2, pb: 3 }}>
           <PetitionForm onSubmitSuccess={handlePetitionCreated} />
         </DialogContent>
       </Dialog>
