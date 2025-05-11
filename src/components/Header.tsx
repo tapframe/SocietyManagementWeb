@@ -36,6 +36,7 @@ import ApartmentIcon from '@mui/icons-material/Apartment';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import PetitionIcon from '@mui/icons-material/Create';
 import { useAuth } from '../context/AuthContext';
 
 const menuItems = [
@@ -43,6 +44,7 @@ const menuItems = [
   { text: 'Report Issues', icon: <ReportIcon />, path: '/report', requireAuth: true },
   { text: 'My Reports', icon: <AssignmentIcon />, path: '/my-reports', requireAuth: true },
   { text: 'Know Your Rules', icon: <RuleIcon />, path: '/rules' },
+  { text: 'Petitions', icon: <PetitionIcon />, path: '/petitions' },
   { text: 'Share Ideas', icon: <IdeaIcon />, path: '/ideas', requireAuth: true },
 ];
 

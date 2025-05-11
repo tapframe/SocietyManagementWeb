@@ -11,6 +11,7 @@ import { fileURLToPath } from 'url';
 import authRoutes from './routes/auth.js';
 import reportRoutes from './routes/reports.js';
 import adminRoutes from './routes/admin.js';
+import petitionRoutes from './routes/petitions.js';
 
 // Get current directory name (ESM equivalent of __dirname)
 const __filename = fileURLToPath(import.meta.url);
@@ -52,6 +53,7 @@ mongoose.connect(process.env.MONGODB_URI)
 app.use('/api/auth', authRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/petitions', petitionRoutes);
 
 // Home route
 app.get('/', (req, res) => {

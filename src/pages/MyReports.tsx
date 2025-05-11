@@ -302,10 +302,10 @@ const MyReports: React.FC = () => {
           sx={{ 
             backgroundColor: report.type === 'violation' ? '#3C3C43' : alpha(theme.palette.info.main, 0.9),
             borderRadius: '12px 0 0 12px',
-            display: 'flex',
-            flexDirection: 'column',
+        display: 'flex',
+        flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'center',
+            justifyContent: 'center', 
             p: 2,
             position: 'relative',
           }}
@@ -324,7 +324,7 @@ const MyReports: React.FC = () => {
             }}
           >
             {report.type}
-          </Typography>
+            </Typography>
           
           <Typography 
             variant="caption" 
@@ -336,7 +336,7 @@ const MyReports: React.FC = () => {
             }}
           >
             {report.status}
-          </Typography>
+        </Typography>
         </Grid>
         
         {/* Main content area */}
@@ -355,8 +355,8 @@ const MyReports: React.FC = () => {
                   }}
                 >
                   ID: {report._id.substring(0, 8)}
-                </Typography>
-                
+        </Typography>
+        
                 {/* Report Title */}
                 <Typography 
                   variant="h6" 
@@ -368,7 +368,7 @@ const MyReports: React.FC = () => {
                   }}
                 >
                   {report.title}
-                </Typography>
+        </Typography>
               </Box>
               
               {/* Status Tag */}
@@ -392,20 +392,20 @@ const MyReports: React.FC = () => {
                     }}
                   >
                     {report.status === 'in-progress' ? 'Active' : report.status}
-                  </Typography>
+          </Typography>
                 </Box>
               </Box>
-            </Box>
-            
+      </Box>
+      
             {/* Progress Bar - only for in-progress reports */}
             {report.status === 'in-progress' && (
               <Box sx={{ mb: 2 }}>
                 <Box sx={{ position: 'relative', height: 4, backgroundColor: 'rgba(222, 222, 222, 0.8)', width: '100%', borderRadius: 2 }}>
                   <Box 
                     sx={{ 
-                      position: 'absolute',
+            position: 'absolute',
                       top: 0,
-                      left: 0,
+            left: 0,
                       height: '100%',
                       width: '60%', // Example progress
                       backgroundColor: '#3C3C43',
@@ -424,32 +424,32 @@ const MyReports: React.FC = () => {
                   }}
                 >
                   In Progress
-                </Typography>
+        </Typography>
               </Box>
             )}
-            
+        
             {/* Description */}
-            <Typography 
-              variant="body2" 
-              sx={{ 
-                mb: 3,
+        <Typography 
+          variant="body2" 
+          sx={{ 
+            mb: 3,
                 color: '#666666',
                 fontFamily: '"Source Code Pro", monospace',
                 fontSize: '14px',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                display: '-webkit-box',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            display: '-webkit-box',
                 WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-              }}
-            >
-              {report.description}
-            </Typography>
-            
+            WebkitBoxOrient: 'vertical',
+          }}
+        >
+          {report.description}
+        </Typography>
+        
             {/* Bottom section with meta info and action */}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
               {/* Meta info (location, date) */}
-              <Box>
+          <Box>
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                   <LocationOnIcon sx={{ fontSize: 16, color: '#666666', mr: 0.5 }} />
                   <Typography 
@@ -460,8 +460,8 @@ const MyReports: React.FC = () => {
                     }}
                   >
                     {report.location}
-                  </Typography>
-                </Box>
+                </Typography>
+              </Box>
                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                   <EventIcon sx={{ fontSize: 16, color: '#666666', mr: 0.5 }} />
                   <Typography 
@@ -474,30 +474,30 @@ const MyReports: React.FC = () => {
                     {formatDate(report.createdAt)}
                   </Typography>
                 </Box>
-              </Box>
-              
+          </Box>
+          
               {/* Action button */}
-              <Button 
-                onClick={() => handleViewReport(report)}
-                sx={{ 
+          <Button 
+            onClick={() => handleViewReport(report)}
+            sx={{ 
                   borderRadius: '100px',
                   border: '1px solid #3C3C43',
                   px: 1.5,
                   py: 0.5,
                   minWidth: 0,
-                  textTransform: 'none',
+              textTransform: 'none',
                   fontFamily: '"Source Code Pro", monospace',
                   fontSize: '12px',
                   color: '#3C3C43',
-                  '&:hover': {
+              '&:hover': {
                     backgroundColor: alpha('#3C3C43', 0.05),
-                  }
-                }}
-              >
+              }
+            }}
+          >
                 View
-              </Button>
-            </Box>
-          </Box>
+          </Button>
+        </Box>
+      </Box>
         </Grid>
       </Grid>
     </Box>

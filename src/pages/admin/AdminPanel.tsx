@@ -35,9 +35,11 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import ApartmentIcon from '@mui/icons-material/Apartment';
 import HomeIcon from '@mui/icons-material/Home';
+import PetitionIcon from '@mui/icons-material/Create';
 import Dashboard from './Dashboard';
 import UserManagement from './UserManagement';
 import IncidentsManagement from './IncidentsManagement';
+import PetitionsManagement from './PetitionsManagement';
 
 const drawerWidth = 280;
 
@@ -166,6 +168,8 @@ const AdminPanel: React.FC = () => {
         return <UserManagement />;
       case 'incidents':
         return <IncidentsManagement />;
+      case 'petitions':
+        return <PetitionsManagement />;
       default:
         return <Dashboard />;
     }
@@ -425,6 +429,35 @@ const AdminPanel: React.FC = () => {
                 primary="Incidents" 
                 primaryTypographyProps={{ 
                   fontWeight: activePage === 'incidents' ? 'bold' : 'medium'
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
+          
+          <ListItem disablePadding sx={{ mb: 0.5 }}>
+            <ListItemButton
+              selected={activePage === 'petitions'}
+              onClick={() => setActivePage('petitions')}
+              sx={{
+                borderRadius: 2,
+                '&.Mui-selected': {
+                  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.15),
+                  }
+                },
+                '&:hover': {
+                  backgroundColor: alpha(theme.palette.primary.main, 0.05),
+                }
+              }}
+            >
+              <ListItemIcon>
+                <PetitionIcon color={activePage === 'petitions' ? 'primary' : undefined} />
+              </ListItemIcon>
+              <ListItemText 
+                primary="Petitions" 
+                primaryTypographyProps={{ 
+                  fontWeight: activePage === 'petitions' ? 'bold' : 'medium'
                 }}
               />
             </ListItemButton>

@@ -13,6 +13,8 @@ import ReportPage from './pages/ReportPage';
 import MyReports from './pages/MyReports';
 import RulesPage from './pages/RulesPage';
 import IdeasPage from './pages/IdeasPage';
+import PetitionsPage from './pages/PetitionsPage';
+import PetitionDetailPage from './pages/PetitionDetailPage';
 import AdminPanel from './pages/admin/AdminPanel';
 
 // Components
@@ -43,6 +45,8 @@ const App: React.FC = () => {
               <Route path="login" element={<LoginPage />} />
               <Route path="register" element={<RegisterPage />} />
               <Route path="rules" element={<RulesPage />} />
+              <Route path="petitions" element={<PetitionsPage />} />
+              <Route path="petitions/:id" element={<PetitionDetailPage />} />
             </Route>
             
             {/* Protected Routes for all authenticated users */}

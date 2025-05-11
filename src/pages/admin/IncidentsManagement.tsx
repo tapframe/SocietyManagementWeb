@@ -160,18 +160,18 @@ const IncidentsManagement: React.FC = () => {
         }
         
         return {
-          id: report._id,
-          title: report.title,
-          description: report.description,
-          category: report.category,
-          severity: report.type || 'medium', // Use type or default to medium
+        id: report._id,
+        title: report.title,
+        description: report.description,
+        category: report.category,
+        severity: report.type || 'medium', // Use type or default to medium
           status: displayStatus,
-          location: report.location,
-          reportedBy: typeof report.submittedBy === 'object' ? report.submittedBy.name : 'Unknown',
-          assignedTo: report.assignedTo || undefined,
-          dateReported: report.createdAt.split('T')[0],
-          dateResolved: report.resolvedAt ? report.resolvedAt.split('T')[0] : undefined,
-          evidence: report.evidence
+        location: report.location,
+        reportedBy: typeof report.submittedBy === 'object' ? report.submittedBy.name : 'Unknown',
+        assignedTo: report.assignedTo || undefined,
+        dateReported: report.createdAt.split('T')[0],
+        dateResolved: report.resolvedAt ? report.resolvedAt.split('T')[0] : undefined,
+        evidence: report.evidence
         };
       });
       
@@ -279,7 +279,7 @@ const IncidentsManagement: React.FC = () => {
           incident.id === selectedIncident.id 
             ? { 
                 ...incident, 
-                status: statusUpdate as any,
+                status: statusUpdate as any, 
                 assignedTo: statusUpdate === 'in-progress' ? assignTo : incident.assignedTo,
                 dateResolved: ['resolved', 'rejected'].includes(statusUpdate) 
                   ? new Date().toISOString().split('T')[0] 
