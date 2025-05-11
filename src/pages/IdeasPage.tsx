@@ -37,8 +37,10 @@ import TitleIcon from '@mui/icons-material/Title';
 import DescriptionIcon from '@mui/icons-material/Description';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { TransitionProps } from '@mui/material/transitions';
+import axiosInstance from '../utils/axiosInstance';
+import { useAuth } from '../context/AuthContext';
 
-// Sample ideas data
+// Sample ideas data as fallback
 const sampleIdeas = [
   {
     id: 1,
@@ -108,9 +110,26 @@ const SlideTransition = React.forwardRef(function Transition(
   return <Slide {...props} direction="up" ref={ref} />;
 });
 
+// Interface for the Idea type
+interface Idea {
+  _id: string;
+  id?: string; // Add id as an optional property for backward compatibility
+  title: string;
+  description: string;
+  category: string;
+  author: string;
+  authorId?: string;
+  date: string;
+  upvotes: number;
+  comments: number;
+  avatar: string;
+  upvotedBy?: string[];
+}
+
 const IdeasPage: React.FC = () => {
   const theme = useTheme();
-  const [ideas, setIdeas] = useState(sampleIdeas);
+  const { isAuthenticated, user } = useAuth();
+  const [ideas, setIdeas] = useState<Idea[]>([]);
   const [newIdea, setNewIdea] = useState({
     title: '',
     description: '',
@@ -127,17 +146,58 @@ const IdeasPage: React.FC = () => {
     severity: 'success' as 'success' | 'error'
   });
   const [filter, setFilter] = useState('');
-  const [voted, setVoted] = useState<number[]>([]);
+  const [voted, setVoted] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
-  // Simulate loading of ideas
+  // Fetch ideas when component mounts
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
+    fetchIdeas();
   }, []);
+
+  // Fetch ideas from the backend
+  const fetchIdeas = async () => {
+    setLoading(true);
+    setFetchError(null);
+    try {
+      const response = await axiosInstance.get('/ideas');
+      if (response.data) {
+        // Transform the data if necessary to match the expected format
+        const formattedIdeas = response.data.map((idea: any) => ({
+          _id: idea._id,
+          id: idea._id, // For backward compatibility
+          title: idea.title,
+          description: idea.description,
+          category: idea.category,
+          author: idea.createdBy?.name || 'Anonymous',
+          authorId: idea.createdBy?._id,
+          date: new Date(idea.createdAt).toISOString().split('T')[0],
+          upvotes: idea.upvotes?.length || 0,
+          comments: idea.comments?.length || 0,
+          avatar: idea.createdBy?.name.charAt(0) || 'A',
+          upvotedBy: idea.upvotes || []
+        }));
+        
+        setIdeas(formattedIdeas);
+        
+        // Set already voted ideas
+        if (user?.id) {
+          const userVotedIdeas = formattedIdeas
+            .filter((idea: Idea) => idea.upvotedBy?.includes(user.id))
+            .map((idea: Idea) => idea._id);
+          setVoted(userVotedIdeas);
+        }
+      }
+    } catch (error: any) {
+      console.error('Error fetching ideas:', error);
+      setFetchError('Failed to load ideas. Using sample data instead.');
+      // Use sample data as fallback if the API fails
+      setIdeas(sampleIdeas as unknown as Idea[]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -188,54 +248,107 @@ const IdeasPage: React.FC = () => {
     return valid;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isAuthenticated) {
+      setSnackbar({
+        open: true,
+        message: 'Please login to submit an idea',
+        severity: 'error'
+      });
+      return;
+    }
 
     if (validateForm()) {
       setSubmitting(true);
       
-      // Simulate API call
-      setTimeout(() => {
-        // In a real app, we would send this to an API
-        const newIdeaObject = {
-          id: ideas.length + 1,
+      try {
+        // Send the idea to the backend
+        const response = await axiosInstance.post('/ideas', {
           title: newIdea.title,
           description: newIdea.description,
-          category: newIdea.category,
-          author: 'Current User', // In a real app, this would be the logged-in user
+          category: newIdea.category
+        });
+        
+        // Get the created idea from the response
+        const createdIdea = response.data;
+        
+        // Create a formatted idea object to add to the state
+        const formattedIdea: Idea = {
+          _id: createdIdea._id,
+          id: createdIdea._id, // For backward compatibility
+          title: createdIdea.title,
+          description: createdIdea.description,
+          category: createdIdea.category,
+          author: user?.name || 'You',
+          authorId: user?.id,
           date: new Date().toISOString().split('T')[0],
           upvotes: 0,
           comments: 0,
-          avatar: 'U'
+          avatar: user?.name?.charAt(0) || 'U'
         };
 
-        setIdeas(prev => [newIdeaObject, ...prev]);
+        // Add the new idea to the state
+        setIdeas(prev => [formattedIdea, ...prev]);
+        
+        // Reset the form
         setNewIdea({
           title: '',
           description: '',
           category: ''
         });
 
+        // Show success message
         setSnackbar({
           open: true,
           message: 'Your idea has been successfully submitted!',
           severity: 'success'
         });
-        
+      } catch (error: any) {
+        console.error('Error submitting idea:', error);
+        setSnackbar({
+          open: true,
+          message: error.response?.data?.message || 'Failed to submit idea. Please try again.',
+          severity: 'error'
+        });
+      } finally {
         setSubmitting(false);
-      }, 800);
+      }
     }
   };
 
-  const handleUpvote = (id: number) => {
+  const handleUpvote = async (id: string) => {
+    if (!isAuthenticated) {
+      setSnackbar({
+        open: true,
+        message: 'Please login to upvote ideas',
+        severity: 'error'
+      });
+      return;
+    }
+    
     if (voted.includes(id)) return;
     
-    setIdeas(prev => 
-      prev.map(idea => 
-        idea.id === id ? { ...idea, upvotes: idea.upvotes + 1 } : idea
-      )
-    );
-    setVoted(prev => [...prev, id]);
+    try {
+      // Send the upvote to the backend
+      await axiosInstance.post(`/ideas/${id}/upvote`);
+      
+      // Update the UI optimistically
+      setIdeas(prev => 
+        prev.map(idea => 
+          idea._id === id ? { ...idea, upvotes: idea.upvotes + 1 } : idea
+        )
+      );
+      setVoted(prev => [...prev, id]);
+    } catch (error: any) {
+      console.error('Error upvoting idea:', error);
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.message || 'Failed to upvote. Please try again.',
+        severity: 'error'
+      });
+    }
   };
 
   const handleSnackbarClose = () => {
@@ -266,6 +379,16 @@ const IdeasPage: React.FC = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 6 }}>
+      {fetchError && (
+        <Alert 
+          severity="warning" 
+          sx={{ mb: 3 }}
+          onClose={() => setFetchError(null)}
+        >
+          {fetchError}
+        </Alert>
+      )}
+      
       <Box 
         sx={{ 
           mb: 7, 
@@ -533,7 +656,7 @@ const IdeasPage: React.FC = () => {
                 variant="contained"
                 size="large"
                 disableElevation
-                disabled={submitting}
+                disabled={submitting || !isAuthenticated}
                 sx={{ 
                   mt: 2, 
                   mb: 2,
@@ -552,7 +675,7 @@ const IdeasPage: React.FC = () => {
                   <LightbulbIcon />
                 }
               >
-                {submitting ? 'Submitting...' : 'Submit Idea'}
+                {submitting ? 'Submitting...' : !isAuthenticated ? 'Login to Submit' : 'Submit Idea'}
               </Button>
             </Box>
           </Paper>
@@ -667,7 +790,7 @@ const IdeasPage: React.FC = () => {
             </Box>
           ) : (
             filteredIdeas.map((idea, index) => (
-              <Grow in={true} key={idea.id} timeout={(index + 1) * 200}>
+              <Grow in={true} key={idea._id} timeout={(index + 1) * 200}>
                 <Card 
                   sx={{ 
                     mb: 3, 
@@ -685,7 +808,7 @@ const IdeasPage: React.FC = () => {
                   <Box
                     sx={{
                       height: 6,
-                      background: getRandomGradient(idea.id),
+                      background: getRandomGradient(index),
                     }}
                   />
                   <CardHeader
@@ -693,7 +816,7 @@ const IdeasPage: React.FC = () => {
                       <Avatar 
                         aria-label="author"
                         sx={{ 
-                          background: getRandomGradient(idea.id + 1),
+                          background: getRandomGradient(index + 1),
                           fontWeight: 'bold',
                           boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
                         }}
@@ -744,15 +867,15 @@ const IdeasPage: React.FC = () => {
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Button 
                           size="small"
-                          variant={voted.includes(idea.id) ? "contained" : "outlined"}
-                          color={voted.includes(idea.id) ? "primary" : "inherit"}
-                          startIcon={voted.includes(idea.id) ? <ThumbUpIcon /> : <ThumbUpOffAltIcon />}
-                          onClick={() => handleUpvote(idea.id)}
+                          variant={voted.includes(idea._id) ? "contained" : "outlined"}
+                          color={voted.includes(idea._id) ? "primary" : "inherit"}
+                          startIcon={voted.includes(idea._id) ? <ThumbUpIcon /> : <ThumbUpOffAltIcon />}
+                          onClick={() => handleUpvote(idea._id)}
                           sx={{ 
                             borderRadius: 6,
                             px: 2,
                             transition: 'all 0.2s ease',
-                            ...(voted.includes(idea.id) && {
+                            ...(voted.includes(idea._id) && {
                               background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`
                             })
                           }}
@@ -789,7 +912,7 @@ const IdeasPage: React.FC = () => {
                       </Box>
                       
                       <Rating 
-                        name={`rating-${idea.id}`} 
+                        name={`rating-${idea._id}`} 
                         defaultValue={0} 
                         precision={0.5} 
                         size="medium"

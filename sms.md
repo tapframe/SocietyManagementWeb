@@ -292,9 +292,61 @@ The Society Management System (SMS) is a comprehensive web-based platform design
 ```
 
 ### Future Collections (Planned)
-- **Ideas**: For community improvement suggestions
 - **Rules**: To document laws and regulations
 - **Notifications**: For system alerts and communications
+
+### Idea Collection
+```
+{
+  title: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  description: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  category: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  createdBy: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  upvotes: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  comments: [{
+    text: {
+      type: String,
+      required: true
+    },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  }
+}
+```
 
 ## API Endpoints
 
@@ -394,6 +446,33 @@ The Society Management System (SMS) is a comprehensive web-based platform design
   - Protected route (admin only)
   - Request: `{ status, notes }` (status must be 'approved' or 'rejected')
   - Response: Updated petition object
+
+### Idea Endpoints
+- **GET /api/ideas**: Get all ideas
+  - Public route that returns all ideas
+  - Response: Array of idea objects with populated user information
+
+- **GET /api/ideas/:id**: Get a specific idea
+  - Public route that returns details of a specific idea
+  - Response: Idea object with populated user information
+
+- **POST /api/ideas**: Create a new idea
+  - Protected route (requires authentication)
+  - Request: `{ title, description, category }`
+  - Response: The created idea object
+
+- **POST /api/ideas/:id/upvote**: Upvote an idea
+  - Protected route (requires authentication)
+  - Response: `{ message: 'Upvote added successfully', upvotes: number }`
+
+- **POST /api/ideas/:id/comments**: Add a comment to an idea
+  - Protected route (requires authentication)
+  - Request: `{ text }`
+  - Response: `{ message: 'Comment added successfully', comments: Array }`
+
+- **GET /api/ideas/user/me**: Get all ideas created by the current user
+  - Protected route (requires authentication)
+  - Response: Array of idea objects created by the user
 
 ## Future Enhancements
 - File upload functionality for evidence

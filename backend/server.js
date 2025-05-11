@@ -12,6 +12,7 @@ import authRoutes from './routes/auth.js';
 import reportRoutes from './routes/reports.js';
 import adminRoutes from './routes/admin.js';
 import petitionRoutes from './routes/petitions.js';
+import ideasRoutes from './routes/ideas.js';
 
 // Get current directory name (ESM equivalent of __dirname)
 const __filename = fileURLToPath(import.meta.url);
@@ -26,6 +27,7 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -47,13 +49,17 @@ app.use((err, req, res, next) => {
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
+  .catch(err => {
+    console.error('MongoDB connection error:', err);
+    process.exit(1);
+  });
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/petitions', petitionRoutes);
+app.use('/api/ideas', ideasRoutes);
 
 // Home route
 app.get('/', (req, res) => {
