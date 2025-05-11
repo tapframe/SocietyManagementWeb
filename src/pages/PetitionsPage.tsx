@@ -22,6 +22,7 @@ import {
   DialogTitle,
   DialogContent,
   IconButton,
+  useTheme,
 } from '@mui/material';
 import { GridLegacy as MuiGrid } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -66,15 +67,46 @@ const PetitionsPage: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const theme = useTheme();
   const [petitions, setPetitions] = useState<Petition[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tabValue, setTabValue] = useState(0);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
+  // Add beautiful background theme variables
+  const bgGradient = `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)}, ${alpha(theme.palette.primary.light, 0.1)})`;
+  const bgPattern = `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23${theme.palette.primary.main.replace('#', '')}' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E")`;
+
   useEffect(() => {
     console.log('Fetching petitions (location, auth state, or mount)');
     fetchPetitions();
+    
+    // Apply style to parent container to ensure full width/height
+    const mainContainer = document.querySelector('main');
+    if (mainContainer) {
+      // Save original styles to restore on unmount
+      const originalStyles = {
+        padding: mainContainer.style.padding,
+        margin: mainContainer.style.margin,
+        maxWidth: mainContainer.style.maxWidth,
+        width: mainContainer.style.width
+      };
+      
+      // Apply new styles
+      mainContainer.style.padding = '0';
+      mainContainer.style.margin = '0';
+      mainContainer.style.maxWidth = '100vw';
+      mainContainer.style.width = '100%';
+      
+      // Cleanup function to restore original styles on component unmount
+      return () => {
+        mainContainer.style.padding = originalStyles.padding;
+        mainContainer.style.margin = originalStyles.margin;
+        mainContainer.style.maxWidth = originalStyles.maxWidth;
+        mainContainer.style.width = originalStyles.width;
+      };
+    }
   }, [location, isAuthenticated, user?.id]); // Re-fetch when location changes or auth state changes
 
   const fetchPetitions = async () => {
@@ -245,7 +277,10 @@ const PetitionsPage: React.FC = () => {
           borderRadius: '16px',
           overflow: 'hidden',
           boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-          backgroundColor: '#ffffff',
+          backgroundColor: alpha('#fff', 0.9),
+          backdropFilter: 'blur(8px)',
+          border: '1px solid',
+          borderColor: 'divider',
           '&:hover': {
             transform: 'translateY(-6px)',
             boxShadow: '0 12px 30px rgba(0,0,0,0.15)',
@@ -378,7 +413,11 @@ const PetitionsPage: React.FC = () => {
                 WebkitBoxOrient: 'vertical',
                 lineHeight: 1.3,
                 height: '2.6em',
-                mb: 1.5
+                mb: 1.5,
+                background: 'linear-gradient(90deg, #3f51b5 0%, #2196f3 100%)',
+                backgroundClip: 'text',
+                color: 'transparent',
+                WebkitBackgroundClip: 'text'
               }}
             >
               {petition.title}
@@ -441,7 +480,8 @@ const PetitionsPage: React.FC = () => {
                     height: 28, 
                     mr: 1, 
                     bgcolor: 'primary.main',
-                    fontSize: '0.85rem'
+                    fontSize: '0.85rem',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.07)'
                   }}
                 >
                   <PersonIcon fontSize="small" />
@@ -472,7 +512,14 @@ const PetitionsPage: React.FC = () => {
                 ml: 'auto',
                 textTransform: 'none',
                 fontWeight: 600,
-                px: 2
+                px: 2,
+                borderWidth: 1.5,
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 4px 12px rgba(63, 81, 181, 0.15)',
+                  borderWidth: 1.5
+                }
               }}
             >
               View Details
@@ -484,281 +531,336 @@ const PetitionsPage: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
-      <Box 
-        sx={{ 
-          display: 'flex', 
-          flexDirection: { xs: 'column', md: 'row' }, 
-          justifyContent: 'space-between', 
-          alignItems: { xs: 'flex-start', md: 'center' }, 
-          mb: { xs: 4, md: 5 },
-          gap: 2
-        }}
-      >
-        <Box sx={{ maxWidth: { xs: '100%', md: '60%' } }}>
-          <Typography 
-            variant="h4" 
-            component="h1" 
-            gutterBottom 
-            sx={{ 
-              fontWeight: 800,
-              fontSize: { xs: '1.75rem', md: '2.25rem' },
-              lineHeight: 1.2,
-              background: 'linear-gradient(90deg, #3f51b5 0%, #2196f3 100%)',
-              backgroundClip: 'text',
-              color: 'transparent',
-              WebkitBackgroundClip: 'text'
-            }}
-          >
-            Community Petitions
-          </Typography>
-          <Typography 
-            variant="subtitle1" 
-            color="text.secondary"
-            sx={{ 
-              fontSize: { xs: '0.95rem', md: '1.05rem' },
-              maxWidth: '95%',
-              mb: { xs: 2, md: 0 }
-            }}
-          >
-            Support initiatives that matter to our society and create positive change
-          </Typography>
-        </Box>
-        <Button 
-          variant="contained" 
-          color="primary" 
-          startIcon={<AddIcon />}
-          onClick={handleCreateDialogOpen}
-          sx={{ 
-            borderRadius: '28px',
-            px: { xs: 2.5, md: 3.5 },
-            py: 1.5,
-            fontWeight: 600,
-            fontSize: '0.95rem',
-            boxShadow: '0 8px 20px rgba(63, 81, 181, 0.2)',
-            background: 'linear-gradient(45deg, #3f51b5 10%, #2196f3 90%)',
-            transition: 'all 0.3s ease',
-            '&:hover': {
-              boxShadow: '0 12px 28px rgba(33, 150, 243, 0.3)',
-              transform: 'translateY(-2px)'
-            }
-          }}
-        >
-          Create Petition
-        </Button>
-      </Box>
-
-      {error && (
-        <Alert 
-          severity="error" 
-          sx={{ 
-            mb: 3, 
-            borderRadius: '12px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
-          }} 
-          onClose={() => setError(null)}
-        >
-          {error}
-        </Alert>
-      )}
-
-      <Paper 
-        sx={{ 
-          mb: 4, 
-          borderRadius: '16px', 
-          overflow: 'hidden',
-          boxShadow: '0 6px 16px rgba(0,0,0,0.05)',
-          border: '1px solid',
-          borderColor: 'divider'
-        }}
-      >
-        <Tabs 
-          value={tabValue} 
-          onChange={handleTabChange}
-          variant="fullWidth"
-          TabIndicatorProps={{ 
-            style: { 
-              height: '3px',
-              borderRadius: '3px'
-            } 
-          }}
-          sx={{
-            '& .MuiTab-root': {
-              textTransform: 'none',
-              fontSize: '0.95rem',
-              fontWeight: 600,
-              py: 2,
-              transition: 'all 0.2s',
-              '&:hover': {
-                opacity: 0.8
-              }
-            }
-          }}
-        >
-          <Tab label="All Petitions" />
-          <Tab label="Active" />
-          <Tab label="Completed" />
-          {isAuthenticated && <Tab label="Pending Review" />}
-          {isAuthenticated && <Tab label="Rejected" />}
-        </Tabs>
-      </Paper>
-
-      {loading ? (
+    <Box sx={{
+      backgroundImage: bgGradient,
+      backgroundAttachment: 'fixed',
+      position: 'relative',
+      minHeight: '100vh',
+      height: '100%',
+      width: '100vw',
+      maxWidth: '100%',
+      py: { xs: 0, md: 0 },
+      px: 0,
+      mx: 0,
+      my: 0,
+      overflow: 'hidden',
+      animation: 'gradientShift 15s ease infinite alternate',
+      '@keyframes gradientShift': {
+        '0%': { backgroundPosition: '0% 50%' },
+        '100%': { backgroundPosition: '100% 50%' }
+      },
+      '&::before': {
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        backgroundImage: bgPattern,
+        backgroundSize: '200px 200px',
+        opacity: 0.5,
+        zIndex: 0
+      }
+    }}>
+      <Container maxWidth="lg" sx={{ 
+        position: 'relative',
+        py: { xs: 4, md: 6 },
+        zIndex: 1
+      }}>
         <Box 
           sx={{ 
             display: 'flex', 
-            flexDirection: 'column',
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            py: 10 
+            flexDirection: { xs: 'column', md: 'row' }, 
+            justifyContent: 'space-between', 
+            alignItems: { xs: 'flex-start', md: 'center' }, 
+            mb: { xs: 4, md: 5 },
+            gap: 2
           }}
         >
-          <CircularProgress size={48} sx={{ mb: 2 }} />
-          <Typography variant="body1" color="text.secondary">
-            Loading petitions...
-          </Typography>
-        </Box>
-      ) : (
-        <>
-          {getFilteredPetitions().length > 0 ? (
-            <MuiGrid container spacing={3}>
-              {getFilteredPetitions().map(petition => renderPetitionCard(petition))}
-            </MuiGrid>
-          ) : (
-            <Paper 
+          <Box sx={{ maxWidth: { xs: '100%', md: '60%' } }}>
+            <Typography 
+              variant="h4" 
+              component="h1" 
+              gutterBottom 
               sx={{ 
-                p: { xs: 4, md: 6 }, 
-                textAlign: 'center', 
-                borderRadius: '16px',
-                boxShadow: '0 6px 20px rgba(0,0,0,0.03)',
-                border: '1px solid',
-                borderColor: 'divider',
-                background: alpha('#f5f5f5', 0.3)
+                fontWeight: 800,
+                fontSize: { xs: '1.75rem', md: '2.25rem' },
+                lineHeight: 1.2,
+                background: 'linear-gradient(90deg, #3f51b5 0%, #2196f3 100%)',
+                backgroundClip: 'text',
+                color: 'transparent',
+                WebkitBackgroundClip: 'text',
+                animation: 'fadeIn 0.8s ease-out',
+                '@keyframes fadeIn': {
+                  '0%': { opacity: 0, transform: 'translateY(-10px)' },
+                  '100%': { opacity: 1, transform: 'translateY(0)' }
+                }
               }}
             >
-              <Box 
+              Community Petitions
+            </Typography>
+            <Typography 
+              variant="subtitle1" 
+              color="text.secondary"
+              sx={{ 
+                fontSize: { xs: '0.95rem', md: '1.05rem' },
+                maxWidth: '95%',
+                mb: { xs: 2, md: 0 }
+              }}
+            >
+              Support initiatives that matter to our society and create positive change
+            </Typography>
+          </Box>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            startIcon={<AddIcon />}
+            onClick={handleCreateDialogOpen}
+            sx={{ 
+              borderRadius: '28px',
+              px: { xs: 2.5, md: 3.5 },
+              py: 1.5,
+              fontWeight: 600,
+              fontSize: '0.95rem',
+              boxShadow: '0 8px 20px rgba(63, 81, 181, 0.2)',
+              background: 'linear-gradient(45deg, #3f51b5 10%, #2196f3 90%)',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                boxShadow: '0 12px 28px rgba(33, 150, 243, 0.3)',
+                transform: 'translateY(-2px)'
+              }
+            }}
+          >
+            Create Petition
+          </Button>
+        </Box>
+
+        {error && (
+          <Alert 
+            severity="error" 
+            sx={{ 
+              mb: 3, 
+              borderRadius: '12px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.08)'
+            }} 
+            onClose={() => setError(null)}
+          >
+            {error}
+          </Alert>
+        )}
+
+        <Paper 
+          sx={{ 
+            mb: 4, 
+            borderRadius: '16px', 
+            overflow: 'hidden',
+            boxShadow: '0 6px 16px rgba(0,0,0,0.05)',
+            border: '1px solid',
+            borderColor: 'divider',
+            backgroundColor: alpha('#fff', 0.9),
+            backdropFilter: 'blur(8px)'
+          }}
+        >
+          <Tabs 
+            value={tabValue} 
+            onChange={handleTabChange}
+            variant="fullWidth"
+            TabIndicatorProps={{ 
+              style: { 
+                height: '3px',
+                borderRadius: '3px'
+              } 
+            }}
+            sx={{
+              '& .MuiTab-root': {
+                textTransform: 'none',
+                fontSize: '0.95rem',
+                fontWeight: 600,
+                py: 2,
+                transition: 'all 0.2s',
+                '&:hover': {
+                  opacity: 0.8
+                }
+              }
+            }}
+          >
+            <Tab label="All Petitions" />
+            <Tab label="Active" />
+            <Tab label="Completed" />
+            {isAuthenticated && <Tab label="Pending Review" />}
+            {isAuthenticated && <Tab label="Rejected" />}
+          </Tabs>
+        </Paper>
+
+        {loading ? (
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              flexDirection: 'column',
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              py: 10,
+              backgroundColor: alpha('#fff', 0.8),
+              backdropFilter: 'blur(8px)',
+              borderRadius: '16px',
+              p: 4
+            }}
+          >
+            <CircularProgress size={48} sx={{ mb: 2 }} />
+            <Typography variant="body1" color="text.secondary">
+              Loading petitions...
+            </Typography>
+          </Box>
+        ) : (
+          <>
+            {getFilteredPetitions().length > 0 ? (
+              <MuiGrid container spacing={3}>
+                {getFilteredPetitions().map(petition => renderPetitionCard(petition))}
+              </MuiGrid>
+            ) : (
+              <Paper 
                 sx={{ 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  alignItems: 'center',
-                  maxWidth: '500px',
-                  mx: 'auto'
+                  p: { xs: 4, md: 6 }, 
+                  textAlign: 'center', 
+                  borderRadius: '16px',
+                  boxShadow: '0 6px 20px rgba(0,0,0,0.03)',
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  background: alpha('#fff', 0.8),
+                  backdropFilter: 'blur(8px)'
                 }}
               >
                 <Box 
                   sx={{ 
-                    width: 120, 
-                    height: 120, 
-                    mb: 3,
-                    opacity: 0.7,
-                    display: 'flex',
+                    display: 'flex', 
+                    flexDirection: 'column', 
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    borderRadius: '50%',
-                    background: alpha('#e0e0e0', 0.3)
+                    maxWidth: '500px',
+                    mx: 'auto'
                   }}
                 >
-                  {tabValue === 3 ? (
-                    <span style={{ fontSize: '3rem' }}>⌛</span>
-                  ) : tabValue === 4 ? (
-                    <span style={{ fontSize: '3rem' }}>❌</span>
-                  ) : (
-                    <span style={{ fontSize: '3rem' }}>📝</span>
-                  )}
+                  <Box 
+                    sx={{ 
+                      width: 120, 
+                      height: 120, 
+                      mb: 3,
+                      opacity: 0.7,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: '50%',
+                      background: alpha('#e0e0e0', 0.3)
+                    }}
+                  >
+                    {tabValue === 3 ? (
+                      <span style={{ fontSize: '3rem' }}>⌛</span>
+                    ) : tabValue === 4 ? (
+                      <span style={{ fontSize: '3rem' }}>❌</span>
+                    ) : (
+                      <span style={{ fontSize: '3rem' }}>📝</span>
+                    )}
+                  </Box>
+
+                  <Typography 
+                    variant="h6" 
+                    gutterBottom
+                    sx={{ fontWeight: 700, mb: 1.5 }}
+                  >
+                    No petitions found
+                  </Typography>
+                  <Typography 
+                    variant="body1" 
+                    color="text.secondary" 
+                    paragraph
+                    sx={{ mb: 3, lineHeight: 1.6 }}
+                  >
+                    {tabValue === 0 
+                      ? 'There are currently no petitions available.' 
+                      : tabValue === 1 
+                        ? 'There are no active petitions at the moment.' 
+                        : tabValue === 2 
+                          ? 'There are no completed petitions yet.'
+                          : tabValue === 3
+                            ? 'You have no petitions pending review.'
+                            : 'You have no rejected petitions.'}
+                  </Typography>
+                  <Button 
+                    variant="outlined" 
+                    color="primary"
+                    startIcon={<AddIcon />}
+                    onClick={handleCreateDialogOpen}
+                    sx={{ 
+                      borderRadius: '28px',
+                      px: 3,
+                      py: 1.25,
+                      fontWeight: 600
+                    }}
+                  >
+                    Create The First Petition
+                  </Button>
                 </Box>
+              </Paper>
+            )}
+          </>
+        )}
 
-                <Typography 
-                  variant="h6" 
-                  gutterBottom
-                  sx={{ fontWeight: 700, mb: 1.5 }}
-                >
-                  No petitions found
-                </Typography>
-                <Typography 
-                  variant="body1" 
-                  color="text.secondary" 
-                  paragraph
-                  sx={{ mb: 3, lineHeight: 1.6 }}
-                >
-                  {tabValue === 0 
-                    ? 'There are currently no petitions available.' 
-                    : tabValue === 1 
-                      ? 'There are no active petitions at the moment.' 
-                      : tabValue === 2 
-                        ? 'There are no completed petitions yet.'
-                        : tabValue === 3
-                          ? 'You have no petitions pending review.'
-                          : 'You have no rejected petitions.'}
-                </Typography>
-                <Button 
-                  variant="outlined" 
-                  color="primary"
-                  startIcon={<AddIcon />}
-                  onClick={handleCreateDialogOpen}
-                  sx={{ 
-                    borderRadius: '28px',
-                    px: 3,
-                    py: 1.25,
-                    fontWeight: 600
-                  }}
-                >
-                  Create The First Petition
-                </Button>
-              </Box>
-            </Paper>
-          )}
-        </>
-      )}
-
-      {/* Create Petition Dialog */}
-      <Dialog 
-        open={createDialogOpen} 
-        onClose={handleCreateDialogClose}
-        maxWidth="md"
-        fullWidth
-        PaperProps={{
-          sx: { 
-            borderRadius: '16px',
-            overflow: 'hidden',
-            boxShadow: '0 10px 40px rgba(0,0,0,0.12)'
-          }
-        }}
-      >
-        <DialogTitle sx={{ px: { xs: 2, md: 3 }, pt: 3, pb: 0 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography 
-              variant="h5" 
-              component="div" 
-              sx={{ 
-                fontWeight: 700,
-                background: 'linear-gradient(45deg, #3f51b5 30%, #2196f3 90%)',
-                backgroundClip: 'text',
-                color: 'transparent',
-                WebkitBackgroundClip: 'text'
-              }}
-            >
-              Create a New Petition
-            </Typography>
-            <IconButton
-              onClick={handleCreateDialogClose}
-              aria-label="close"
-              size="small"
-              sx={{ 
-                bgcolor: alpha('#000', 0.05),
-                '&:hover': {
-                  bgcolor: alpha('#000', 0.1)
-                }
-              }}
-            >
-              <CloseIcon />
-            </IconButton>
-          </Box>
-        </DialogTitle>
-        <DialogContent sx={{ px: { xs: 2, md: 3 }, pt: 2, pb: 3 }}>
-          <PetitionForm onSubmitSuccess={handlePetitionCreated} />
-        </DialogContent>
-      </Dialog>
-    </Container>
+        {/* Create Petition Dialog */}
+        <Dialog 
+          open={createDialogOpen} 
+          onClose={handleCreateDialogClose}
+          maxWidth="md"
+          fullWidth
+          PaperProps={{
+            sx: { 
+              borderRadius: '16px',
+              overflow: 'hidden',
+              boxShadow: '0 10px 40px rgba(0,0,0,0.12)',
+              backdropFilter: 'blur(8px)',
+              backgroundColor: alpha('#fff', 0.95)
+            }
+          }}
+        >
+          <DialogTitle sx={{ px: { xs: 2, md: 3 }, pt: 3, pb: 0 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography 
+                variant="h5" 
+                component="div" 
+                sx={{ 
+                  fontWeight: 700,
+                  background: 'linear-gradient(45deg, #3f51b5 30%, #2196f3 90%)',
+                  backgroundClip: 'text',
+                  color: 'transparent',
+                  WebkitBackgroundClip: 'text',
+                  animation: 'fadeIn 0.6s ease-out',
+                  '@keyframes fadeIn': {
+                    '0%': { opacity: 0, transform: 'translateY(-5px)' },
+                    '100%': { opacity: 1, transform: 'translateY(0)' }
+                  }
+                }}
+              >
+                Create a New Petition
+              </Typography>
+              <IconButton
+                onClick={handleCreateDialogClose}
+                aria-label="close"
+                size="small"
+                sx={{ 
+                  bgcolor: alpha('#000', 0.05),
+                  '&:hover': {
+                    bgcolor: alpha('#000', 0.1)
+                  }
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+            </Box>
+          </DialogTitle>
+          <DialogContent sx={{ px: { xs: 2, md: 3 }, pt: 2, pb: 3 }}>
+            <PetitionForm onSubmitSuccess={handlePetitionCreated} />
+          </DialogContent>
+        </Dialog>
+      </Container>
+    </Box>
   );
 };
 
