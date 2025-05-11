@@ -56,7 +56,7 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { format } from 'date-fns';
 import axiosInstance from '../../utils/axiosInstance';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, Legend, LineChart, Line, CartesianGrid, Area } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, Legend, LineChart, Line, CartesianGrid, Area, Sector } from 'recharts';
 import AttachmentIcon from '@mui/icons-material/Attachment';
 
 interface Report {
@@ -140,6 +140,11 @@ const a11yProps = (index: number) => {
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 const RADIAL_GRADIENT_SUFFIX = '_pie_grad';
 const DROP_SHADOW_ID = 'dropShadow';
+const HIGHLIGHT_FILTER_ID = 'highlightEffect';
+const BEVEL_FILTER_ID = 'bevelEffect';
+const BAR_TOP_GRADIENT_ID = 'barTopGradient';
+const BAR_FRONT_GRADIENT_ID = 'barFrontGradient';
+const BAR_RIGHT_GRADIENT_ID = 'barRightGradient';
 
 const Dashboard: React.FC = () => {
   const theme = useTheme();
@@ -162,6 +167,9 @@ const Dashboard: React.FC = () => {
   const [activeUsers, setActiveUsers] = useState(0);
   const [monthlyReports, setMonthlyReports] = useState<Array<{ month: string, count: number }>>([]);
   const [categoryData, setCategoryData] = useState<Array<{ name: string, value: number }>>([]);
+
+  // State for active pie segment index
+  const [activeIndex, setActiveIndex] = useState<number | undefined>(undefined);
 
   useEffect(() => {
     fetchReports();
@@ -587,7 +595,6 @@ const Dashboard: React.FC = () => {
     const xLabel = cx + outerRadiusLabel * Math.cos(-midAngle * RADIAN);
     const yLabel = cy + outerRadiusLabel * Math.sin(-midAngle * RADIAN);
 
-
     if (percent * 100 < 3) return null; // Don't render label for very small slices
 
     return (
@@ -600,13 +607,138 @@ const Dashboard: React.FC = () => {
           dominantBaseline="central"
           fontSize="10px"
           fontWeight="bold"
+          style={{
+            filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.3))',
+            textShadow: '0 1px 2px rgba(0,0,0,0.5)'
+          }}
         >
           {`${(percent * 100).toFixed(0)}%`}
         </text>
-        {/* <text x={xLabel} y={yLabel} fill={theme.palette.text.primary} textAnchor={textAnchor} dominantBaseline="central" fontSize="11px">
-          {`${name} (${value})`}
-        </text> */}
       </>
+    );
+  };
+
+  // Handler for pie segment activation (hover)
+  const onPieEnter = (_: any, index: number) => {
+    setActiveIndex(index);
+  };
+
+  // Handler for pie segment deactivation (hover out)
+  const onPieLeave = () => {
+    setActiveIndex(undefined);
+  };
+
+  // Render active pie segment with special effects
+  const renderActiveShape = (props: any) => {
+    const RADIAN = Math.PI / 180;
+    const { cx, cy, midAngle, innerRadius, outerRadius, startAngle, endAngle, fill, payload, percent, value } = props;
+    const sin = Math.sin(-RADIAN * midAngle);
+    const cos = Math.cos(-RADIAN * midAngle);
+    const mx = cx + (outerRadius + 10) * cos;
+    const my = cy + (outerRadius + 10) * sin;
+    const ex = mx + (cos >= 0 ? 1 : -1) * 22;
+    const ey = my;
+    const textAnchor = cos >= 0 ? 'start' : 'end';
+
+    // Calculate slight offset for 3D "pop" effect
+    const offsetRadius = 5;
+    const offsetX = offsetRadius * cos;
+    const offsetY = offsetRadius * sin;
+
+    return (
+      <g>
+        {/* Base sector with shadow */}
+        <Sector
+          cx={cx}
+          cy={cy}
+          innerRadius={innerRadius - 3}
+          outerRadius={outerRadius}
+          startAngle={startAngle}
+          endAngle={endAngle}
+          fill={fill}
+          stroke={theme.palette.background.paper}
+          strokeWidth={2}
+          style={{ filter: `url(#${DROP_SHADOW_ID})`, opacity: 0.9 }}
+        />
+        
+        {/* Elevated sector (appears to pop out) */}
+        <Sector
+          cx={cx + offsetX}
+          cy={cy + offsetY}
+          innerRadius={innerRadius}
+          outerRadius={outerRadius + 5}
+          startAngle={startAngle}
+          endAngle={endAngle}
+          fill={fill}
+          filter={`url(#${HIGHLIGHT_FILTER_ID})`}
+        />
+
+        {/* Label line */}
+        <path d={`M${cx},${cy}L${mx},${my}L${ex},${ey}`} stroke={fill} fill="none" strokeWidth={2} />
+        <circle cx={ex} cy={ey} r={2} fill={fill} stroke="none" />
+
+        {/* Enhanced label text */}
+        <text x={ex + (cos >= 0 ? 1 : -1) * 12} y={ey} textAnchor={textAnchor} fill={theme.palette.text.primary} style={{ 
+          fontWeight: 'bold',
+          filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.3))',
+          fontSize: '12px'
+        }}>
+          {payload.name}
+        </text>
+        <text x={ex + (cos >= 0 ? 1 : -1) * 12} y={ey} dy={18} textAnchor={textAnchor} fill={theme.palette.text.secondary} style={{fontSize: '11px'}}>
+          {`(${value} reports, ${(percent * 100).toFixed(0)}%)`}
+        </text>
+      </g>
+    );
+  };
+
+  // Custom bar shape to create 3D effect with top face
+  const CustomBar = (props: any) => {
+    const { x, y, width, height, fill } = props;
+    
+    // Only draw the 3D effect if bar is tall enough
+    if (height < 10) return <rect x={x} y={y} width={width} height={height} fill={fill} />;
+    
+    const topHeight = 4; // Height of the "top" face of 3D bar
+    const sideWidth = 4; // Width of the "side" face of 3D bar
+    
+    return (
+      <g>
+        {/* Front face with gradient */}
+        <rect
+          x={x}
+          y={y}
+          width={width}
+          height={height}
+          fill={`url(#${BAR_FRONT_GRADIENT_ID})`}
+          rx={2}
+          ry={2}
+          style={{
+            filter: `url(#${DROP_SHADOW_ID})`,
+            transition: 'all 0.3s ease'
+          }}
+        />
+        
+        {/* Top face with different gradient for 3D effect */}
+        <rect
+          x={x}
+          y={y}
+          width={width}
+          height={topHeight}
+          fill={`url(#${BAR_TOP_GRADIENT_ID})`}
+          rx={2}
+          ry={2}
+        />
+        
+        {/* Right side face with different gradient for 3D effect */}
+        <rect
+          x={x + width - sideWidth}
+          y={y + topHeight}
+          width={sideWidth}
+          height={height - topHeight}
+          fill={`url(#${BAR_RIGHT_GRADIENT_ID})`}
+        />
+      </g>
     );
   };
 
@@ -828,10 +960,33 @@ const Dashboard: React.FC = () => {
               height: 350, 
               borderRadius: 3,
               display: 'flex',
-              flexDirection: 'column'
+              flexDirection: 'column',
+              position: 'relative',
+              overflow: 'hidden',
+              transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+              transform: 'perspective(1200px) rotateX(2deg)',
+              transformStyle: 'preserve-3d',
+              '&:hover': {
+                transform: 'perspective(1200px) rotateX(4deg) scale(1.02)',
+                boxShadow: '0 16px 32px rgba(0,0,0,0.15), 0 3px 8px rgba(0,0,0,0.1)',
+              }
             }}
           >
-            <Typography variant="h6" fontWeight="bold" gutterBottom>
+            {/* Decorative 3D elements */}
+            <Box 
+              sx={{ 
+                position: 'absolute', 
+                width: '100%', 
+                height: '100%', 
+                top: 0, 
+                left: 0, 
+                background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.1)}, ${alpha(theme.palette.background.paper, 0)})`,
+                pointerEvents: 'none',
+                zIndex: 1
+              }} 
+            />
+
+            <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ position: 'relative', zIndex: 2 }}>
               Reports by Category
             </Typography>
             {statsLoading ? (
@@ -839,57 +994,105 @@ const Dashboard: React.FC = () => {
                 <CircularProgress />
               </Box>
             ) : (
-              <Box sx={{ flex: 1 }}>
+              <Box sx={{ flex: 1, position: 'relative', zIndex: 2 }}>
                 <Box sx={{ height: 300, position: 'relative' }}>
                   <svg style={{ width: 0, height: 0, position: 'absolute' }}>
                     <defs>
                       <filter id={DROP_SHADOW_ID} x="-50%" y="-50%" width="200%" height="200%">
-                        <feDropShadow dx="2" dy="3" stdDeviation="3" floodColor={alpha(theme.palette.common.black, 0.2)} />
+                        <feDropShadow dx="3" dy="4" stdDeviation="4" floodColor={alpha(theme.palette.common.black, 0.25)} />
                       </filter>
+                      
+                      <filter id={HIGHLIGHT_FILTER_ID} x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="blur" />
+                        <feSpecularLighting in="blur" surfaceScale="5" specularConstant="0.75" specularExponent="20" lightingColor="#FFFFFF" result="specOut">
+                          <fePointLight x="150" y="60" z="20" />
+                        </feSpecularLighting>
+                        <feComposite in="specOut" in2="SourceAlpha" operator="in" result="specOut" />
+                        <feComposite in="SourceGraphic" in2="specOut" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" result="litPaint" />
+                        <feMerge>
+                          <feMergeNode in="litPaint" />
+                        </feMerge>
+                      </filter>
+                      
+                      <filter id={BEVEL_FILTER_ID} x="-50%" y="-50%" width="200%" height="200%">
+                        <feGaussianBlur in="SourceAlpha" stdDeviation="2" result="blur" />
+                        <feSpecularLighting in="blur" surfaceScale="5" specularConstant="0.5" specularExponent="10" lightingColor="#FFFFFF" result="specOut">
+                          <fePointLight x="100" y="100" z="90" />
+                        </feSpecularLighting>
+                        <feComposite in="specOut" in2="SourceAlpha" operator="in" result="specOut" />
+                        <feComposite in="SourceGraphic" in2="specOut" operator="arithmetic" k1="0" k2="1" k3="1" k4="0" />
+                      </filter>
+                      
                       {COLORS.map((color, index) => (
-                        <radialGradient key={color} id={`${color.replace('#', '')}${RADIAL_GRADIENT_SUFFIX}`}>
-                          <stop offset="0%" stopColor={alpha(color, 0.7)} />
-                          <stop offset="60%" stopColor={color} />
-                          <stop offset="100%" stopColor={alpha(color, 0.8)} />
+                        <radialGradient key={color} id={`${color.replace('#', '')}${RADIAL_GRADIENT_SUFFIX}`} cx="30%" cy="30%" r="70%" fx="30%" fy="30%">
+                          <stop offset="0%" stopColor={alpha(color, 0.9)} />
+                          <stop offset="50%" stopColor={alpha(color, 0.85)} />
+                          <stop offset="80%" stopColor={alpha(color, 0.7)} />
+                          <stop offset="100%" stopColor={alpha(color, 0.6)} />
                         </radialGradient>
                       ))}
                     </defs>
                   </svg>
                   <ResponsiveContainer width="100%" height="100%">
-                    <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }} style={{ filter: `url(#${DROP_SHADOW_ID})` }}>
+                    <PieChart margin={{ top: 10, right: 30, bottom: 20, left: 30 }} style={{ filter: `url(#${DROP_SHADOW_ID})` }}>
                       <Pie
+                        activeIndex={activeIndex}
+                        activeShape={renderActiveShape}
                         data={categoryData}
                         cx="50%"
                         cy="50%"
                         labelLine={false}
-                        outerRadius={100}
-                        innerRadius={50}
+                        outerRadius={110}
+                        innerRadius={60}
                         fill="#8884d8"
                         dataKey="value"
                         paddingAngle={5}
                         cornerRadius={8}
+                        onMouseEnter={onPieEnter}
+                        onMouseLeave={onPieLeave}
+                        animationBegin={200}
+                        animationDuration={800}
+                        animationEasing="ease-out"
+                        style={{ transform: 'translateZ(20px)' }}
                       >
                         {categoryData.map((entry, index) => (
                           <Cell 
                             key={`cell-${index}`} 
                             fill={`url(#${COLORS[index % COLORS.length].replace('#', '')}${RADIAL_GRADIENT_SUFFIX})`}
-                            stroke={alpha(theme.palette.background.paper, 0.5)}
-                            strokeWidth={2}
+                            stroke={theme.palette.background.paper}
+                            strokeWidth={3}
+                            style={{ 
+                              transition: 'all 0.3s ease',
+                              transform: activeIndex === index ? 'scale(1.05)' : 'scale(1)',
+                              filter: activeIndex === index ? `url(#${HIGHLIGHT_FILTER_ID})` : 'none'
+                            }}
                           />
                         ))}
                       </Pie>
                       <RechartsTooltip 
                         contentStyle={{ 
-                          backgroundColor: alpha(theme.palette.background.paper, 0.9), 
-                          borderRadius: '8px', 
+                          backgroundColor: alpha(theme.palette.background.paper, 0.95), 
+                          borderRadius: '12px', 
                           borderColor: theme.palette.divider,
-                          boxShadow: theme.shadows[3] 
+                          boxShadow: '0 8px 16px rgba(0,0,0,0.15)',
+                          padding: '10px',
+                          fontSize: '13px',
+                          fontWeight: 'bold'
                         }} 
-                        cursor={{ fill: alpha(theme.palette.text.secondary, 0.1) }}
+                        cursor={{ 
+                          fill: alpha(theme.palette.primary.main, 0.1),
+                          stroke: alpha(theme.palette.primary.main, 0.3),
+                          strokeWidth: 1,
+                          strokeDasharray: '5 5',
+                          radius: 8
+                        }}
+                        formatter={(value, name) => [`${value} reports`, name]}
+                        labelFormatter={(name) => `Category: ${name}`}
                       />
                       <Legend 
-                        iconSize={12} 
+                        iconSize={10} 
                         wrapperStyle={{ fontSize: '12px', paddingTop: '20px' }} 
+                        iconType="circle"
                       />
                     </PieChart>
                   </ResponsiveContainer>
@@ -908,27 +1111,62 @@ const Dashboard: React.FC = () => {
               height: 350, 
               borderRadius: 3,
               display: 'flex',
-              flexDirection: 'column'
+              flexDirection: 'column',
+              position: 'relative',
+              overflow: 'hidden',
+              transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+              transform: 'perspective(1200px) rotateX(2deg)',
+              transformStyle: 'preserve-3d',
+              '&:hover': {
+                transform: 'perspective(1200px) rotateX(4deg) scale(1.02)',
+                boxShadow: '0 16px 32px rgba(0,0,0,0.15), 0 3px 8px rgba(0,0,0,0.1)',
+              }
             }}
           >
-            <Typography variant="h6" fontWeight="bold" gutterBottom>
+            {/* Decorative 3D elements */}
+            <Box 
+              sx={{ 
+                position: 'absolute', 
+                width: '100%', 
+                height: '100%', 
+                top: 0, 
+                left: 0, 
+                background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.1)}, ${alpha(theme.palette.background.paper, 0)})`,
+                pointerEvents: 'none',
+                zIndex: 1
+              }} 
+            />
+
+            <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ position: 'relative', zIndex: 2 }}>
               Monthly Reports Trend
             </Typography>
-            <Box sx={{ flex: 1 }}>
+            <Box sx={{ flex: 1, position: 'relative', zIndex: 2 }}>
               <Box sx={{ height: 300, position: 'relative' }}>
                 <svg style={{ width: 0, height: 0, position: 'absolute' }}>
                   <defs>
                     <filter id={DROP_SHADOW_ID} x="-50%" y="-50%" width="200%" height="200%">
-                      <feDropShadow dx="2" dy="3" stdDeviation="3" floodColor={alpha(theme.palette.common.black, 0.2)} />
+                      <feDropShadow dx="3" dy="4" stdDeviation="4" floodColor={alpha(theme.palette.common.black, 0.25)} />
                     </filter>
-                    <linearGradient id="barColorGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={alpha(theme.palette.primary.main, 0.9)} />
-                      <stop offset="70%" stopColor={alpha(theme.palette.primary.main, 0.7)} />
+                    
+                    <linearGradient id={BAR_FRONT_GRADIENT_ID} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={alpha(theme.palette.primary.main, 1)} />
+                      <stop offset="50%" stopColor={alpha(theme.palette.primary.main, 0.9)} />
                       <stop offset="100%" stopColor={alpha(theme.palette.primary.dark, 0.8)} />
                     </linearGradient>
+                    
+                    <linearGradient id={BAR_TOP_GRADIENT_ID} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor={alpha(theme.palette.primary.light, 1)} />
+                      <stop offset="100%" stopColor={alpha(theme.palette.primary.main, 0.9)} />
+                    </linearGradient>
+                    
+                    <linearGradient id={BAR_RIGHT_GRADIENT_ID} x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor={alpha(theme.palette.primary.main, 0.9)} />
+                      <stop offset="100%" stopColor={alpha(theme.palette.primary.dark, 0.8)} />
+                    </linearGradient>
+                    
                     <linearGradient id="barHoverColorGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={alpha(theme.palette.secondary.main, 0.9)} />
-                      <stop offset="70%" stopColor={alpha(theme.palette.secondary.main, 0.7)} />
+                      <stop offset="0%" stopColor={alpha(theme.palette.secondary.light, 1)} />
+                      <stop offset="70%" stopColor={alpha(theme.palette.secondary.main, 0.85)} />
                       <stop offset="100%" stopColor={alpha(theme.palette.secondary.dark, 0.8)} />
                     </linearGradient>
                   </defs>
@@ -936,38 +1174,63 @@ const Dashboard: React.FC = () => {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart 
                     data={monthlyReports} 
-                    margin={{ top: 5, right: 0, left: -25, bottom: 5 }}
-                    style={{ filter: `url(#${DROP_SHADOW_ID})` }}
+                    margin={{ top: 20, right: 20, left: 0, bottom: 10 }}
+                    style={{ filter: `url(#${DROP_SHADOW_ID})`, transform: 'translateZ(10px)' }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke={alpha(theme.palette.divider, 0.3)} />
+                    <CartesianGrid 
+                      strokeDasharray="3 3" 
+                      stroke={alpha(theme.palette.divider, 0.3)}
+                      vertical={false}
+                    />
                     <XAxis 
                       dataKey="month" 
-                      tick={{ fontSize: 10, fill: theme.palette.text.secondary }} 
+                      tick={{ fontSize: 11, fill: theme.palette.text.secondary, fontWeight: 500 }} 
                       axisLine={{ stroke: theme.palette.divider }}
                       tickLine={{ stroke: theme.palette.divider }}
+                      padding={{ left: 10, right: 10 }}
                     />
                     <YAxis 
-                      tick={{ fontSize: 10, fill: theme.palette.text.secondary }} 
+                      tick={{ fontSize: 11, fill: theme.palette.text.secondary }} 
                       axisLine={{ stroke: theme.palette.divider }}
                       tickLine={{ stroke: theme.palette.divider }}
+                      width={35}
                     />
                     <RechartsTooltip 
                       contentStyle={{ 
-                        backgroundColor: alpha(theme.palette.background.paper, 0.9), 
-                        borderRadius: '8px', 
+                        backgroundColor: alpha(theme.palette.background.paper, 0.95), 
+                        borderRadius: '12px', 
                         borderColor: theme.palette.divider,
-                        boxShadow: theme.shadows[3]
+                        boxShadow: '0 8px 16px rgba(0,0,0,0.15)',
+                        padding: '10px',
+                        fontSize: '13px',
+                        fontWeight: 'bold'
                       }}
-                      cursor={{ fill: alpha(theme.palette.text.secondary, 0.1) }} 
+                      cursor={{ 
+                        fill: alpha(theme.palette.primary.main, 0.1),
+                        stroke: alpha(theme.palette.primary.main, 0.3),
+                        strokeWidth: 1,
+                        strokeDasharray: '5 5',
+                        radius: 8
+                      }} 
+                      formatter={(value) => [`${value} reports`, 'Count']}
+                      labelFormatter={(label) => `Month: ${label}`}
                     />
-                    <Legend iconSize={12} wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }}/>
+                    <Legend 
+                      iconSize={12} 
+                      wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }}
+                      formatter={(value) => <span style={{ color: theme.palette.text.primary, fontWeight: 500 }}>{value}</span>}
+                    />
                     <Bar 
                       dataKey="count" 
-                      fill="url(#barColorGradient)"
-                      radius={[5, 5, 0, 0]}
-                      barSize={20}
-                    >
-                    </Bar>
+                      name="Report Count"
+                      barSize={30}
+                      // Custom shape for 3D effect
+                      shape={<CustomBar />}
+                      // Animation settings
+                      animationBegin={300}
+                      animationDuration={1000}
+                      animationEasing="ease-out"
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </Box>
