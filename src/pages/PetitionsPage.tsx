@@ -75,8 +75,11 @@ const PetitionsPage: React.FC = () => {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   // Add beautiful background theme variables
-  const bgGradient = `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)}, ${alpha(theme.palette.primary.light, 0.1)})`;
-  const bgPattern = `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23${theme.palette.primary.main.replace('#', '')}' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E")`;
+  const bgGradient = theme.palette.mode === 'dark' 
+    ? `radial-gradient(circle at 30% 50%, ${alpha(theme.palette.primary.dark, 0.4)} 0%, ${alpha(theme.palette.background.default, 0.95)} 50%, ${alpha(theme.palette.primary.dark, 0.2)} 100%)`
+    : `radial-gradient(circle at 30% 50%, ${alpha(theme.palette.primary.light, 0.2)} 0%, ${alpha(theme.palette.background.default, 0.9)} 50%, ${alpha(theme.palette.primary.main, 0.1)} 100%)`;
+    
+  const bgPattern = `url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23${theme.palette.primary.main.replace('#', '')}' fill-opacity='${theme.palette.mode === 'dark' ? '0.07' : '0.05'}'%3E%3Cpath d='M50 50c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10c0 5.523-4.477 10-10 10s-10-4.477-10-10 4.477-10 10-10zM10 10c0-5.523 4.477-10 10-10s10 4.477 10 10-4.477 10-10 10c0 5.523-4.477 10-10 10S0 25.523 0 20s4.477-10 10-10zm10 8c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8zm40 40c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8z' /%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`;
 
   useEffect(() => {
     console.log('Fetching petitions (location, auth state, or mount)');
@@ -273,29 +276,36 @@ const PetitionsPage: React.FC = () => {
           display: 'flex', 
           flexDirection: 'column',
           height: '100%',
-          transition: 'transform 0.3s, box-shadow 0.3s',
+          transition: 'all 0.3s ease',
           borderRadius: '16px',
           overflow: 'hidden',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-          backgroundColor: alpha('#fff', 0.9),
-          backdropFilter: 'blur(8px)',
-          border: '1px solid',
-          borderColor: 'divider',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+          backgroundColor: alpha(theme.palette.background.paper, 0.6),
+          backdropFilter: 'blur(12px)',
+          border: `1px solid ${alpha(theme.palette.background.paper, 0.2)}`,
+          position: 'relative',
           '&:hover': {
             transform: 'translateY(-6px)',
-            boxShadow: '0 12px 30px rgba(0,0,0,0.15)',
+            boxShadow: '0 15px 35px rgba(0,0,0,0.12)',
+            backgroundColor: alpha(theme.palette.background.paper, 0.7),
+          },
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '1px',
+            background: `linear-gradient(90deg, ${alpha(theme.palette.common.white, 0)}, ${alpha(theme.palette.common.white, 0.2)}, ${alpha(theme.palette.common.white, 0)})`
           },
           ...(isPending && {
-            border: '1px dashed',
-            borderColor: 'warning.main',
+            border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`,
           }),
           ...(isRejected && {
-            border: '1px dashed',
-            borderColor: 'error.main',
+            border: `1px solid ${alpha(theme.palette.error.main, 0.3)}`,
           }),
           ...(isActuallyActive && {
-            border: '1px solid',
-            borderColor: 'primary.main',
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
           }),
         }}>
           {petition.image ? (
@@ -544,10 +554,11 @@ const PetitionsPage: React.FC = () => {
       mx: 0,
       my: 0,
       overflow: 'hidden',
-      animation: 'gradientShift 15s ease infinite alternate',
+      animation: 'gradientShift 30s ease infinite alternate',
       '@keyframes gradientShift': {
-        '0%': { backgroundPosition: '0% 50%' },
-        '100%': { backgroundPosition: '100% 50%' }
+        '0%': { backgroundPosition: '0% 0%' },
+        '50%': { backgroundPosition: '100% 50%' },
+        '100%': { backgroundPosition: '0% 100%' }
       },
       '&::before': {
         content: '""',
@@ -557,8 +568,20 @@ const PetitionsPage: React.FC = () => {
         width: '100%',
         height: '100%',
         backgroundImage: bgPattern,
-        backgroundSize: '200px 200px',
-        opacity: 0.5,
+        backgroundSize: '180px 180px',
+        opacity: theme.palette.mode === 'dark' ? 0.6 : 0.7,
+        zIndex: 0
+      },
+      '&::after': {
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        background: theme.palette.mode === 'dark' 
+          ? `radial-gradient(circle at right bottom, ${alpha(theme.palette.primary.main, 0.2)}, transparent 600px)`
+          : `radial-gradient(circle at right bottom, ${alpha(theme.palette.primary.light, 0.15)}, transparent 600px)`,
         zIndex: 0
       }
     }}>
@@ -654,11 +677,21 @@ const PetitionsPage: React.FC = () => {
             mb: 4, 
             borderRadius: '16px', 
             overflow: 'hidden',
-            boxShadow: '0 6px 16px rgba(0,0,0,0.05)',
-            border: '1px solid',
-            borderColor: 'divider',
-            backgroundColor: alpha('#fff', 0.9),
-            backdropFilter: 'blur(8px)'
+            boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+            border: `1px solid ${alpha(theme.palette.background.paper, 0.2)}`,
+            backgroundColor: alpha(theme.palette.background.paper, 0.65),
+            backdropFilter: 'blur(15px)',
+            position: 'relative',
+            transition: 'all 0.3s ease',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '1px',
+              background: `linear-gradient(90deg, ${alpha(theme.palette.common.white, 0)}, ${alpha(theme.palette.common.white, 0.3)}, ${alpha(theme.palette.common.white, 0)})`
+            }
           }}
         >
           <Tabs 
@@ -700,10 +733,23 @@ const PetitionsPage: React.FC = () => {
               alignItems: 'center', 
               justifyContent: 'center', 
               py: 10,
-              backgroundColor: alpha('#fff', 0.8),
-              backdropFilter: 'blur(8px)',
+              backgroundColor: alpha(theme.palette.background.paper, 0.5),
+              backdropFilter: 'blur(12px)',
               borderRadius: '16px',
-              p: 4
+              p: 4,
+              border: `1px solid ${alpha(theme.palette.background.paper, 0.2)}`,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+              position: 'relative',
+              overflow: 'hidden',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '1px',
+                background: `linear-gradient(90deg, ${alpha(theme.palette.common.white, 0)}, ${alpha(theme.palette.common.white, 0.2)}, ${alpha(theme.palette.common.white, 0)})`
+              }
             }}
           >
             <CircularProgress size={48} sx={{ mb: 2 }} />
@@ -723,11 +769,21 @@ const PetitionsPage: React.FC = () => {
                   p: { xs: 4, md: 6 }, 
                   textAlign: 'center', 
                   borderRadius: '16px',
-                  boxShadow: '0 6px 20px rgba(0,0,0,0.03)',
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  background: alpha('#fff', 0.8),
-                  backdropFilter: 'blur(8px)'
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+                  backgroundColor: alpha(theme.palette.background.paper, 0.5),
+                  backdropFilter: 'blur(12px)',
+                  border: `1px solid ${alpha(theme.palette.background.paper, 0.2)}`,
+                  position: 'relative',
+                  overflow: 'hidden',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '1px',
+                    background: `linear-gradient(90deg, ${alpha(theme.palette.common.white, 0)}, ${alpha(theme.palette.common.white, 0.2)}, ${alpha(theme.palette.common.white, 0)})`
+                  }
                 }}
               >
                 <Box 
@@ -814,9 +870,20 @@ const PetitionsPage: React.FC = () => {
             sx: { 
               borderRadius: '16px',
               overflow: 'hidden',
-              boxShadow: '0 10px 40px rgba(0,0,0,0.12)',
-              backdropFilter: 'blur(8px)',
-              backgroundColor: alpha('#fff', 0.95)
+              boxShadow: '0 15px 40px rgba(0,0,0,0.15)',
+              backdropFilter: 'blur(15px)',
+              backgroundColor: alpha(theme.palette.background.paper, 0.7),
+              border: `1px solid ${alpha(theme.palette.background.paper, 0.2)}`,
+              position: 'relative',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '1px',
+                background: `linear-gradient(90deg, ${alpha(theme.palette.common.white, 0)}, ${alpha(theme.palette.common.white, 0.2)}, ${alpha(theme.palette.common.white, 0)})`
+              }
             }
           }}
         >

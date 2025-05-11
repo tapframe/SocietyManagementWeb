@@ -145,8 +145,8 @@ const ReportPage: React.FC = () => {
   ];
 
   // Add beautiful background theme variables
-  const bgGradient = `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)}, ${alpha(theme.palette.primary.light, 0.1)})`;
-  const bgPattern = `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23${theme.palette.primary.main.replace('#', '')}' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E")`;
+  const bgGradient = `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 0.2)} 0%, ${alpha(theme.palette.background.default, 0.9)} 30%, ${alpha(theme.palette.secondary.dark, 0.3)} 100%)`;
+  const bgPattern = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23${theme.palette.primary.main.replace('#', '')}' fill-opacity='0.08'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`;
 
   const { isAuthenticated, getToken } = useAuth();
 
@@ -451,9 +451,14 @@ const ReportPage: React.FC = () => {
               borderRadius: 4,
               transform: 'scale(1)',
               transition: 'all 0.3s ease',
+              backgroundColor: alpha(theme.palette.background.paper, 0.5),
+              backdropFilter: 'blur(10px)',
+              border: `1px solid ${alpha(theme.palette.error.main, 0.15)}`,
               '&:hover': {
                 transform: 'scale(1.03)',
-                boxShadow: `0 12px 30px ${alpha(theme.palette.error.main, 0.2)}`
+                boxShadow: `0 15px 35px ${alpha(theme.palette.error.main, 0.25)}`,
+                backgroundColor: alpha(theme.palette.background.paper, 0.6),
+                backdropFilter: 'blur(12px)',
               }
             }}
           >
@@ -510,9 +515,14 @@ const ReportPage: React.FC = () => {
               borderRadius: 4,
               transform: 'scale(1)',
               transition: 'all 0.3s ease',
+              backgroundColor: alpha(theme.palette.background.paper, 0.5),
+              backdropFilter: 'blur(10px)',
+              border: `1px solid ${alpha(theme.palette.info.main, 0.15)}`,
               '&:hover': {
                 transform: 'scale(1.03)',
-                boxShadow: `0 12px 30px ${alpha(theme.palette.info.main, 0.2)}`
+                boxShadow: `0 15px 35px ${alpha(theme.palette.info.main, 0.25)}`,
+                backgroundColor: alpha(theme.palette.background.paper, 0.6),
+                backdropFilter: 'blur(12px)',
               }
             }}
           >
@@ -571,7 +581,19 @@ const ReportPage: React.FC = () => {
         
         <Grid container spacing={3}>
           <Grid item xs={12} md={4}>
-            <Paper elevation={0} sx={{ p: 3, borderRadius: 3, bgcolor: alpha(theme.palette.primary.main, 0.04) }}>
+            <Paper elevation={0} sx={{ 
+              p: 3, 
+              borderRadius: 3, 
+              backgroundColor: alpha(theme.palette.background.paper, 0.4),
+              backdropFilter: 'blur(8px)',
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+              boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.05)}`,
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: 'translateY(-5px)',
+                boxShadow: `0 8px 25px ${alpha(theme.palette.common.black, 0.08)}`,
+              }
+            }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <Box sx={{ 
                   width: 50, 
@@ -601,7 +623,19 @@ const ReportPage: React.FC = () => {
           </Grid>
           
           <Grid item xs={12} md={4}>
-            <Paper elevation={0} sx={{ p: 3, borderRadius: 3, bgcolor: alpha(theme.palette.primary.main, 0.04) }}>
+            <Paper elevation={0} sx={{ 
+              p: 3, 
+              borderRadius: 3, 
+              backgroundColor: alpha(theme.palette.background.paper, 0.4),
+              backdropFilter: 'blur(8px)',
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+              boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.05)}`,
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: 'translateY(-5px)',
+                boxShadow: `0 8px 25px ${alpha(theme.palette.common.black, 0.08)}`,
+              }
+            }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <Box sx={{ 
                   width: 50, 
@@ -631,7 +665,19 @@ const ReportPage: React.FC = () => {
           </Grid>
           
           <Grid item xs={12} md={4}>
-            <Paper elevation={0} sx={{ p: 3, borderRadius: 3, bgcolor: alpha(theme.palette.primary.main, 0.04) }}>
+            <Paper elevation={0} sx={{ 
+              p: 3, 
+              borderRadius: 3, 
+              backgroundColor: alpha(theme.palette.background.paper, 0.4),
+              backdropFilter: 'blur(8px)',
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+              boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.05)}`,
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: 'translateY(-5px)',
+                boxShadow: `0 8px 25px ${alpha(theme.palette.common.black, 0.08)}`,
+              }
+            }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <Box sx={{ 
                   width: 50, 
@@ -671,7 +717,21 @@ const ReportPage: React.FC = () => {
         <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
           Recent Reports & Their Status
         </Typography>
-        <Paper elevation={0} sx={{ borderRadius: 3, overflow: 'hidden', border: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
+        <Paper 
+          elevation={0} 
+          sx={{ 
+            borderRadius: 3, 
+            overflow: 'hidden', 
+            backgroundColor: alpha(theme.palette.background.paper, 0.4),
+            backdropFilter: 'blur(8px)',
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+            boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.05)}`,
+            '& .MuiListItem-root': {
+              transition: 'all 0.2s ease',
+              backdropFilter: 'blur(4px)',
+            }
+          }}
+        >
           <List sx={{ p: 0 }}>
             {recentReports.map((report, index) => (
               <React.Fragment key={report.id}>
@@ -1512,9 +1572,23 @@ const ReportPage: React.FC = () => {
                 sx={{
                   p: { xs: 3, sm: 4 },
                   mb: 4,
-                  backgroundColor: alpha('#fff', 0.9),
-                  backdropFilter: 'blur(8px)',
-                  borderRadius: { xs: 2, sm: 4 }
+                  backgroundColor: alpha(theme.palette.background.paper, 0.65),
+                  backdropFilter: 'blur(15px)',
+                  borderRadius: { xs: 2, sm: 4 },
+                  border: `1px solid ${alpha(theme.palette.background.paper, 0.2)}`,
+                  boxShadow: `0 8px 32px 0 ${alpha(theme.palette.common.black, 0.15)}`,
+                  transition: 'all 0.3s ease',
+                  overflow: 'hidden',
+                  position: 'relative',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '1px',
+                    background: `linear-gradient(90deg, ${alpha(theme.palette.common.white, 0)}, ${alpha(theme.palette.common.white, 0.2)}, ${alpha(theme.palette.common.white, 0)})`
+                  }
                 }}
               >
                 <Typography variant="h4" component="h1" gutterBottom sx={{ 
@@ -1538,10 +1612,23 @@ const ReportPage: React.FC = () => {
                 {!reportType && (
                   <Box sx={{ 
                     mb: 4, 
-                    backgroundColor: alpha(theme.palette.background.paper, 0.5),
+                    backgroundColor: alpha(theme.palette.background.paper, 0.4),
+                    backdropFilter: 'blur(8px)',
                     borderRadius: 2,
-                    p: 2,
-                    border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
+                    p: 2.5,
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                    boxShadow: `0 4px 20px ${alpha(theme.palette.common.black, 0.05)}`,
+                    position: 'relative',
+                    overflow: 'hidden',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: '1px',
+                      background: `linear-gradient(90deg, ${alpha(theme.palette.common.white, 0)}, ${alpha(theme.palette.common.white, 0.2)}, ${alpha(theme.palette.common.white, 0)})`
+                    }
                   }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                       <InfoIcon color="primary" sx={{ mr: 1 }} />

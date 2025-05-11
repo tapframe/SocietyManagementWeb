@@ -38,6 +38,7 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import PetitionIcon from '@mui/icons-material/Create';
 import { useAuth } from '../context/AuthContext';
+import ThemeToggle from './ThemeToggle';
 
 const menuItems = [
   { text: 'Home', icon: <HomeIcon />, path: '/' },
@@ -286,6 +287,11 @@ const Header: React.FC = () => {
       </List>
       
       <Box sx={{ p: 3 }}>
+        {/* Theme Toggle in mobile drawer */}
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
+          <ThemeToggle sx={{ width: 40, height: 40 }} />
+        </Box>
+        
         <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 2, opacity: 0.7, fontSize: 12 }}>
           ACCOUNT
         </Typography>
@@ -579,6 +585,9 @@ const Header: React.FC = () => {
                   gap: { xs: 0.5, md: 1 }
                 }}
               >
+                {/* Theme Toggle */}
+                <ThemeToggle />
+                
                 {!isAuthenticated ? (
                   <>
                     {!isMobile && (
