@@ -1186,13 +1186,14 @@ const HomePage: React.FC = () => {
                   >
                     <Box
                       component="img"
-                      src="/images/community-illustration.svg"
+                      src="https://images.unsplash.com/photo-1659019722197-8ec84ff3df8a?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                       alt="Community Illustration"
                       sx={{
                         width: '100%',
                         maxWidth: '400px',
                         height: 'auto',
-                        filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.1))'
+                        filter: 'drop-shadow(0 10px 20px rgba(0,0,0,0.1))',
+                        borderRadius: '16px'
                       }}
                       onError={(e) => {
                         // Fallback if image doesn't exist
@@ -1440,7 +1441,7 @@ const HomePage: React.FC = () => {
               <Fade in={true} timeout={1000}>
                 <Box 
                   sx={{ 
-                    borderRadius: 5, 
+                    borderRadius: '30px', 
                     overflow: 'hidden',
                     boxShadow: theme.shadows[8],
                     position: 'relative',
@@ -1461,13 +1462,13 @@ const HomePage: React.FC = () => {
                   }}
                 >
                   <Box sx={{ 
-                    borderRadius: 4, 
+                    borderRadius: '20px', 
                     overflow: 'hidden',
                     position: 'relative',
                   }}>
                     <Box
                       component="img"
-                      src="https://source.unsplash.com/random?society" 
+                      src="https://plus.unsplash.com/premium_photo-1681910115431-29a1c8876e5a?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
                       alt="About the Society Management System"
                       sx={{ 
                         width: '100%', 
