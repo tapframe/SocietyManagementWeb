@@ -58,6 +58,8 @@ import { format } from 'date-fns';
 import axiosInstance from '../../utils/axiosInstance';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, Legend, LineChart, Line, CartesianGrid, Area, Sector } from 'recharts';
 import AttachmentIcon from '@mui/icons-material/Attachment';
+import ReportProblemIcon from '@mui/icons-material/ReportProblem';
+import FeedbackIcon from '@mui/icons-material/Feedback';
 
 interface Report {
   _id: string;
@@ -72,6 +74,8 @@ interface Report {
   category: string;
   location: string;
   status: 'pending' | 'in-progress' | 'resolved' | 'rejected';
+  type: 'violation' | 'complaint' | 'official';
+  officialId?: string;
   evidence?: string;
   adminNotes?: Array<{
     text: string;
@@ -426,6 +430,40 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const getReportTypeChip = (type: string) => {
+    switch (type) {
+      case 'violation':
+        return <Chip 
+                icon={<ReportProblemIcon fontSize="small" />} 
+                label="Violation" 
+                color="error" 
+                size="small"
+                variant="outlined"
+                sx={{ fontWeight: 'medium' }}
+              />;
+      case 'complaint':
+        return <Chip 
+                icon={<FeedbackIcon fontSize="small" />} 
+                label="Complaint" 
+                color="info" 
+                size="small"
+                variant="outlined"
+                sx={{ fontWeight: 'medium' }}
+              />;
+      case 'official':
+        return <Chip 
+                icon={<GavelIcon fontSize="small" />} 
+                label="Official" 
+                color="warning" 
+                size="small"
+                variant="outlined"
+                sx={{ fontWeight: 'medium' }}
+              />;
+      default:
+        return <Chip label={type} size="small" variant="outlined" />;
+    }
+  };
+
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), 'MMM dd, yyyy');
@@ -480,6 +518,8 @@ const Dashboard: React.FC = () => {
               {report.description}
             </Typography>
             <Stack direction="row" spacing={1} sx={{ mb: 2, flexWrap: 'wrap', gap: 1 }}>
+              {report.type && getReportTypeChip(report.type)}
+              
               <Chip 
                 label={report.category} 
                 color="primary" 
@@ -499,6 +539,19 @@ const Dashboard: React.FC = () => {
               />
               {getStatusChip(report.status)}
             </Stack>
+            
+            {/* Display official ID for official reports */}
+            {report.type === 'official' && report.officialId && (
+              <Typography variant="body2" sx={{ 
+                mt: 1, 
+                p: 1, 
+                bgcolor: alpha(theme.palette.warning.light, 0.2), 
+                borderRadius: 1,
+                display: 'inline-block'
+              }}>
+                <strong>Official ID/Badge:</strong> {report.officialId}
+              </Typography>
+            )}
           </Grid>
           <Grid item xs={12} sm={4}>
             <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
@@ -1270,6 +1323,7 @@ const Dashboard: React.FC = () => {
                   <TableHead>
                     <TableRow>
                       <TableCell>Title</TableCell>
+                      <TableCell>Type</TableCell>
                       <TableCell>Category</TableCell>
                       <TableCell>Reported By</TableCell>
                       <TableCell>Status</TableCell>
@@ -1284,6 +1338,9 @@ const Dashboard: React.FC = () => {
                             <Typography variant="body2" fontWeight="medium" noWrap sx={{ maxWidth: 200 }}>
                               {report.title}
                             </Typography>
+                          </TableCell>
+                          <TableCell>
+                            {report.type && getReportTypeChip(report.type)}
                           </TableCell>
                           <TableCell>
                             <Chip 
@@ -1465,6 +1522,7 @@ const Dashboard: React.FC = () => {
                   {selectedReport.title}
                 </Typography>
                 {getStatusChip(selectedReport.status)}
+                {selectedReport.type && getReportTypeChip(selectedReport.type)}
               </Stack>
             </DialogTitle>
             <DialogContent dividers sx={{ p: 0 }}>
@@ -1504,6 +1562,25 @@ const Dashboard: React.FC = () => {
                       <Typography variant="subtitle2" color="text.secondary" gutterBottom>Location</Typography>
                       <Typography variant="body1">{selectedReport.location}</Typography>
                     </Box>
+                    
+                    {/* Display official ID for official reports */}
+                    {selectedReport.type === 'official' && selectedReport.officialId && (
+                      <Box sx={{ mb: 3 }}>
+                        <Typography variant="subtitle2" color="text.secondary" gutterBottom>Official ID/Badge</Typography>
+                        <Typography 
+                          variant="body1" 
+                          sx={{ 
+                            p: 1.5, 
+                            bgcolor: alpha(theme.palette.warning.light, 0.2), 
+                            borderRadius: 1,
+                            display: 'inline-block',
+                            fontWeight: 'medium'
+                          }}
+                        >
+                          {selectedReport.officialId}
+                        </Typography>
+                      </Box>
+                    )}
                   </Grid>
                   
                   <Grid item xs={12} md={6}>

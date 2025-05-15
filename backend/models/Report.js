@@ -13,7 +13,7 @@ const ReportSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['violation', 'complaint'],
+    enum: ['violation', 'complaint', 'official'],
     required: true
   },
   category: {
@@ -25,6 +25,11 @@ const ReportSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true
+  },
+  officialId: {
+    type: String,
+    trim: true
+    // Will be required only for 'official' type reports
   },
   date: {
     type: Date,

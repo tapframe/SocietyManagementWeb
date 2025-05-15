@@ -50,6 +50,7 @@ import ReportProblemIcon from '@mui/icons-material/ReportProblem';
 import FeedbackIcon from '@mui/icons-material/Feedback';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import GavelIcon from '@mui/icons-material/Gavel';
 import { useAuth } from '../context/AuthContext';
 import { REPORT_ENDPOINTS } from '../config';
 
@@ -94,7 +95,7 @@ const ReportPage: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   const [activeStep, setActiveStep] = useState(0);
-  const [reportType, setReportType] = useState<'violation' | 'complaint' | null>(null);
+  const [reportType, setReportType] = useState<'violation' | 'complaint' | 'official' | null>(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -102,14 +103,16 @@ const ReportPage: React.FC = () => {
     category: '',
     date: new Date().toISOString().split('T')[0], // Current date in YYYY-MM-DD format
     time: '',
-    file: null as File | null
+    file: null as File | null,
+    officialId: '' // New field for official ID/badge number
   });
 
   const [errors, setErrors] = useState({
     title: '',
     description: '',
     location: '',
-    category: ''
+    category: '',
+    officialId: '' // Add error field for official ID
   });
 
   const [submitted, setSubmitted] = useState(false);
@@ -134,19 +137,34 @@ const ReportPage: React.FC = () => {
     'Other'
   ];
 
+  // Add official categories
+  const officialCategories = [
+    'Police Officer',
+    'Municipal Officer',
+    'Society Staff',
+    'Security Personnel',
+    'Maintenance Staff',
+    'Administrative Staff',
+    'Other'
+  ];
+
   // Choose categories based on report type
-  const categories = reportType === 'violation' ? violationCategories : complaintCategories;
+  const categories = reportType === 'violation' 
+    ? violationCategories 
+    : reportType === 'complaint' 
+      ? complaintCategories 
+      : officialCategories;
 
   const steps = [
     { label: 'Basic Information', icon: <InfoIcon /> },
-    { label: reportType === 'violation' ? 'Violation Details' : 'Complaint Details', icon: <DescriptionIcon /> },
+    { label: reportType === 'violation' ? 'Violation Details' : reportType === 'complaint' ? 'Complaint Details' : 'Official Report Details', icon: <DescriptionIcon /> },
     { label: 'Evidence Upload', icon: <FileUploadIcon /> },
     { label: 'Review & Submit', icon: <CheckCircleIcon /> }
   ];
 
   // Add beautiful background theme variables
   const bgGradient = `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 0.2)} 0%, ${alpha(theme.palette.background.default, 0.9)} 30%, ${alpha(theme.palette.secondary.dark, 0.3)} 100%)`;
-  const bgPattern = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23${theme.palette.primary.main.replace('#', '')}' fill-opacity='0.08'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`;
+  const bgPattern = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23${theme.palette.primary.main.replace('#', '')}' fill-opacity='0.08'%3E%3Cpath opacity='.5' d='M96 95h4v1h-4v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4h-9v4h-1v-4H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15v-9H0v-1h15V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h9V0h1v15h4v1h-4v9h4v1h-4v9h4v1h-4v9h4v1h-4v9zm-1 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm9-10v-9h-9v9h9zm-10 0v-9h-9v9h9zm-10 0v-9h-9v9h9zm-9-10h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9zm10 0h9v-9h-9v9z'/%3E%3Cpath d='M6 5V0H5v5H0v1h5v94h1V6h94V5H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`;
 
   const { isAuthenticated, getToken } = useAuth();
 
@@ -224,12 +242,13 @@ const ReportPage: React.FC = () => {
     }
   };
 
-  const handleReportTypeSelect = (type: 'violation' | 'complaint') => {
+  const handleReportTypeSelect = (type: 'violation' | 'complaint' | 'official') => {
     setReportType(type);
     // Reset form data when changing report type
     setFormData({
       ...formData,
-      category: '' // Reset category as the options will change
+      category: '', // Reset category as the options will change
+      officialId: '' // Reset official ID
     });
   };
 
@@ -238,7 +257,8 @@ const ReportPage: React.FC = () => {
       title: '',
       description: '',
       location: '',
-      category: ''
+      category: '',
+      officialId: ''
     };
     let valid = true;
 
@@ -250,6 +270,12 @@ const ReportPage: React.FC = () => {
       
       if (!formData.category) {
         newErrors.category = 'Category is required';
+        valid = false;
+      }
+
+      // Validate official ID if report type is official
+      if (reportType === 'official' && !formData.officialId) {
+        newErrors.officialId = 'Official ID or badge number is required';
         valid = false;
       }
     } else if (activeStep === 1) {
@@ -276,7 +302,8 @@ const ReportPage: React.FC = () => {
       title: '',
       description: '',
       location: '',
-      category: ''
+      category: '',
+      officialId: ''
     };
     let valid = true;
 
@@ -303,17 +330,29 @@ const ReportPage: React.FC = () => {
       valid = false;
     }
 
+    // Validate official ID if report type is official
+    if (reportType === 'official' && !formData.officialId) {
+      newErrors.officialId = 'Official ID or badge number is required';
+      valid = false;
+    }
+
     setErrors(newErrors);
     return valid;
   };
 
-  const handleNext = () => {
+  const handleNext = (e?: React.MouseEvent<HTMLButtonElement>) => {
+    if (e) {
+      e.preventDefault(); // Prevent default button action
+    }
     if (validateCurrentStep()) {
       setActiveStep((prevActiveStep) => prevActiveStep + 1);
     }
   };
 
-  const handleBack = () => {
+  const handleBack = (e?: React.MouseEvent<HTMLButtonElement>) => {
+    if (e) {
+      e.preventDefault(); // Prevent default button action
+    }
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
 
@@ -327,7 +366,8 @@ const ReportPage: React.FC = () => {
       category: '',
       date: new Date().toISOString().split('T')[0],
       time: '',
-      file: null
+      file: null,
+      officialId: ''
     });
     setSubmitted(false);
   };
@@ -348,6 +388,7 @@ const ReportPage: React.FC = () => {
           location: formData.location,
           date: formData.date,
           time: formData.time,
+          officialId: reportType === 'official' ? formData.officialId : undefined,
           // Handle file evidence separately if needed
         };
         
@@ -444,7 +485,7 @@ const ReportPage: React.FC = () => {
       </Box>
       
       <Grid container spacing={4} justifyContent="center">
-        <Grid item xs={12} sm={6} md={5}>
+        <Grid item xs={12} sm={6} md={4}>
           <Card 
             elevation={4} 
             sx={{ 
@@ -508,7 +549,7 @@ const ReportPage: React.FC = () => {
           </Card>
         </Grid>
         
-        <Grid item xs={12} sm={6} md={5}>
+        <Grid item xs={12} sm={6} md={4}>
           <Card 
             elevation={4} 
             sx={{ 
@@ -564,6 +605,70 @@ const ReportPage: React.FC = () => {
                     mt: 2, 
                     bgcolor: alpha(theme.palette.info.main, 0.1),
                     color: theme.palette.info.main,
+                    fontWeight: 500
+                  }} 
+                />
+              </Box>
+            </CardActionArea>
+          </Card>
+        </Grid>
+
+        <Grid item xs={12} sm={6} md={4}>
+          <Card 
+            elevation={4} 
+            sx={{ 
+              borderRadius: 4,
+              transform: 'scale(1)',
+              transition: 'all 0.3s ease',
+              backgroundColor: alpha(theme.palette.background.paper, 0.5),
+              backdropFilter: 'blur(10px)',
+              border: `1px solid ${alpha(theme.palette.warning.main, 0.15)}`,
+              '&:hover': {
+                transform: 'scale(1.03)',
+                boxShadow: `0 15px 35px ${alpha(theme.palette.warning.main, 0.25)}`,
+                backgroundColor: alpha(theme.palette.background.paper, 0.6),
+                backdropFilter: 'blur(12px)',
+              }
+            }}
+          >
+            <CardActionArea 
+              onClick={() => handleReportTypeSelect('official')}
+              sx={{ 
+                p: 3,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                borderRadius: 4
+              }}
+            >
+              <Box 
+                sx={{ 
+                  backgroundColor: alpha(theme.palette.warning.main, 0.1),
+                  borderRadius: '50%',
+                  p: 2,
+                  mb: 2,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}
+              >
+                <GavelIcon sx={{ fontSize: 60, color: theme.palette.warning.main }} />
+              </Box>
+              <Typography variant="h5" gutterBottom align="center" sx={{ fontWeight: 600 }}>
+                Report an Official
+              </Typography>
+              <Typography variant="body1" color="text.secondary" align="center">
+                Report issues related to police officers and other officials, such as misconduct, corruption, or negligence.
+              </Typography>
+              <Box sx={{ width: '100%', mt: 3 }}>
+                <Chip 
+                  size="small" 
+                  label="Response time: 1-2 days" 
+                  sx={{ 
+                    mt: 2, 
+                    bgcolor: alpha(theme.palette.warning.main, 0.1),
+                    color: theme.palette.warning.main,
                     fontWeight: 500
                   }} 
                 />
@@ -751,15 +856,21 @@ const ReportPage: React.FC = () => {
                       sx={{ 
                         bgcolor: report.type === 'violation' 
                           ? alpha(theme.palette.error.main, 0.1) 
-                          : alpha(theme.palette.info.main, 0.1),
+                          : report.type === 'complaint' 
+                            ? alpha(theme.palette.info.main, 0.1)
+                            : alpha(theme.palette.warning.main, 0.1),
                         color: report.type === 'violation' 
                           ? theme.palette.error.main 
-                          : theme.palette.info.main
+                          : report.type === 'complaint' 
+                            ? theme.palette.info.main
+                            : theme.palette.warning.main
                       }}
                     >
                       {report.type === 'violation' 
                         ? <ReportProblemIcon fontSize="small" /> 
-                        : <FeedbackIcon fontSize="small" />}
+                        : report.type === 'complaint' 
+                          ? <FeedbackIcon fontSize="small" />
+                          : <GavelIcon fontSize="small" />}
                     </Avatar>
                   </ListItemIcon>
                   <ListItemText 
@@ -939,8 +1050,20 @@ const ReportPage: React.FC = () => {
                     fullWidth
                     id="title"
                     name="title"
-                    label={reportType === 'violation' ? "Violation Title" : "Complaint Title"}
-                    placeholder={reportType === 'violation' ? "Brief title describing the violation" : "Brief title describing your complaint"}
+                    label={
+                      reportType === 'violation' 
+                        ? "Violation Title" 
+                        : reportType === 'complaint' 
+                          ? "Complaint Title" 
+                          : "Official Report Title"
+                    }
+                    placeholder={
+                      reportType === 'violation' 
+                        ? "Brief title describing the violation" 
+                        : reportType === 'complaint' 
+                          ? "Brief title describing your complaint" 
+                          : "Brief title describing the issue with the official"
+                    }
                     value={formData.title}
                     onChange={handleChange}
                     error={!!errors.title}
@@ -1043,6 +1166,66 @@ const ReportPage: React.FC = () => {
                   </FormControl>
                 </Box>
               </Grid>
+              
+              {/* Official ID field - only show for official reports */}
+              {reportType === 'official' && (
+                <Grid item xs={12}>
+                  <Box sx={{ 
+                    position: 'relative',
+                    transition: 'all 0.3s ease',
+                    transform: 'translateY(0)',
+                    '&:hover': {
+                      transform: 'translateY(-3px)'
+                    }
+                  }}>
+                    <TextField
+                      required
+                      fullWidth
+                      id="officialId"
+                      name="officialId"
+                      label="Official ID/Badge Number"
+                      placeholder="Enter the official's ID or badge number"
+                      value={formData.officialId}
+                      onChange={handleChange}
+                      error={!!errors.officialId}
+                      helperText={errors.officialId}
+                      InputProps={{
+                        startAdornment: <GavelIcon sx={{ mr: 1, color: theme.palette.text.secondary }} />,
+                        sx: { 
+                          borderRadius: 3,
+                          boxShadow: !!errors.officialId ? 'none' : `0 4px 20px ${alpha(theme.palette.primary.main, 0.1)}`,
+                          border: `1px solid ${!!errors.officialId ? alpha(theme.palette.error.main, 0.5) : alpha(theme.palette.primary.main, 0.2)}`,
+                          transition: 'all 0.3s ease',
+                          '&:hover': {
+                            boxShadow: !!errors.officialId ? 'none' : `0 6px 24px ${alpha(theme.palette.primary.main, 0.15)}`,
+                          },
+                          '&.Mui-focused': {
+                            boxShadow: !!errors.officialId ? 'none' : `0 6px 24px ${alpha(theme.palette.primary.main, 0.15)}`,
+                          }
+                        }
+                      }}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          '&:hover fieldset': {
+                            borderColor: !!errors.officialId ? alpha(theme.palette.error.main, 0.5) : alpha(theme.palette.primary.main, 0.5),
+                          },
+                          '&.Mui-focused fieldset': {
+                            borderColor: !!errors.officialId ? alpha(theme.palette.error.main, 0.5) : theme.palette.primary.main,
+                          }
+                        },
+                        '& .MuiInputLabel-root': {
+                          fontWeight: 500
+                        },
+                        '& .MuiFormHelperText-root': {
+                          fontWeight: 500,
+                          fontSize: '0.75rem',
+                          mt: 1
+                        }
+                      }}
+                    />
+                  </Box>
+                </Grid>
+              )}
               
               <Grid item xs={12} sm={6}>
                 <Box sx={{ 
@@ -1158,7 +1341,9 @@ const ReportPage: React.FC = () => {
                   label="Location"
                   placeholder={reportType === 'violation' 
                     ? "Where did this violation occur?" 
-                    : "Where did this issue occur?"}
+                    : reportType === 'complaint' 
+                      ? "Where did this issue occur?"
+                      : "Where did this issue occur with the official?"}
                   value={formData.location}
                   onChange={handleChange}
                   error={!!errors.location}
@@ -1179,7 +1364,9 @@ const ReportPage: React.FC = () => {
                   label="Description"
                   placeholder={reportType === 'violation'
                     ? "Provide a detailed description of the violation..."
-                    : "Provide a detailed description of your complaint..."}
+                    : reportType === 'complaint'
+                      ? "Provide a detailed description of your complaint..."
+                      : "Provide a detailed description of the issue with the official..."}
                   multiline
                   rows={6}
                   value={formData.description}
@@ -1207,7 +1394,9 @@ const ReportPage: React.FC = () => {
                   <Typography variant="body2" color="text.secondary">
                     {reportType === 'violation'
                       ? "Please provide as much detail as possible, including specific time, exact location, individuals involved (if applicable), and any other relevant information that might help authorities address the issue effectively."
-                      : "Please provide as much detail as possible about your complaint, including when it happened, who was involved, and what specific issues you experienced. This will help us address your concerns more effectively."}
+                      : reportType === 'complaint'
+                        ? "Please provide as much detail as possible about your complaint, including when it happened, who was involved, and what specific issues you experienced. This will help us address your concerns more effectively."
+                        : "Please provide as much detail as possible about the issue with the official, including when it happened, who was involved, and what specific issues you experienced. This will help us address the issue more effectively."}
                   </Typography>
                 </Box>
               </Grid>
@@ -1338,7 +1527,9 @@ const ReportPage: React.FC = () => {
                   <Typography variant="body2" color="text.secondary">
                     {reportType === 'violation'
                       ? "Providing evidence such as photos or videos can significantly help in addressing the violation. However, this is optional if you don't have any evidence to upload."
-                      : "Supporting documentation or images related to your complaint can help us understand and resolve the issue more effectively. This step is optional if you don't have any materials to upload."}
+                      : reportType === 'complaint'
+                        ? "Supporting documentation or images related to your complaint can help us understand and resolve the issue more effectively. This step is optional if you don't have any materials to upload."
+                        : "Providing evidence such as photos or videos can significantly help in addressing the issue with the official. However, this is optional if you don't have any evidence to upload."}
                   </Typography>
                 </Box>
               </Grid>
@@ -1349,12 +1540,18 @@ const ReportPage: React.FC = () => {
         return (
           <Box sx={{ mt: 4, p:3, backgroundColor: alpha(theme.palette.background.paper, 0.8), borderRadius: 2 }}>
             <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
-              Review Your {reportType === 'violation' ? 'Violation Report' : 'Complaint'}
+              Review Your {
+                reportType === 'violation' ? 'Violation Report' : 
+                reportType === 'complaint' ? 'Complaint' : 
+                'Official Report'}
             </Typography>
             <Paper elevation={0} sx={{ p:2, mb:2, borderRadius:2, border: `1px solid ${alpha(theme.palette.divider,0.2)}`}}>
               <Typography variant="subtitle1" gutterBottom sx={{fontWeight: 500}}>Basic Information:</Typography>
               <Typography variant="body2"><strong>Title:</strong> {formData.title}</Typography>
               <Typography variant="body2"><strong>Category:</strong> {formData.category}</Typography>
+              {reportType === 'official' && (
+                <Typography variant="body2"><strong>Official ID/Badge:</strong> {formData.officialId}</Typography>
+              )}
               <Typography variant="body2"><strong>Date:</strong> {formData.date}</Typography>
               {formData.time && <Typography variant="body2"><strong>Time:</strong> {formData.time}</Typography>}
             </Paper>
@@ -1458,7 +1655,7 @@ const ReportPage: React.FC = () => {
           }
         }}
       >
-        {reportType === 'violation' ? 'Violation Report Submitted!' : 'Complaint Registered Successfully!'}
+        {reportType === 'violation' ? 'Violation Report Submitted!' : reportType === 'complaint' ? 'Complaint Registered Successfully!' : 'Official Report Submitted Successfully!'}
       </Typography>
       <Typography 
         variant="h6" 
@@ -1473,7 +1670,9 @@ const ReportPage: React.FC = () => {
       >
         {reportType === 'violation' 
           ? 'Thank you for your contribution to maintaining social order. Your violation report has been received and will be reviewed by the authorities.'
-          : 'Thank you for sharing your concerns with us. Your complaint has been registered and will be addressed by our team.'}
+          : reportType === 'complaint'
+            ? 'Thank you for sharing your concerns with us. Your complaint has been registered and will be addressed by our team.'
+            : 'Thank you for reporting the issue with the official. Your report has been received and will be reviewed by the appropriate authorities.'}
       </Typography>
       
       <Box sx={{ 
@@ -1517,7 +1716,7 @@ const ReportPage: React.FC = () => {
           }
         }}
       >
-        Submit Another {reportType === 'violation' ? 'Report' : 'Complaint'}
+        Submit Another {reportType === 'violation' ? 'Report' : reportType === 'complaint' ? 'Complaint' : 'Official Report'}
       </Button>
     </Box>
   );
@@ -1605,7 +1804,9 @@ const ReportPage: React.FC = () => {
                   }
                 }}>
                   {reportType === null ? 'Report an Issue' : 
-                   reportType === 'violation' ? 'Report a Violation' : 'Register a Complaint'}
+                   reportType === 'violation' ? 'Report a Violation' : 
+                   reportType === 'complaint' ? 'Register a Complaint' : 
+                   'Report an Official'}
                 </Typography>
                 
                 {/* Instruction panel shown only when no report type is selected */}
@@ -1733,8 +1934,12 @@ const ReportPage: React.FC = () => {
                         {activeStep === 0 ? (
                           <Button
                             variant="outlined"
-                            onClick={() => setReportType(null)}
+                            onClick={(e) => { // Modified onClick
+                              if (e) e.preventDefault();
+                              setReportType(null);
+                            }}
                             startIcon={<ArrowBackIcon />}
+                            type="button" 
                             sx={{
                               borderRadius: 8,
                               px: 3,
@@ -1753,8 +1958,9 @@ const ReportPage: React.FC = () => {
                         ) : (
                           <Button
                             variant="outlined"
-                            onClick={handleBack}
+                            onClick={(e) => handleBack(e)} // Pass event to handleBack
                             startIcon={<ArrowBackIcon />}
+                            type="button" 
                             sx={{
                               borderRadius: 8,
                               px: 3,
@@ -1774,7 +1980,7 @@ const ReportPage: React.FC = () => {
 
                         {activeStep === steps.length - 1 ? (
                           <Button
-                            type="submit"
+                            type="submit" // This one is correct
                             variant="contained"
                             endIcon={<SendIcon />}
                             sx={{
@@ -1793,12 +1999,13 @@ const ReportPage: React.FC = () => {
                               }
                             }}
                           >
-                            Submit {reportType === 'violation' ? 'Violation Report' : 'Complaint'}
+                            Submit {reportType === 'violation' ? 'Violation Report' : reportType === 'complaint' ? 'Complaint' : 'Official Report'}
                           </Button>
                         ) : (
                           <Button
                             variant="contained"
-                            onClick={handleNext}
+                            onClick={(e) => handleNext(e)} // Pass event to handleNext
+                            type="button" 
                             endIcon={<ArrowForwardIcon />}
                             sx={{
                               borderRadius: 8,
